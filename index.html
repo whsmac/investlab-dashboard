@@ -118,24 +118,225 @@ h1{font-size:clamp(25px,4vw,36px);margin:24px 0 4px}.grid{display:grid;grid-temp
 </section>
 <!-- 업종별 시장 히트맵 끝 -->  
 <!-- 시장 심리 지표 시작 -->
-<section class="section panel">
+<section class="section panel" id="fear-greed-panel">
   <div class="section-head">
-    <h2>시장 심리 지표</h2>
-    <span class="small">CNN Fear & Greed Index</span>
+    <h2>미국 시장 심리</h2>
+    <span class="small">Fear &amp; Greed Index</span>
   </div>
-  <div class="small" style="margin-bottom:12px">
-    미국 주식시장의 투자 심리를 확인합니다. 아래 링크에서 최신 지수와 해석을 확인할 수 있습니다.
+
+  <div style="display:flex; flex-wrap:wrap; align-items:center; gap:20px; margin:16px 0;">
+    <div>
+      <div class="small">최근 지수</div>
+      <div id="fg-value" style="font-size:36px; font-weight:700;">불러오는 중…</div>
+      <div id="fg-rating" class="small">데이터를 가져오고 있습니다.</div>
+    </div>
+    <div>
+      <div class="small">기준 날짜</div>
+      <div id="fg-date" style="font-weight:600;">-</div>
+      <div id="fg-change" class="small">-</div>
+    </div>
   </div>
-  <p>
-    <a
-      href="https://www.cnn.com/markets/fear-and-greed"
-      target="_blank"
-      rel="noopener noreferrer">
-      CNN 공포·탐욕 지수 열기 ↗
-    </a>
-  </p>
+
+  <div style="display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-bottom:12px;">
+    <span class="small">조회 기간</span>
+    <button type="button" class="fg-range" data-days="30">1개월</button>
+    <button type="button" class="fg-range" data-days="183">6개월</button>
+    <button type="button" class="fg-range" data-days="365">1년</button>
+    <button type="button" class="fg-range" data-days="1095">3년</button>
+  </div>
+
+  <div style="position:relative; width:100%; height:300px;">
+    <canvas id="fg-chart"></canvas>
+  </div>
+
+  <div id="fg-status" class="small" style="margin-top:10px;">
+    데이터 연결을 준비하고 있습니다.
+  </div>
+
+  <div class="small" style="margin-top:6px;">
+    출처:
+    <a href="https://github.com/Darthh/fear-and-greed-index-data"
+       target="_blank" rel="noopener noreferrer">Fear &amp; Greed Index 데이터 아카이브</a>
+    · 값은 0~100 범위이며 투자 참고용입니다.
+  </div>
 </section>
-<!-- 시장 심리 지표 끝 --> 
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+  const panel = document.getElementById("fear-greed-panel");
+  if (!panel || panel.dataset.initialized === "true") return;
+  panel.dataset.initialized = "true";
+
+  const historyUrl =
+    "https://cdn.jsdelivr.net/gh/Darthh/fear-and-greed-index-data@main/data/fear-greed.json";
+  const latestUrl =
+    "https://cdn.jsdelivr.net/gh/Darthh/fear-and-greed-index-data@main/data/latest.json";
+
+  const valueEl = document.getElementById("fg-value");
+  const ratingEl = document.getElementById("fg-rating");
+  const dateEl = document.getElementById("fg-date");
+  const changeEl = document.getElementById("fg-change");
+  const statusEl = document.getElementById("fg-status");
+  const chartCanvas = document.getElementById("fg-chart");
+
+  let allData = [];
+  let chart = null;
+  let selectedDays = 183;
+
+  function ratingFor(value) {
+    if (value < 25) return "극단적 공포";
+    if (value < 45) return "공포";
+    if (value < 55) return "중립";
+    if (value < 75) return "탐욕";
+    return "극단적 탐욕";
+  }
+
+  function formatDate(date) {
+    return date ? date.replaceAll("-", ". ") : "-";
+  }
+
+  function drawChart() {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - selectedDays);
+    const visible = allData.filter(item => {
+      const date = new Date(item.date + "T00:00:00");
+      return date >= cutoff;
+    });
+
+    if (!visible.length) {
+      statusEl.textContent = "선택한 기간에 표시할 데이터가 없습니다.";
+      return;
+    }
+
+    if (chart) chart.destroy();
+
+    chart = new Chart(chartCanvas, {
+      type: "line",
+      data: {
+        labels: visible.map(item => item.date),
+        datasets: [{
+          label: "Fear & Greed",
+          data: visible.map(item => item.value),
+          borderColor: "#60a5fa",
+          backgroundColor: "rgba(96,165,250,0.12)",
+          fill: true,
+          borderWidth: 2,
+          pointRadius: 0,
+          pointHitRadius: 8,
+          tension: 0.15
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: "index",
+          intersect: false
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: context => "점수: " + context.parsed.y
+            }
+          }
+        },
+        scales: {
+          x: {
+            ticks: { maxTicksLimit: 7, maxRotation: 0 },
+            grid: { display: false }
+          },
+          y: {
+            min: 0,
+            max: 100,
+            ticks: { stepSize: 20 },
+            title: { display: true, text: "공포 ← 점수 → 탐욕" }
+          }
+        }
+      }
+    });
+
+    statusEl.textContent =
+      "표시 기간: " + visible[0].date + " ~ " +
+      visible[visible.length - 1].date +
+      " · 총 " + visible.length + "개 데이터";
+  }
+
+  panel.querySelectorAll(".fg-range").forEach(button => {
+    button.addEventListener("click", () => {
+      selectedDays = Number(button.dataset.days);
+      drawChart();
+    });
+  });
+
+  async function loadData() {
+    try {
+      statusEl.textContent = "일별 데이터를 불러오는 중입니다.";
+
+      const [historyResponse, latestResponse] = await Promise.all([
+        fetch(historyUrl),
+        fetch(latestUrl)
+      ]);
+
+      if (!historyResponse.ok || !latestResponse.ok) {
+        throw new Error("데이터 서버 응답 오류");
+      }
+
+      const history = await historyResponse.json();
+      const latest = await latestResponse.json();
+
+      if (!Array.isArray(history.data) || !history.data.length) {
+        throw new Error("과거 데이터 형식을 확인할 수 없습니다.");
+      }
+
+      allData = history.data
+        .filter(item =>
+          typeof item.date === "string" &&
+          Number.isFinite(Number(item.value))
+        )
+        .sort((a, b) => a.date.localeCompare(b.date));
+
+      if (!allData.length) {
+        throw new Error("유효한 데이터가 없습니다.");
+      }
+
+      const current = Number.isFinite(Number(latest.value))
+        ? latest
+        : allData[allData.length - 1];
+
+      valueEl.textContent = Number(current.value).toFixed(1);
+      ratingEl.textContent = current.rating || ratingFor(Number(current.value));
+      dateEl.textContent = formatDate(current.date);
+
+      if (current.change !== undefined && Number.isFinite(Number(current.change))) {
+        const change = Number(current.change);
+        changeEl.textContent =
+          "전일 대비 " + (change > 0 ? "+" : "") + change.toFixed(1) + "점";
+      } else {
+        changeEl.textContent = "전일 대비 변화 정보 없음";
+      }
+
+      drawChart();
+    } catch (error) {
+      valueEl.textContent = "조회 실패";
+      ratingEl.textContent = "데이터 연결을 확인해 주세요.";
+      statusEl.textContent =
+        "데이터를 불러오지 못했습니다. 잠시 후 새로고침해 주세요. (" +
+        error.message + ")";
+    }
+  }
+
+  if (typeof Chart === "undefined") {
+    statusEl.textContent =
+      "차트 라이브러리를 불러오지 못했습니다. 인터넷 연결을 확인해 주세요.";
+    return;
+  }
+
+  loadData();
+})();
+</script>
+<!-- 시장 심리 지표 끝 -->
 <section class="grid">
 <div class="card"><div class="metric-label">총 평가금액 (USD)</div><div id="totalValue" class="metric">—</div><div id="valueSub" class="metric-sub">시세 연결 대기</div></div>
 <div class="card"><div class="metric-label">총 매입 원금 (USD)</div><div id="totalCost" class="metric">$117,443.50</div><div class="metric-sub">수수료·세금 제외</div></div>
