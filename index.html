@@ -67,8 +67,8 @@ h1{font-size:clamp(25px,4vw,36px);margin:24px 0 4px}.grid{display:grid;grid-temp
         {
           "title": "시장 지표",
           "symbols": [
-            {"s": "TVC:VIX", "d": "VIX 변동성 지수"},
-            {"s": "TVC:US10Y", "d": "미국 10년물 금리 (%)"},
+            {"s": "FOREXCOM:VIX", "d": "VIX 변동성 지수"},
+            {"s": "FOREXCOM:US10Y", "d": "미국 10년물 금리 (%)"},
             {"s": "FX_IDC:USDKRW", "d": "원/달러 환율"},
             {"s": "TVC:GOLD", "d": "금 가격"},
             {"s": "TVC:USOIL", "d": "WTI 국제유가"}
@@ -117,6 +117,25 @@ h1{font-size:clamp(25px,4vw,36px);margin:24px 0 4px}.grid{display:grid;grid-temp
   </div>
 </section>
 <!-- 업종별 시장 히트맵 끝 -->  
+<!-- 시장 심리 지표 시작 -->
+<section class="section panel">
+  <div class="section-head">
+    <h2>시장 심리 지표</h2>
+    <span class="small">CNN Fear & Greed Index</span>
+  </div>
+  <div class="small" style="margin-bottom:12px">
+    미국 주식시장의 투자 심리를 확인합니다. 아래 링크에서 최신 지수와 해석을 확인할 수 있습니다.
+  </div>
+  <p>
+    <a
+      href="https://www.cnn.com/markets/fear-and-greed"
+      target="_blank"
+      rel="noopener noreferrer">
+      CNN 공포·탐욕 지수 열기 ↗
+    </a>
+  </p>
+</section>
+<!-- 시장 심리 지표 끝 --> 
 <section class="grid">
 <div class="card"><div class="metric-label">총 평가금액 (USD)</div><div id="totalValue" class="metric">—</div><div id="valueSub" class="metric-sub">시세 연결 대기</div></div>
 <div class="card"><div class="metric-label">총 매입 원금 (USD)</div><div id="totalCost" class="metric">$117,443.50</div><div class="metric-sub">수수료·세금 제외</div></div>
