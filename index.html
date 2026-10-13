@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>INVESTLAB · My Portfolio</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root{--bg:#0b1020;--panel:#141b2d;--panel2:#1b2439;--text:#edf2ff;--muted:#9ba8c4;--line:#2a3550;--green:#42d3a5;--red:#ff7185;--blue:#7ca7ff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#17233e 0,#0b1020 55%);color:var(--text);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.wrap{max-width:1280px;margin:auto;padding:28px 20px 60px}.top{display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap}.brand{font-weight:800;font-size:22px;letter-spacing:.06em}.brand span{color:var(--blue)}.sub{color:var(--muted);font-size:13px}.actions{display:flex;gap:8px;flex-wrap:wrap}
+button,input{font:inherit}button{border:1px solid var(--line);border-radius:10px;padding:9px 13px;background:var(--panel2);color:var(--text);cursor:pointer}button.primary{background:var(--blue);border-color:var(--blue);color:#071024;font-weight:700}button:hover{filter:brightness(1.12)}
+h1{font-size:clamp(25px,4vw,36px);margin:24px 0 4px}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:20px 0}.card{background:linear-gradient(145deg,#172137,#12192a);border:1px solid var(--line);border-radius:16px;padding:18px;min-width:0}.metric-label{font-size:12px;color:var(--muted)}.metric{font-size:clamp(20px,2.6vw,29px);font-weight:750;margin-top:7px;overflow-wrap:anywhere}.metric-sub{font-size:12px;color:var(--muted);margin-top:5px}.section{margin-top:20px}.section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}.section h2{font-size:17px;margin:0}.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;min-width:0}.two{display:grid;grid-template-columns:1.3fr 1fr;gap:14px}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;white-space:nowrap}th,td{padding:12px 10px;border-bottom:1px solid var(--line);text-align:right}th:first-child,td:first-child{text-align:left}th{color:var(--muted);font-size:12px;font-weight:600}td{font-variant-numeric:tabular-nums}td input{width:92px;background:#0d1424;color:var(--text);border:1px solid var(--line);padding:6px;border-radius:7px;text-align:right}.ticker{font-weight:800}.pill{display:inline-block;border-radius:20px;padding:3px 8px;background:#202c45;color:#c8d7ff;font-size:11px}.positive{color:var(--green)}.negative{color:var(--red)}.muted{color:var(--muted)}.notice{padding:12px 14px;border:1px solid #67582a;background:#292516;border-radius:12px;color:#f5d98b;font-size:13px}.formrow{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.formrow input{min-width:220px;flex:1;background:#0d1424;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:10px}.status{font-size:12px;color:var(--muted);margin-top:10px}.small{font-size:12px;color:var(--muted)}.scenario{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.scenario .card{padding:14px}.footer{color:var(--muted);font-size:12px;margin-top:26px}.hidden{display:none!important}
+@media(max-width:850px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.two{grid-template-columns:1fr}}
+@media(max-width:480px){.wrap{padding:18px 12px 40px}.grid{gap:8px}.card{padding:13px}.panel{padding:12px}.scenario{grid-template-columns:1fr}}
+</style>
+</head>
+<body><main class="wrap">
+<header class="top"><div><div class="brand">INVEST<span>LAB</span> <span class="pill">PERSONAL</span></div><div class="sub">미국 주식 · ETF 포트폴리오 모니터</div></div>
+<div class="actions"><button id="refreshBtn">↻ 시세 갱신</button><button id="settingsBtn">연결 설정</button><button id="authBtn" class="primary">로그인</button></div></header>
+<h1>내 투자 현황</h1><div class="sub">보유 내역은 직접 입력한 매입 기준값입니다. 시세가 연결되면 평가금액과 손익이 자동 계산됩니다.</div>
+<div id="notice" class="notice section">초기 모드입니다. 여러 기기 동기화와 자동 시세를 사용하려면 Supabase 및 시세 API 설정을 완료하세요.</div>
+<section class="grid">
+<div class="card"><div class="metric-label">총 평가금액 (USD)</div><div id="totalValue" class="metric">—</div><div id="valueSub" class="metric-sub">시세 연결 대기</div></div>
+<div class="card"><div class="metric-label">총 매입 원금 (USD)</div><div id="totalCost" class="metric">$117,443.50</div><div class="metric-sub">수수료·세금 제외</div></div>
+<div class="card"><div class="metric-label">평가손익 (USD)</div><div id="totalPnl" class="metric">—</div><div id="totalPnlPct" class="metric-sub">—</div></div>
+<div class="card"><div class="metric-label">원화 환산 평가금액</div><div id="totalKrw" class="metric">—</div><div id="fxSub" class="metric-sub">USD/KRW 시세 연결 필요</div></div>
+</section>
+<section class="section panel"><div class="section-head"><h2>보유 종목</h2><div class="actions"><button id="saveBtn" class="primary">보유 정보 저장</button></div></div>
+<div class="table-wrap"><table><thead><tr><th>종목</th><th>수량</th><th>평균 매입가</th><th>현재가</th><th>평가금액</th><th>손익</th><th>수익률</th><th>비중</th></tr></thead><tbody id="holdingsBody"></tbody></table></div>
+<div class="status" id="dataStatus">초기 보유 내역은 이 브라우저에 저장됩니다. 로그인 후 저장하면 계정 간 동기화됩니다.</div></section>
+<section class="section two">
+<div class="panel"><div class="section-head"><h2>자산 배분</h2><span class="small">현재 평가금액 기준</span></div><canvas id="allocationChart" height="240"></canvas></div>
+<div class="panel"><div class="section-head"><h2>종목별 매입 원금</h2><span class="small">입력값 기준</span></div><canvas id="costChart" height="240"></canvas></div>
+</section>
+<section class="section panel"><div class="section-head"><h2>레버리지 ETF 스트레스 테스트</h2><span class="small">단순 가정 · 예측 아님</span></div>
+<div class="sub">각 ETF의 기초지수가 하루 동안 같은 방향으로 움직인다고 가정한 이론적 1일 변화입니다. 장기 수익률 예측에는 사용할 수 없습니다.</div>
+<div id="scenarioCards" class="scenario" style="margin-top:14px"></div></section>
+<section class="section panel"><div class="section-head"><h2>연결 설정</h2><span class="small">API 비밀키를 여기에 입력하지 마세요.</span></div>
+<div id="settingsPanel" class="hidden">
+<label class="small">Supabase Project URL</label><div class="formrow"><input id="sbUrl" placeholder="https://YOUR-PROJECT.supabase.co"></div>
+<label class="small">Supabase anon/publishable key (공개용 키만)</label><div class="formrow"><input id="sbKey" placeholder="Supabase publishable key"></div>
+<label class="small">Quotes Edge Function URL</label><div class="formrow"><input id="quoteUrl" placeholder="https://YOUR-PROJECT.supabase.co/functions/v1/quotes"></div>
+<div class="actions"><button id="connectBtn" class="primary">설정 저장 및 연결</button><button id="closeSettingsBtn">닫기</button></div>
+<div class="status">자동 시세 API의 비밀키는 Supabase Edge Function의 Secrets에만 저장합니다. GitHub에 올리지 마세요.</div>
+</div>
+<div id="authPanel" class="hidden">
+<div class="formrow"><input id="email" type="email" placeholder="이메일"><input id="password" type="password" placeholder="비밀번호 (최소 8자)"></div>
+<div class="actions"><button id="signInBtn" class="primary">로그인</button><button id="signUpBtn">계정 만들기</button><button id="signOutBtn">로그아웃</button></div>
+<div class="status" id="authStatus">동기화하려면 Supabase 연결 설정 후 로그인하세요.</div>
+</div>
+</section>
+<div class="footer">참고용 투자 정보 도구입니다. 시세는 제공업체의 지연·호출 제한·오류 영향을 받을 수 있습니다. 매매 주문을 실행하지 않습니다.</div>
+</main>
+<script>
+const SEED=[
+ {symbol:"TSLA",shares:222,avg_cost:385.2,price:null,category:"개별주"},
+ {symbol:"BITU",shares:160,avg_cost:14,price:null,category:"비트코인 레버리지"},
+ {symbol:"TQQQ",shares:283,avg_cost:73.3,price:null,category:"나스닥 레버리지"},
+ {symbol:"USD",shares:107,avg_cost:83.6,price:null,category:"반도체 레버리지"}
+];
+const $=id=>document.getElementById(id);
+let holdings=JSON.parse(localStorage.getItem("investlab_holdings")||"null")||SEED;
+let config=JSON.parse(localStorage.getItem("investlab_config")||"{}");
+let supabaseClient=null, session=null, allocationChart=null, costChart=null, fx=null;
+const money=(n,cur="USD")=>n==null||!Number.isFinite(n)?"—":new Intl.NumberFormat("en-US",{style:"currency",currency:cur,maximumFractionDigits:2}).format(n);
+const pct=n=>n==null||!Number.isFinite(n)?"—":(n>=0?"+":"")+n.toFixed(2)+"%";
+const num=n=>Number(n)||0;
+function cost(h){return h.shares*h.avg_cost}
+function market(h){return h.price==null?null:h.shares*h.price}
+function pnl(h){return h.price==null?null:market(h)-cost(h)}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function render(){
+ const totalCost=holdings.reduce((a,h)=>a+cost(h),0), priced=holdings.every(h=>h.price!=null), totalValue=holdings.reduce((a,h)=>a+(market(h)||0),0), totalPnl=priced?totalValue-totalCost:null;
+ $("totalCost").textContent=money(totalCost);$("totalValue").textContent=priced?money(totalValue):"시세 대기";
+ $("valueSub").textContent=priced?"현재가 기준 · "+new Date().toLocaleTimeString("ko-KR"):"시세 API를 연결하세요";
+ $("totalPnl").textContent=totalPnl==null?"—":money(totalPnl);$("totalPnl").className="metric "+(totalPnl>=0?"positive":"negative");
+ $("totalPnlPct").textContent=totalPnl==null?"현재가 필요":pct(totalPnl/totalCost*100);
+ $("totalKrw").textContent=priced&&fx?money(totalValue*fx,"KRW"):"—";$("fxSub").textContent=fx?"USD/KRW "+fx.toFixed(2):"환율 연결 필요";
+ $("holdingsBody").innerHTML=holdings.map((h,i)=>{const p=pnl(h),v=market(h),weight=priced&&totalValue?v/totalValue*100:null;return `<tr>
+ <td><div class="ticker">${esc(h.symbol)}</div><div class="small">${esc(h.category||"")}</div></td>
+ <td><input aria-label="${h.symbol} 수량" data-i="${i}" data-k="shares" type="number" min="0" step="any" value="${h.shares}"></td>
+ <td><input aria-label="${h.symbol} 매입가" data-i="${i}" data-k="avg_cost" type="number" min="0" step="any" value="${h.avg_cost}"></td>
+ <td>${h.price==null?"—":money(h.price)}</td><td>${v==null?"—":money(v)}</td>
+ <td class="${p==null?"":p>=0?"positive":"negative"}">${p==null?"—":money(p)}</td><td class="${p==null?"":p>=0?"positive":"negative"}">${p==null?"—":pct(p/cost(h)*100)}</td><td>${weight==null?"—":weight.toFixed(1)+"%"}</td></tr>`}).join("");
+ document.querySelectorAll("#holdingsBody input").forEach(el=>el.addEventListener("change",e=>{const i=+e.target.dataset.i,k=e.target.dataset.k;holdings[i][k]=Math.max(0,num(e.target.value));localStorage.setItem("investlab_holdings",JSON.stringify(holdings));render()}));
+ renderCharts();renderScenarios();
+}
+function chartOpts(){return {plugins:{legend:{labels:{color:"#cbd5ee"}}},scales:{x:{ticks:{color:"#9ba8c4"},grid:{color:"#263149"}},y:{ticks:{color:"#9ba8c4"},grid:{color:"#263149"}}}}}
+function renderCharts(){
+ const labels=holdings.map(h=>h.symbol), vals=holdings.map(h=>market(h)||0), costs=holdings.map(cost);
+ if(allocationChart)allocationChart.destroy();if(costChart)costChart.destroy();
+ allocationChart=new Chart($("allocationChart"),{type:"doughnut",data:{labels,datasets:[{data:vals,backgroundColor:["#7ca7ff","#42d3a5","#ffb86b","#c59cff"],borderColor:"#141b2d"}]},options:{plugins:{legend:{position:"bottom",labels:{color:"#cbd5ee"}}}}});
+ costChart=new Chart($("costChart"),{type:"bar",data:{labels,datasets:[{label:"매입 원금 USD",data:costs,backgroundColor:"#7ca7ff",borderRadius:5}]},options:{...chartOpts(),plugins:{legend:{display:false}}}});
+}
+function renderScenarios(){
+ const scenarios=[{label:"기초자산 -5%",base:-5},{label:"기초자산 -10%",base:-10},{label:"기초자산 -20%",base:-20}];
+ $("scenarioCards").innerHTML=scenarios.map(s=>{let total=0,has=true;for(const h of holdings){if(h.price==null){has=false;break}let mult=h.symbol==="TQQQ"?3:(["BITU","USD"].includes(h.symbol)?2:1);total+=market(h)*(1+s.base/100*mult)}return `<div class="card"><div class="metric-label">${s.label}</div><div class="metric">${has?money(total):"시세 필요"}</div><div class="metric-sub">${has?"가정 후 포트폴리오 평가금액":"현재가를 불러오면 계산됩니다"}</div></div>`}).join("");
+}
+function setNotice(t){$("notice").textContent=t}
+function connect(){
+ if(!config.url||!config.key){supabaseClient=null;return}
+ supabaseClient=window.supabase.createClient(config.url,config.key);
+ supabaseClient.auth.getSession().then(({data})=>{session=data.session;updateAuthUI();if(session)loadCloud()});
+ supabaseClient.auth.onAuthStateChange((_event,s)=>{session=s;updateAuthUI();if(s)loadCloud()});
+}
+function updateAuthUI(){$("authBtn").textContent=session?"계정 연결됨":"로그인";$("authStatus").textContent=session?"로그인됨: "+session.user.email:"로그인하지 않았습니다."}
+async function loadCloud(){
+ if(!supabaseClient||!session)return;
+ try{const {data,error}=await supabaseClient.from("holdings").select("symbol,shares,avg_cost").order("symbol");if(error)throw error;
+ if(data&&data.length){holdings=data.map(row=>({...row,price:(holdings.find(h=>h.symbol===row.symbol)||{}).price??null,category:(holdings.find(h=>h.symbol===row.symbol)||{}).category||""}));localStorage.setItem("investlab_holdings",JSON.stringify(holdings));render();$("dataStatus").textContent="Supabase 계정과 보유 내역을 동기화했습니다."}
+ else {$("dataStatus").textContent="클라우드 보유 내역이 비어 있습니다. '보유 정보 저장'을 눌러 초기값을 업로드하세요."}
+ }catch(e){$("dataStatus").textContent="클라우드 불러오기 실패: "+e.message}
+}
+async function saveCloud(){
+ localStorage.setItem("investlab_holdings",JSON.stringify(holdings));
+ if(!supabaseClient||!session){$("dataStatus").textContent="이 브라우저에 저장했습니다. 여러 기기 동기화는 Supabase 연결 및 로그인이 필요합니다.";return}
+ const rows=holdings.map(h=>({user_id:session.user.id,symbol:h.symbol,shares:h.shares,avg_cost:h.avg_cost}));
+ const {error}=await supabaseClient.from("holdings").upsert(rows,{onConflict:"user_id,symbol"});
+ $("dataStatus").textContent=error?"저장 실패: "+error.message:"클라우드에 저장했습니다. 다른 기기에서도 같은 계정으로 로그인하세요.";
+}
+async function refreshQuotes(){
+ const url=config.quoteUrl;if(!url){setNotice("시세 API가 아직 연결되지 않았습니다. 연결 설정에서 Supabase Edge Function URL을 등록하세요.");return}
+ $("refreshBtn").textContent="갱신 중…";
+ try{const headers={"Content-Type":"application/json"};if(session)headers.Authorization="Bearer "+session.access_token;
+ const res=await fetch(url,{method:"POST",headers,body:JSON.stringify({symbols:holdings.map(h=>h.symbol),includeFx:true})});
+ if(!res.ok)throw new Error("HTTP "+res.status+" — Edge Function 설정 및 시세 제공업체 키를 확인하세요.");
+ const data=await res.json();if(data.quotes){holdings=holdings.map(h=>({...h,price:data.quotes[h.symbol]?.price??h.price}));}
+ if(data.fx)fx=Number(data.fx);localStorage.setItem("investlab_holdings",JSON.stringify(holdings));render();
+ setNotice("시세 갱신 완료 · "+new Date().toLocaleString("ko-KR")+" · 제공업체 시세는 지연될 수 있습니다.");
+ }catch(e){setNotice("시세 갱신 실패: "+e.message)}finally{$("refreshBtn").textContent="↻ 시세 갱신"}
+}
+$("settingsBtn").onclick=()=>{$("settingsPanel").classList.toggle("hidden");$("authPanel").classList.add("hidden");$("sbUrl").value=config.url||"";$("sbKey").value=config.key||"";$("quoteUrl").value=config.quoteUrl||""};
+$("closeSettingsBtn").onclick=()=>$("settingsPanel").classList.add("hidden");
+$("connectBtn").onclick=()=>{config={url:$("sbUrl").value.trim(),key:$("sbKey").value.trim(),quoteUrl:$("quoteUrl").value.trim()};localStorage.setItem("investlab_config",JSON.stringify(config));connect();$("settingsPanel").classList.add("hidden");setNotice("연결 설정을 저장했습니다. Supabase SQL과 Edge Function 배포가 완료되어야 동기화 및 자동 시세가 작동합니다.")};
+$("authBtn").onclick=()=>{$("authPanel").classList.toggle("hidden");$("settingsPanel").classList.add("hidden")};
+$("signInBtn").onclick=async()=>{if(!supabaseClient)return $("authStatus").textContent="먼저 연결 설정을 완료하세요.";const {error}=await supabaseClient.auth.signInWithPassword({email:$("email").value,password:$("password").value});$("authStatus").textContent=error?error.message:"로그인 요청 완료."};
+$("signUpBtn").onclick=async()=>{if(!supabaseClient)return $("authStatus").textContent="먼저 연결 설정을 완료하세요.";const {error}=await supabaseClient.auth.signUp({email:$("email").value,password:$("password").value});$("authStatus").textContent=error?error.message:"가입 요청 완료. 이메일 확인이 필요할 수 있습니다."};
+$("signOutBtn").onclick=async()=>{if(supabaseClient)await supabaseClient.auth.signOut();session=null;updateAuthUI()};
+$("saveBtn").onclick=saveCloud;$("refreshBtn").onclick=refreshQuotes;
+render();connect();
+// 시세 URL이 설정되어 있으면 페이지 시작 시 조회하고 15분마다 갱신합니다.
+// 공급자 호출 한도를 고려해 주기를 짧게 설정하지 마세요.
+if(config.quoteUrl){refreshQuotes();setInterval(()=>{if(config.quoteUrl)refreshQuotes()},15*60*1000);}
+</script></body></html>
