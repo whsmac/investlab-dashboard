@@ -1,0 +1,73 @@
+name: Validate dashboard scripts
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main, "feature/**"]
+
+jobs:
+  syntax-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Check inline JavaScript syntax
+        run: |
+          python3 - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+
+          class InlineScripts(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.scripts = []
+                  self.current = None
+                  self.external = False
+
+              def handle_starttag(self, tag, attrs):
+                  if tag.lower() == "script":
+                      self.current = []
+                      self.external = any(k.lower() == "src" for k, _ in attrs)
+
+              def handle_data(self, data):
+                  if self.current is not None:
+                      self.current.append(data)
+
+              def handle_endtag(self, tag):
+                  if tag.lower() == "script" and self.current is not None:
+                      code = "".join(self.current).strip()
+                      if code and not self.external:
+                          self.scripts.append(code)
+                      self.current = None
+                      self.external = False
+
+          parser = InlineScripts()
+          parser.feed(Path("index.html").read_text(encoding="utf-8"))
+          if not parser.scripts:
+              raise SystemExit("No inline JavaScript blocks found")
+          for i, code in enumerate(parser.scripts, 1):
+              Path(f"/tmp/investlab-inline-{i}.js").write_text(code, encoding="utf-8")
+          print(f"Extracted {len(parser.scripts)} inline JavaScript blocks")
+          PY
+          for file in /tmp/investlab-inline-*.js; do
+            echo "Checking $file"
+            node --check "$file"
+          done
+      - name: Check required symbol-management elements
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          html = Path("index.html").read_text(encoding="utf-8")
+          required = [
+              'id="menuDashboard"', 'id="menuSymbols"', 'id="symbolManagementView"',
+              'id="symbolInput"', 'id="managedHoldingsBody"', 'id="watchlistBody"',
+              'id="pastSymbolsBody"', 'function renderSymbolManagement'
+          ]
+          missing = [item for item in required if item not in html]
+          if missing:
+              raise SystemExit("Missing required elements: " + ", ".join(missing))
+          print("Required symbol-management elements are present")
+          PY
