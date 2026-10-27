@@ -358,7 +358,7 @@ async function loadData() {
 </section>
 <section class="section panel"><div class="section-head"><h2>보유 종목</h2><div class="actions"><button id="saveBtn" class="primary">보유 정보 저장</button></div></div>
 <div class="table-wrap"><table><thead><tr><th>종목</th><th>수량</th><th>평균 매입가</th><th>현재가</th><th>평가금액</th><th>손익</th><th>수익률</th><th>비중</th></tr></thead><tbody id="holdingsBody"></tbody></table></div>
-<div class="status" id="dataStatus">초기 보유 내역은 이 브라우저에 저장됩니다. 로그인 후 저장하면 계정 간 동기화됩니다.</div></section>
+<div class="status" id="dataStatus">초기 보유 내역은 이 브라우저에 저장됩니다. 로그인 후 저장하면 계정 간 동기화됩니다.</div><div class="formrow" style="margin-top:12px;align-items:end"><div style="flex:1;min-width:220px"><label class="small" for="cashBalanceInput">증권계좌 달러 현금 잔액 (USD)</label><input id="cashBalanceInput" type="number" min="0" step="0.01" placeholder="예: 2500.00" style="width:100%"></div><button id="saveCashBalanceBtn" type="button">달러 현금 잔액 저장</button></div><div class="small">달러 현금은 현재가 $1로 계산하며 시세 API에서 조회하지 않습니다. 매입 원금·평가금액·자산 배분에 포함됩니다. 환차손익은 별도 환전 원가 기록 전까지 계산하지 않습니다.</div></section>
 <section class="section two">
 <div class="panel"><div class="section-head"><h2>자산 배분</h2><span class="small">현재 평가금액 기준</span></div><canvas id="allocationChart" height="240"></canvas></div>
 <div class="panel"><div class="section-head"><h2>종목별 매입 원금</h2><span class="small">입력값 기준</span></div><canvas id="costChart" height="240"></canvas></div>
@@ -396,6 +396,7 @@ let supabaseClient=null, session=null, allocationChart=null, costChart=null, fx=
 const money=(n,cur="USD")=>n==null||!Number.isFinite(n)?"—":new Intl.NumberFormat("en-US",{style:"currency",currency:cur,maximumFractionDigits:2}).format(n);
 const pct=n=>n==null||!Number.isFinite(n)?"—":(n>=0?"+":"")+n.toFixed(2)+"%";
 const num=n=>Number(n)||0;
+function isUsdCash(h){return h.symbol==="USD-CASH"}
 function cost(h){return h.shares*h.avg_cost}
 function market(h){return h.price==null?null:h.shares*h.price}
 function pnl(h){return h.price==null?null:market(h)-cost(h)}
@@ -410,11 +411,11 @@ function render(){
  $("holdingsBody").innerHTML=holdings.map((h,i)=>{const p=pnl(h),v=market(h),weight=priced&&totalValue?v/totalValue*100:null;return `<tr>
  <td><div class="ticker">${esc(h.symbol)}</div><div class="small">${esc(h.category||"")}</div></td>
  <td><input aria-label="${h.symbol} 수량" data-i="${i}" data-k="shares" type="number" min="0" step="any" value="${h.shares}"></td>
- <td><input aria-label="${h.symbol} 매입가" data-i="${i}" data-k="avg_cost" type="number" min="0" step="any" value="${h.avg_cost}"></td>
+ <td><input aria-label="${h.symbol} 매입가" data-i="${i}" data-k="avg_cost" type="number" min="0" step="any" value="${h.avg_cost}" ${isUsdCash(h)?"disabled":""}></td>
  <td>${h.price==null?"—":money(h.price)}</td><td>${v==null?"—":money(v)}</td>
  <td class="${p==null?"":p>=0?"positive":"negative"}">${p==null?"—":money(p)}</td><td class="${p==null?"":p>=0?"positive":"negative"}">${p==null?"—":pct(p/cost(h)*100)}</td><td>${weight==null?"—":weight.toFixed(1)+"%"}</td></tr>`}).join("");
- document.querySelectorAll("#holdingsBody input").forEach(el=>el.addEventListener("change",async e=>{const i=+e.target.dataset.i,k=e.target.dataset.k;holdings[i][k]=Math.max(0,num(e.target.value));localStorage.setItem("investlab_holdings",JSON.stringify(holdings));render();if(supabaseClient&&session){const h=holdings[i];const {error}=await supabaseClient.from("holdings").upsert({user_id:session.user.id,symbol:h.symbol,shares:h.shares,avg_cost:h.avg_cost},{onConflict:"user_id,symbol"});if(error){$("dataStatus").textContent=h.symbol+" 브라우저 저장은 완료했지만 클라우드 자동 저장 실패: "+error.message+" · ‘보유 정보 저장’으로 다시 시도하세요.";}else{$("dataStatus").textContent=h.symbol+" 수량·평균 매입가를 Supabase에 자동 저장했습니다.";}}else{$("dataStatus").textContent="브라우저에 저장했습니다. 클라우드 자동 저장은 로그인 후 사용할 수 있습니다.";}}));
- renderCharts();renderScenarios();
+ document.querySelectorAll("#holdingsBody input").forEach(el=>el.addEventListener("change",async e=>{const i=+e.target.dataset.i,k=e.target.dataset.k;if(isUsdCash(holdings[i])){holdings[i].avg_cost=1;holdings[i].price=1;holdings[i].shares=Math.max(0,num(e.target.value));}else holdings[i][k]=Math.max(0,num(e.target.value));localStorage.setItem("investlab_holdings",JSON.stringify(holdings));render();if(supabaseClient&&session){const h=holdings[i];const {error}=await supabaseClient.from("holdings").upsert({user_id:session.user.id,symbol:h.symbol,shares:h.shares,avg_cost:h.avg_cost},{onConflict:"user_id,symbol"});if(error){$("dataStatus").textContent=h.symbol+" 브라우저 저장은 완료했지만 클라우드 자동 저장 실패: "+error.message+" · ‘보유 정보 저장’으로 다시 시도하세요.";}else{$("dataStatus").textContent=h.symbol+" 수량·평균 매입가를 Supabase에 자동 저장했습니다.";}}else{$("dataStatus").textContent="브라우저에 저장했습니다. 클라우드 자동 저장은 로그인 후 사용할 수 있습니다.";}}));
+ renderCharts();renderScenarios();syncCashInput();
 }
 function chartOpts(){return {plugins:{legend:{labels:{color:"#cbd5ee"}}},scales:{x:{ticks:{color:"#9ba8c4"},grid:{color:"#263149"}},y:{ticks:{color:"#9ba8c4"},grid:{color:"#263149"}}}}}
 function renderCharts(){
@@ -441,7 +442,7 @@ async function loadCloud(){
   const {data,error}=await supabaseClient.from("holdings").select("symbol,shares,avg_cost").order("symbol");
   if(error)throw error;
   if(data&&data.length){
-   holdings=data.map(row=>({...row,price:(holdings.find(h=>h.symbol===row.symbol)||{}).price??null,category:(holdings.find(h=>h.symbol===row.symbol)||{}).category||""}));
+   holdings=data.map(row=>({...row,price:row.symbol==="USD-CASH"?1:((holdings.find(h=>h.symbol===row.symbol)||{}).price??null),avg_cost:row.symbol==="USD-CASH"?1:row.avg_cost,category:row.symbol==="USD-CASH"?"달러 현금":((holdings.find(h=>h.symbol===row.symbol)||{}).category||"")}));
    localStorage.setItem("investlab_holdings",JSON.stringify(holdings));render();
    $("dataStatus").textContent="Supabase 계정과 보유 내역을 동기화했습니다.";
   }else{$("dataStatus").textContent="클라우드 보유 내역이 비어 있습니다. ‘보유 정보 저장’을 눌러 초기값을 업로드하세요.";}
@@ -467,9 +468,9 @@ async function refreshQuotes(){
  const url=config.quoteUrl;if(!url){setNotice("시세 API가 아직 연결되지 않았습니다. 연결 설정에서 Supabase Edge Function URL을 등록하세요.");return}
  $("refreshBtn").textContent="갱신 중…";
  try{const headers={"Content-Type":"application/json"};if(session)headers.Authorization="Bearer "+session.access_token;
- const res=await fetch(url,{method:"POST",headers,body:JSON.stringify({symbols:holdings.map(h=>h.symbol),includeFx:true})});
+ const res=await fetch(url,{method:"POST",headers,body:JSON.stringify({symbols:holdings.filter(h=>!isUsdCash(h)).map(h=>h.symbol),includeFx:true})});
  if(!res.ok)throw new Error("HTTP "+res.status+" — Edge Function 설정 및 시세 제공업체 키를 확인하세요.");
- const data=await res.json();if(data.quotes){holdings=holdings.map(h=>({...h,price:data.quotes[h.symbol]?.price??h.price}));}
+ const data=await res.json();if(data.quotes){holdings=holdings.map(h=>isUsdCash(h)?({...h,price:1,avg_cost:1}):({...h,price:data.quotes[h.symbol]?.price??h.price}));}
  if(data.fx)fx=Number(data.fx);localStorage.setItem("investlab_holdings",JSON.stringify(holdings));render();
  setNotice("시세 갱신 완료 · "+new Date().toLocaleString("ko-KR")+" · 제공업체 시세는 지연될 수 있습니다.");
  }catch(e){setNotice("시세 갱신 실패: "+e.message)}finally{$("refreshBtn").textContent="↻ 시세 갱신"}
@@ -481,7 +482,11 @@ $("authBtn").onclick=()=>{$("authPanel").classList.toggle("hidden");$("settingsP
 $("signInBtn").onclick=async()=>{if(!supabaseClient)return $("authStatus").textContent="먼저 연결 설정을 완료하세요.";const {error}=await supabaseClient.auth.signInWithPassword({email:$("email").value,password:$("password").value});$("authStatus").textContent=error?error.message:"로그인 요청 완료."};
 $("signUpBtn").onclick=async()=>{if(!supabaseClient)return $("authStatus").textContent="먼저 연결 설정을 완료하세요.";const {error}=await supabaseClient.auth.signUp({email:$("email").value,password:$("password").value});$("authStatus").textContent=error?error.message:"가입 요청 완료. 이메일 확인이 필요할 수 있습니다."};
 $("signOutBtn").onclick=async()=>{if(supabaseClient)await supabaseClient.auth.signOut();session=null;updateAuthUI()};
-$("saveBtn").onclick=saveCloud;$("refreshBtn").onclick=refreshQuotes;
+$("saveBtn").onclick=saveCloud;
+function syncCashInput(){const cash=holdings.find(h=>isUsdCash(h));const input=$("cashBalanceInput");if(input&&document.activeElement!==input)input.value=cash?cash.shares:"";}
+async function saveCashBalance(){const input=$("cashBalanceInput"),amount=Number(input.value);if(input.value.trim()===""||!Number.isFinite(amount)||amount<0){$("dataStatus").textContent="달러 현금 잔액에 0 이상의 금액을 입력해 주세요.";return;}let cash=holdings.find(h=>isUsdCash(h));if(cash){cash.shares=amount;cash.avg_cost=1;cash.price=1;cash.category="달러 현금";}else{cash={symbol:"USD-CASH",shares:amount,avg_cost:1,price:1,category:"달러 현금"};holdings.push(cash);}localStorage.setItem("investlab_holdings",JSON.stringify(holdings));render();syncCashInput();if(supabaseClient&&session){const {error}=await supabaseClient.from("holdings").upsert({user_id:session.user.id,symbol:"USD-CASH",shares:amount,avg_cost:1},{onConflict:"user_id,symbol"});$("dataStatus").textContent=error?"브라우저에는 저장했지만 달러 현금 클라우드 저장 실패: "+error.message:"달러 현금 "+money(amount)+"를 브라우저와 Supabase에 저장했습니다.";}else{$("dataStatus").textContent="달러 현금 "+money(amount)+"를 이 브라우저에 저장했습니다. 여러 브라우저에서 동기화하려면 Supabase 로그인 후 저장해 주세요.";}}
+$("saveCashBalanceBtn").onclick=saveCashBalance;
+syncCashInput();$("refreshBtn").onclick=refreshQuotes;
 render();connect();
 function loadSymbolLists(){const read=k=>{try{return JSON.parse(localStorage.getItem(k)||"[]")}catch(e){return []}};return {watchlist:read("investlab_watchlist"),past:read("investlab_past_symbols")};}
 function saveSymbolListsLocalOnly(x){localStorage.setItem("investlab_watchlist",JSON.stringify(x.watchlist));localStorage.setItem("investlab_past_symbols",JSON.stringify(x.past));}
