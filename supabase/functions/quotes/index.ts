@@ -128,10 +128,14 @@ async function fetchYahooHistory(symbol: string) {
   return {
     price: current,
     changes: {
+      // Periods used by the market overview.
       week: pct(base(5)),
       month: pct(base(21)),
       year: pct(base(252)),
       threeYears: pct(base(756)),
+      // Legacy sector heatmap periods.
+      day: pct(Number.isFinite(prevCloseValue) && prevCloseValue > 0 ? prevCloseValue : base(1)),
+      sixMonths: pct(base(126)),
     },
     series,
   };
