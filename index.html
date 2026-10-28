@@ -26,7 +26,7 @@ h1{font-size:clamp(25px,4vw,36px);margin:24px 0 4px}.grid{display:grid;grid-temp
     <span class="small">INVESTLAB 시세 API</span>
   </div>
   <div class="small" style="margin-bottom:12px">주요 시장 ETF의 현재 가격과 선택한 기간의 변동률을 확인합니다. 제공처 시세는 지연될 수 있습니다.</div>
-  <div id="market-overview-periods" class="actions" style="margin-bottom:12px"><button type="button" data-market-period="month" class="primary">1개월</button><button type="button" data-market-period="sixMonths">6개월</button><button type="button" data-market-period="year">1년</button></div>
+  <div id="market-overview-periods" class="actions" style="margin-bottom:12px"><button type="button" data-market-period="week" class="primary">1주</button><button type="button" data-market-period="month">1개월</button><button type="button" data-market-period="year">1년</button><button type="button" data-market-period="threeYears">3년</button></div>
   <div id="market-overview-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">
     <div class="status">시장 지표를 불러오는 중입니다.</div>
   </div>
@@ -414,7 +414,7 @@ if(config.quoteUrl){refreshQuotes();setInterval(()=>{if(config.quoteUrl)refreshQ
   const marketPeriodRoot = document.getElementById("market-overview-periods");
   if (!overview || !sectorRoot) return;
   const indicatorSymbols = ["^TNX", "GC=F", "CL=F"];
-  let selectedMarketPeriod = "month";
+  let selectedMarketPeriod = "week";
   let selectedChartDays = 21;
   const marketItems = [
     {symbol:"SPY",name:"S&P 500 ETF"},
@@ -484,7 +484,7 @@ if(config.quoteUrl){refreshQuotes();setInterval(()=>{if(config.quoteUrl)refreshQ
       const path=points.map((p,i)=>(i?"L":"M")+p.x.toFixed(1)+" "+p.y.toFixed(1)).join(" ");
       const grid=[0,1,2,3].map(n=>{const y=T+n*plotH/3,v=hi-n*(hi-lo)/3;return '<line x1="'+L+'" y1="'+y+'" x2="'+(W-R)+'" y2="'+y+'" stroke="#29364f"/><text x="'+(L-8)+'" y="'+(y+4)+'" text-anchor="end" fill="#9ba8c4" font-size="11">'+fmt(v,def.decimals)+'</text>';}).join("");
       const start=sliced[0].date,end=sliced[sliced.length-1].date,last=sliced[sliced.length-1].value,first=sliced[0].value,delta=(last/first-1)*100,color=last>=first?"#34d399":"#fb7185";
-      const buttons=[{days:5,label:"1주"},{days:21,label:"1개월"},{days:252,label:"1년"}].map(o=>'<button type="button" data-chart-days="'+o.days+'" class="'+(selectedChartDays===o.days?'primary':'')+'">'+o.label+'</button>').join("");
+      const buttons=[{days:5,label:"1주"},{days:21,label:"1개월"},{days:252,label:"1년"},{days:756,label:"3년"}].map(o=>'<button type="button" data-chart-days="'+o.days+'" class="'+(selectedChartDays===o.days?'primary':'')+'">'+o.label+'</button>').join("");
       return '<div style="border:1px solid #29364f;border-radius:10px;padding:12px;min-width:0"><div style="display:flex;justify-content:space-between;gap:8px;align-items:start"><div><strong>'+def.title+'</strong><div class="small" style="margin-top:4px">'+def.symbol+' · '+def.unit+'</div></div><div style="text-align:right"><div style="font-size:18px;font-weight:700">'+fmt(last,def.decimals)+(def.unit==="%"?"%":"")+'</div><div style="font-size:12px;color:'+color+'">'+(delta>=0?"+":"")+fmt(delta,2)+'% · 기간 변화</div></div></div><div class="actions" style="margin:10px 0">'+buttons+'</div><svg viewBox="0 0 '+W+' '+H+'" width="100%" role="img" aria-label="'+def.title+' historical chart">'+grid+'<path d="'+path+'" fill="none" stroke="'+color+'" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><text x="'+L+'" y="'+(H-8)+'" fill="#9ba8c4" font-size="11">'+start+'</text><text x="'+(W-R)+'" y="'+(H-8)+'" text-anchor="end" fill="#9ba8c4" font-size="11">'+end+'</text></svg></div>';
     };
     indicatorRoot.innerHTML=defs.map(chart).join("");
@@ -495,7 +495,7 @@ if(config.quoteUrl){refreshQuotes();setInterval(()=>{if(config.quoteUrl)refreshQ
     const price=q?.price??q?.regularMarketPrice;
     const change=q?.periodChanges?.[selectedMarketPeriod]??null;
     const color=Number(change)>=0?"#34d399":"#fb7185";
-    const periodLabel={month:"1개월",sixMonths:"6개월",year:"1년"}[selectedMarketPeriod];
+    const periodLabel={week:"1주",month:"1개월",year:"1년",threeYears:"3년"}[selectedMarketPeriod];
     return '<div style="padding:14px;border:1px solid #29364f;border-radius:12px;background:#111b2e;min-width:0"><div style="display:flex;justify-content:space-between;gap:8px"><strong>'+item.symbol+'</strong><span class="small">'+item.name+'</span></div><div style="font-size:22px;font-weight:700;margin-top:10px">'+fmtPrice(price)+'</div><div style="font-size:13px;color:'+color+';margin-top:4px">'+periodLabel+' 변동 '+(change===null?"데이터 없음":fmtPct(change))+'</div></div>';
   }
   async function load(){
