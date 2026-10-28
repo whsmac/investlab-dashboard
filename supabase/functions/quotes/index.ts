@@ -14,6 +14,18 @@ const ALLOWED_SYMBOLS = [
   // Sector ETFs.
   "XLK", "XLF", "XLE", "XLI", "XLY", "XLP",
   "XLV", "XLC", "XLU", "XLB", "XLRE",
+  // Representative large-cap companies for the sector heatmap.
+  "AAPL", "MSFT", "NVDA", "AVGO",
+  "JPM", "BAC",
+  "XOM", "CVX",
+  "CAT", "GE",
+  "AMZN", "TSLA",
+  "WMT", "COST",
+  "LLY", "JNJ",
+  "META", "GOOGL",
+  "NEE", "DUK",
+  "LIN", "SHW",
+  "PLD", "AMT",
 ];
 
 const CACHE_MS = 5 * 60 * 1000;
@@ -79,6 +91,45 @@ async function fetchYahooQuote(symbol: string): Promise<Quote> {
   return quote;
 }
 
+async function fetchYahooHistory(symbol: string) {
+  const url =
+    `https://query1.finance.yahoo.com/v8/finance/chart/` +
+    `${encodeURIComponent(symbol)}?range=1y&interval=1d`;
+  const response = await fetch(url, {
+    headers: { Accept: "application/json", "User-Agent": "Mozilla/5.0" },
+    signal: AbortSignal.timeout(12000),
+  });
+  if (!response.ok) throw new Error(`${symbol}: Yahoo Finance HTTP ${response.status}`);
+  const data = await response.json();
+  const result = data?.chart?.result?.[0];
+  const meta = result?.meta;
+  const closes: number[] = (result?.indicators?.quote?.[0]?.close ?? [])
+    .map((v: unknown) => Number(v))
+    .filter((v: number) => Number.isFinite(v) && v > 0);
+  const current = Number(meta?.regularMarketPrice);
+  if (!Number.isFinite(current) || current <= 0 || closes.length < 2) {
+    throw new Error(`${symbol}: 기간별 시세 데이터가 부족합니다.`);
+  }
+  const prevCloseValue = Number(meta?.chartPreviousClose ?? meta?.previousClose);
+  const base = (tradingDaysAgo: number) => {
+    const idx = Math.max(0, closes.length - 1 - tradingDaysAgo);
+    return closes[idx];
+  };
+  const pct = (start: number | null | undefined) =>
+    Number.isFinite(Number(start)) && Number(start) > 0
+      ? ((current - Number(start)) / Number(start)) * 100
+      : null;
+  return {
+    price: current,
+    changes: {
+      day: pct(Number.isFinite(prevCloseValue) && prevCloseValue > 0 ? prevCloseValue : base(1)),
+      month: pct(base(21)),
+      sixMonths: pct(base(126)),
+      year: pct(base(252)),
+    },
+  };
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -136,6 +187,27 @@ Deno.serve(async (req: Request) => {
     }
 
     let fx: number | null = null;
+
+    if (body?.includeHistory === true) {
+      const historySymbols = symbols.filter((symbol) =>
+        !["TSLA", "BITU", "TQQQ", "USD", "SOXL", "SPY", "QQQ", "DIA", "IWM", "SOXX", "VIXY", "TLT", "GLD", "USO"].includes(symbol)
+      );
+      const historyResults = await Promise.all(historySymbols.map(async (symbol) => {
+        try {
+          const history = await fetchYahooHistory(symbol);
+          return { symbol, history, error: null };
+        } catch (error) {
+          return { symbol, history: null, error: error instanceof Error ? error.message : "기간별 시세 조회 실패" };
+        }
+      }));
+      for (const item of historyResults) {
+        if (item.history && quotes[item.symbol]) {
+          (quotes[item.symbol] as any).periodChanges = item.history.changes;
+        } else if (item.error) {
+          errors[item.symbol + ":history"] = item.error;
+        }
+      }
+    }
 
     if (body?.includeFx === true) {
       try {
