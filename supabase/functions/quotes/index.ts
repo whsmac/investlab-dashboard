@@ -34,11 +34,10 @@ async function fetchYahooQuote(symbol: string): Promise<Quote> {
     return cached;
   }
 
-  // Five daily candles provide a more reliable previous-close reference
-  // than relying on a single intraday candle.
+  // Intraday range exposes Yahoo Finance's previous regular-session close.
   const url =
     `https://query1.finance.yahoo.com/v8/finance/chart/` +
-    `${encodeURIComponent(symbol)}?range=5d&interval=1d`;
+    `${encodeURIComponent(symbol)}?range=1d&interval=1h`;
 
   const response = await fetch(url, {
     headers: {
