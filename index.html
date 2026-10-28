@@ -4,7 +4,6 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>INVESTLAB · My Portfolio</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 :root{--bg:#0b1020;--panel:#141b2d;--panel2:#1b2439;--text:#edf2ff;--muted:#9ba8c4;--line:#2a3550;--green:#42d3a5;--red:#ff7185;--blue:#7ca7ff}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#17233e 0,#0b1020 55%);color:var(--text);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -20,100 +19,28 @@ h1{font-size:clamp(25px,4vw,36px);margin:24px 0 4px}.grid{display:grid;grid-temp
 <div class="actions"><button id="refreshBtn">↻ 시세 갱신</button><button id="settingsBtn">연결 설정</button><button id="authBtn" class="primary">로그인</button></div></header>
 <nav class="section actions" aria-label="주요 메뉴" style="margin-top:18px"><button type="button" class="primary" id="menuDashboard">기존 대시보드</button><button type="button" id="menuSymbols">종목 관리</button></nav><div id="dashboardView"><h1>내 투자 현황</h1><div class="sub">보유 내역은 직접 입력한 매입 기준값입니다. 시세가 연결되면 평가금액과 손익이 자동 계산됩니다.</div>
 <div id="notice" class="notice section">초기 모드입니다. 여러 기기 동기화와 자동 시세를 사용하려면 Supabase 및 시세 API 설정을 완료하세요.</div>
-<!-- 시장 종합 홈 화면 -->
-<section class="section panel">
+<!-- 자체 시장 지표: 외부 위젯 스크립트 없이 렌더링 -->
+<section class="section panel" id="market-overview-panel">
   <div class="section-head">
     <h2>미국 시장 종합</h2>
-    <span class="small">TradingView 시장 데이터</span>
+    <span class="small">INVESTLAB 시세 API</span>
   </div>
-  <div class="small" style="margin-bottom:12px">
-    주요 주가지수와 시장 위험·환율·원자재 흐름을 확인합니다. 시세는 지연될 수 있습니다.
+  <div class="small" style="margin-bottom:12px">주요 지수 ETF와 시장 위험·금리·원자재 관련 ETF를 자체 표로 표시합니다. 제공처 시세는 지연될 수 있습니다.</div>
+  <div id="market-overview-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">
+    <div class="status">시장 지표를 불러오는 중입니다.</div>
   </div>
-
-  <div class="tradingview-widget-container" style="width:100%">
-    <div class="tradingview-widget-container__widget"></div>
-    <script
-      type="text/javascript"
-      src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js"
-      async>
-    {
-      "colorTheme": "dark",
-      "dateRange": "1D",
-      "showChart": true,
-      "locale": "kr",
-      "width": "100%",
-      "height": "500",
-      "isTransparent": true,
-      "showSymbolLogo": true,
-      "tabs": [
-        {
-          "title": "주요 지수",
-          "symbols": [
-            {"s": "FOREXCOM:SPXUSD", "d": "S&P 500"},
-            {"s": "FOREXCOM:NSXUSD", "d": "나스닥 종합"},
-            {"s": "FOREXCOM:DJI", "d": "다우존스"},
-            {"s": "FOREXCOM:US2000", "d": "러셀 2000 (FOREX.com)"}
-          ]
-        },
-        {
-          "title": "기술주",
-          "symbols": [
-            {"s": "NASDAQ:QQQ", "d": "나스닥 100 ETF"},
-            {"s": "NASDAQ:SOXX", "d": "반도체 ETF"},
-            {"s": "NASDAQ:AAPL", "d": "애플"},
-            {"s": "NASDAQ:NVDA", "d": "엔비디아"}
-          ]
-        },
-        {
-          "title": "시장 지표",
-          "symbols": [
-            {"s": "FRED:VIXCLS", "d": "VIX 변동성 지수 (일간 종가)"},
-            {"s": "FRED:DGS10", "d": "미국 10년물 금리 (%)"},
-            {"s": "FX_IDC:USDKRW", "d": "원/달러 환율"},
-            {"s": "TVC:GOLD", "d": "금 가격"},
-            {"s": "TVC:USOIL", "d": "WTI 국제유가"}
-          ]
-        }
-      ]
-    }
-    </script>
-  </div>
+  <div id="market-overview-status" class="small" style="margin-top:10px">시세 API 연결을 확인하고 있습니다.</div>
 </section>
 <!-- 시장 종합 홈 화면 끝 -->
-<!-- 업종별 시장 히트맵 시작 -->
-<section class="section panel">
+<!-- 자체 업종별 ETF 표: TradingView 위젯 대체 -->
+<section class="section panel" id="sector-flow-panel">
   <div class="section-head">
     <h2>미국 주식 업종별 흐름</h2>
-    <span class="small">S&P 500 · 일간 등락률</span>
+    <span class="small">업종 ETF · 일간 변동</span>
   </div>
-  <div class="small" style="margin-bottom:12px">
-    사각형이 클수록 시가총액이 크며, 색상은 당일 주가 변동을 나타냅니다.
-  </div>
-
-  <div class="tradingview-widget-container" style="width:100%">
-    <div class="tradingview-widget-container__widget"></div>
-    <script
-      type="text/javascript"
-      src="https://s3.tradingview.com/external-embedding/embed-widget-stock-heatmap.js"
-      async>
-    {
-      "exchanges": [],
-      "dataSource": "SPX500",
-      "grouping": "sector",
-      "blockSize": "market_cap_basic",
-      "blockColor": "change",
-      "locale": "en",
-      "symbolUrl": "",
-      "colorTheme": "dark",
-      "hasTopBar": false,
-      "isDataSetEnabled": false,
-      "isZoomEnabled": true,
-      "hasSymbolTooltip": true,
-      "isMonoSize": false,
-      "width": "100%",
-      "height": "500"
-    }
-    </script>
+  <div class="small" style="margin-bottom:12px">업종별 대표 ETF의 가격과 일간 변동률을 비교합니다. 색상은 등락 방향을 나타내며, 시가총액 히트맵과는 다른 비교 방식입니다.</div>
+  <div id="sector-flow-table" style="overflow-x:auto">
+    <div class="status">업종별 ETF 데이터를 불러오는 중입니다.</div>
   </div>
 </section>
 <!-- 업종별 시장 히트맵 끝 -->  
@@ -145,9 +72,7 @@ h1{font-size:clamp(25px,4vw,36px);margin:24px 0 4px}.grid{display:grid;grid-temp
     <button type="button" class="fg-range" data-days="1095">3년</button>
   </div>
 
-  <div style="position:relative; width:100%; height:300px;">
-    <canvas id="fg-chart"></canvas>
-  </div>
+  <div id="fg-chart" role="img" aria-label="Fear and Greed Index history chart" style="width:100%;min-height:280px;overflow:hidden"></div>
 
   <div id="fg-status" class="small" style="margin-top:10px;">
     데이터 연결을 준비하고 있습니다.
@@ -161,7 +86,6 @@ h1{font-size:clamp(25px,4vw,36px);margin:24px 0 4px}.grid{display:grid;grid-temp
   </div>
 </section>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
 <script>
 (function () {
   const panel = document.getElementById("fear-greed-panel");
@@ -181,7 +105,6 @@ const latestUrl =
   const chartCanvas = document.getElementById("fg-chart");
 
   let allData = [];
-  let chart = null;
   let selectedDays = 183;
 
   function ratingFor(value) {
@@ -209,53 +132,21 @@ const latestUrl =
       return;
     }
 
-    if (chart) chart.destroy();
-
-    chart = new Chart(chartCanvas, {
-      type: "line",
-      data: {
-        labels: visible.map(item => item.date),
-        datasets: [{
-          label: "Fear & Greed",
-          data: visible.map(item => item.value),
-          borderColor: "#60a5fa",
-          backgroundColor: "rgba(96,165,250,0.12)",
-          fill: true,
-          borderWidth: 2,
-          pointRadius: 0,
-          pointHitRadius: 8,
-          tension: 0.15
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: {
-          mode: "index",
-          intersect: false
-        },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: context => "점수: " + context.parsed.y
-            }
-          }
-        },
-        scales: {
-          x: {
-            ticks: { maxTicksLimit: 7, maxRotation: 0 },
-            grid: { display: false }
-          },
-          y: {
-            min: 0,
-            max: 100,
-            ticks: { stepSize: 20 },
-            title: { display: true, text: "공포 ← 점수 → 탐욕" }
-          }
-        }
-      }
-    });
+    const width = 1000, height = 280, left = 42, right = 14, top = 14, bottom = 32;
+    const plotW = width - left - right, plotH = height - top - bottom;
+    const points = visible.map((item, index) => ({
+      x: left + (visible.length < 2 ? plotW / 2 : index * plotW / (visible.length - 1)),
+      y: top + (100 - Math.max(0, Math.min(100, Number(item.value)))) * plotH / 100,
+      item
+    }));
+    const path = points.map((p, i) => (i ? "L" : "M") + p.x.toFixed(2) + " " + p.y.toFixed(2)).join(" ");
+    const area = path + " L " + points[points.length - 1].x.toFixed(2) + " " + (top + plotH) + " L " + points[0].x.toFixed(2) + " " + (top + plotH) + " Z";
+    const grid = [0,20,40,60,80,100].map(v => {
+      const y = top + (100-v)*plotH/100;
+      return '<line x1="'+left+'" y1="'+y+'" x2="'+(width-right)+'" y2="'+y+'" stroke="#29364f" stroke-width="1"/><text x="'+(left-8)+'" y="'+(y+4)+'" text-anchor="end" fill="#9caac4" font-size="12">'+v+'</text>';
+    }).join("");
+    const first = visible[0].date, last = visible[visible.length-1].date;
+    chartCanvas.innerHTML = '<svg viewBox="0 0 '+width+' '+height+'" width="100%" height="280" role="img" aria-label="Fear and Greed score from 0 to 100"><rect width="'+width+'" height="'+height+'" fill="transparent"/>'+grid+'<path d="'+area+'" fill="rgba(96,165,250,0.12)"/><path d="'+path+'" fill="none" stroke="#60a5fa" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><text x="'+left+'" y="'+(height-8)+'" fill="#9caac4" font-size="12">'+first+'</text><text x="'+(width-right)+'" y="'+(height-8)+'" text-anchor="end" fill="#9caac4" font-size="12">'+last+'</text></svg>';
 
     statusEl.textContent =
       "표시 기간: " + visible[0].date + " ~ " +
@@ -498,4 +389,46 @@ $("menuSymbols").onclick=()=>{$("dashboardView").classList.add("hidden");$("symb
 // 시세 URL이 설정되어 있으면 페이지 시작 시 조회하고 15분마다 갱신합니다.
 // 공급자 호출 한도를 고려해 주기를 짧게 설정하지 마세요.
 if(config.quoteUrl){refreshQuotes();setInterval(()=>{if(config.quoteUrl)refreshQuotes()},15*60*1000);}
-</script></body></html>
+</script><script>
+(function(){
+  const overview = document.getElementById("market-overview-grid");
+  const overviewStatus = document.getElementById("market-overview-status");
+  const sectorRoot = document.getElementById("sector-flow-table");
+  if (!overview || !sectorRoot) return;
+  const marketItems = [
+    {symbol:"SPY",name:"S&P 500 ETF"},
+    {symbol:"QQQ",name:"나스닥 100 ETF"},
+    {symbol:"DIA",name:"다우존스 ETF"},
+    {symbol:"IWM",name:"러셀 2000 ETF"},
+    {symbol:"SOXX",name:"반도체 ETF"},
+    {symbol:"VIXY",name:"변동성 ETF"},
+    {symbol:"TLT",name:"미국 장기국채 ETF"},
+    {symbol:"GLD",name:"금 ETF"},
+    {symbol:"USO",name:"원유 ETF"}
+  ];
+  const sectorItems = [["XLK","기술"],["XLF","금융"],["XLE","에너지"],["XLI","산업재"],["XLY","임의소비재"],["XLP","필수소비재"],["XLV","헬스케어"],["XLC","커뮤니케이션"],["XLU","유틸리티"],["XLB","소재"],["XLRE","부동산"]];
+  const fmtPrice = n => Number.isFinite(Number(n)) ? "$"+Number(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}) : "—";
+  const fmtPct = n => Number.isFinite(Number(n)) ? (Number(n)>=0?"+":"")+Number(n).toFixed(2)+"%" : "—";
+  const changeOf = q => q?.changePercent ?? q?.regularMarketChangePercent ?? q?.percentChange ?? null;
+  function card(item,q){
+    const price=q?.price??q?.regularMarketPrice, change=changeOf(q), color=Number(change)>=0?"#34d399":"#fb7185";
+    return '<div style="padding:14px;border:1px solid #29364f;border-radius:12px;background:#111b2e;min-width:0"><div style="display:flex;justify-content:space-between;gap:8px"><strong>'+item.symbol+'</strong><span class="small">'+item.name+'</span></div><div style="font-size:22px;font-weight:700;margin-top:10px">'+fmtPrice(price)+'</div><div style="font-size:13px;color:'+color+';margin-top:4px">'+(change===null?"등락률 데이터 없음":fmtPct(change))+'</div></div>';
+  }
+  async function load(){
+    const cfg=JSON.parse(localStorage.getItem("investlab_config")||"{}");
+    if(!cfg.quoteUrl){overview.innerHTML='<div class="status">연결 설정에서 시세 API URL을 먼저 등록해 주세요.</div>';sectorRoot.innerHTML='<div class="status">시세 API 연결이 필요합니다.</div>';return;}
+    try{
+      const symbols=[...new Set([...marketItems.map(x=>x.symbol),...sectorItems.map(x=>x[0])])];
+      const response=await fetch(cfg.quoteUrl,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({symbols,includeFx:true})});
+      if(!response.ok)throw new Error("HTTP "+response.status);
+      const data=await response.json(), quotes=data.quotes||{}, available=marketItems.filter(x=>quotes[x.symbol]);
+      overview.innerHTML=available.length?available.map(x=>card(x,quotes[x.symbol])).join(""):'<div class="status">시장 지표 종목이 API에서 반환되지 않았습니다. Supabase quotes 함수의 허용 종목 목록을 확장해야 합니다.</div>';
+      const sectors=sectorItems.filter(x=>quotes[x[0]]);
+      sectorRoot.innerHTML=sectors.length?'<table style="width:100%;border-collapse:collapse"><thead><tr><th style="text-align:left;padding:10px">업종</th><th style="text-align:left;padding:10px">ETF</th><th style="text-align:right;padding:10px">현재가</th><th style="text-align:right;padding:10px">일간 등락률</th></tr></thead><tbody>'+sectors.map(x=>{const q=quotes[x[0]],ch=changeOf(q),color=Number(ch)>=0?"#34d399":"#fb7185";return '<tr style="border-top:1px solid #29364f"><td style="padding:10px">'+x[1]+'</td><td style="padding:10px;font-weight:700">'+x[0]+'</td><td style="padding:10px;text-align:right">'+fmtPrice(q.price??q.regularMarketPrice)+'</td><td style="padding:10px;text-align:right;color:'+color+'">'+(ch===null?"—":fmtPct(ch))+'</td></tr>';}).join("")+'</tbody></table>':'<div class="status">업종 ETF 데이터가 API에서 반환되지 않았습니다. Supabase quotes 함수의 허용 종목 목록을 확장해야 합니다.</div>';
+      overviewStatus.textContent=available.length?"시세 API 응답 "+available.length+"/"+marketItems.length+"개 · "+new Date().toLocaleString("ko-KR"):"API 연결은 됐지만 시장 지표 종목은 아직 허용 목록에 없습니다.";
+    }catch(e){overview.innerHTML='<div class="status">시장 지표를 불러오지 못했습니다: '+String(e.message).replace(/[<>&"]/g,"")+'</div>';sectorRoot.innerHTML='<div class="status">업종별 데이터 연결 실패</div>';overviewStatus.textContent="연결 설정 또는 Edge Function 응답을 확인해 주세요.";}
+  }
+  load();
+})();
+</script>
+</body></html>
