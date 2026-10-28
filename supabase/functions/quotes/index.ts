@@ -11,6 +11,8 @@ const ALLOWED_SYMBOLS = [
   "TSLA", "BITU", "TQQQ", "USD", "SOXL",
   // Broad market and market-risk indicators.
   "SPY", "QQQ", "DIA", "IWM", "SOXX", "VIXY", "TLT", "GLD", "USO",
+  // Historical market indicator charts.
+  "^TNX", "GC=F", "CL=F",
   // Sector ETFs.
   "XLK", "XLF", "XLE", "XLI", "XLY", "XLP",
   "XLV", "XLC", "XLU", "XLB", "XLRE",
@@ -103,9 +105,13 @@ async function fetchYahooHistory(symbol: string) {
   const data = await response.json();
   const result = data?.chart?.result?.[0];
   const meta = result?.meta;
-  const closes: number[] = (result?.indicators?.quote?.[0]?.close ?? [])
-    .map((v: unknown) => Number(v))
-    .filter((v: number) => Number.isFinite(v) && v > 0);
+  const timestamps: number[] = result?.timestamp ?? [];
+  const rawCloses: unknown[] = result?.indicators?.quote?.[0]?.close ?? [];
+  const series = timestamps.map((timestamp, index) => ({
+    date: new Date(timestamp * 1000).toISOString().slice(0, 10),
+    value: Number(rawCloses[index]),
+  })).filter((point) => Number.isFinite(point.value) && point.value > 0);
+  const closes: number[] = series.map((point) => point.value);
   const current = Number(meta?.regularMarketPrice);
   if (!Number.isFinite(current) || current <= 0 || closes.length < 2) {
     throw new Error(`${symbol}: 기간별 시세 데이터가 부족합니다.`);
@@ -127,6 +133,7 @@ async function fetchYahooHistory(symbol: string) {
       sixMonths: pct(base(126)),
       year: pct(base(252)),
     },
+    series,
   };
 }
 
@@ -203,6 +210,9 @@ Deno.serve(async (req: Request) => {
       for (const item of historyResults) {
         if (item.history && quotes[item.symbol]) {
           (quotes[item.symbol] as any).periodChanges = item.history.changes;
+          if (["^TNX", "GC=F", "CL=F"].includes(item.symbol)) {
+            (quotes[item.symbol] as any).chartHistory = item.history.series;
+          }
         } else if (item.error) {
           errors[item.symbol + ":history"] = item.error;
         }
