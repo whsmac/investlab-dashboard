@@ -407,10 +407,45 @@ if(config.quoteUrl){refreshQuotes();setInterval(()=>{if(config.quoteUrl)refreshQ
     {symbol:"GLD",name:"금 ETF"},
     {symbol:"USO",name:"원유 ETF"}
   ];
-  const sectorItems = [["XLK","기술"],["XLF","금융"],["XLE","에너지"],["XLI","산업재"],["XLY","임의소비재"],["XLP","필수소비재"],["XLV","헬스케어"],["XLC","커뮤니케이션"],["XLU","유틸리티"],["XLB","소재"],["XLRE","부동산"]];
+  const sectorItems = [
+    {symbol:"XLK",name:"기술",companies:[{symbol:"AAPL",name:"Apple",weight:7},{symbol:"MSFT",name:"Microsoft",weight:7},{symbol:"NVDA",name:"NVIDIA",weight:7},{symbol:"AVGO",name:"Broadcom",weight:4}]},
+    {symbol:"XLF",name:"금융",companies:[{symbol:"JPM",name:"JPMorgan",weight:6},{symbol:"BAC",name:"Bank of America",weight:4}]},
+    {symbol:"XLE",name:"에너지",companies:[{symbol:"XOM",name:"Exxon Mobil",weight:7},{symbol:"CVX",name:"Chevron",weight:4}]},
+    {symbol:"XLI",name:"산업재",companies:[{symbol:"CAT",name:"Caterpillar",weight:4},{symbol:"GE",name:"GE Aerospace",weight:4}]},
+    {symbol:"XLY",name:"임의소비재",companies:[{symbol:"AMZN",name:"Amazon",weight:7},{symbol:"TSLA",name:"Tesla",weight:5}]},
+    {symbol:"XLP",name:"필수소비재",companies:[{symbol:"WMT",name:"Walmart",weight:6},{symbol:"COST",name:"Costco",weight:5}]},
+    {symbol:"XLV",name:"헬스케어",companies:[{symbol:"LLY",name:"Eli Lilly",weight:6},{symbol:"JNJ",name:"Johnson & Johnson",weight:5}]},
+    {symbol:"XLC",name:"커뮤니케이션",companies:[{symbol:"META",name:"Meta",weight:7},{symbol:"GOOGL",name:"Alphabet",weight:7}]},
+    {symbol:"XLU",name:"유틸리티",companies:[{symbol:"NEE",name:"NextEra Energy",weight:4},{symbol:"DUK",name:"Duke Energy",weight:3}]},
+    {symbol:"XLB",name:"소재",companies:[{symbol:"LIN",name:"Linde",weight:5},{symbol:"SHW",name:"Sherwin-Williams",weight:3}]},
+    {symbol:"XLRE",name:"부동산",companies:[{symbol:"PLD",name:"Prologis",weight:4},{symbol:"AMT",name:"American Tower",weight:3}]}
+  ];
+  let selectedSectorPeriod="day";
+  const sectorPeriodLabels={day:"일간",month:"월간",sixMonths:"6개월",year:"연간"};
   const fmtPrice = n => Number.isFinite(Number(n)) ? "$"+Number(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}) : "—";
   const fmtPct = n => Number.isFinite(Number(n)) ? (Number(n)>=0?"+":"")+Number(n).toFixed(2)+"%" : "—";
   const changeOf = q => q?.changePercent ?? q?.regularMarketChangePercent ?? q?.percentChange ?? null;
+  function heatColor(value){
+    const n=Number(value); if(!Number.isFinite(n))return "#354158";
+    if(n>=0){const t=Math.min(n/8,1);return "rgb("+Math.round(24-5*t)+","+Math.round(75+95*t)+","+Math.round(65+20*t)+")";}
+    const t=Math.min(Math.abs(n)/8,1);return "rgb("+Math.round(105+105*t)+","+Math.round(48-20*t)+","+Math.round(65-5*t)+")";
+  }
+  function renderSectorHeatmap(quotes){
+    const root=sectorRoot;
+    const buttons='<div class="actions" style="margin-bottom:12px">'+Object.entries(sectorPeriodLabels).map(([key,label])=>'<button type="button" data-sector-period="'+key+'" class="'+(selectedSectorPeriod===key?'primary':'')+'">'+label+' 등락률</button>').join("")+'</div>';
+    const groups=sectorItems.map(sector=>{
+      const items=[{symbol:sector.symbol,name:sector.name+" ETF",weight:5,isEtf:true},...sector.companies];
+      const tiles=items.map(item=>{
+        const q=quotes[item.symbol]||{}, change=item.isEtf?(q.periodChanges?.[selectedSectorPeriod]??q.changePercent):(q.periodChanges?.[selectedSectorPeriod]);
+        const size=Math.max(1,item.weight);
+        return '<div title="'+item.name+' ('+item.symbol+') · '+sectorPeriodLabels[selectedSectorPeriod]+' '+fmtPct(change)+'" style="flex:'+size+' 1 92px;min-width:82px;min-height:76px;padding:9px;border-radius:7px;background:'+heatColor(change)+';color:#fff;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden"><div style="font-size:12px;font-weight:800">'+item.symbol+'</div><div style="font-size:10px;opacity:.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+item.name+'</div><div style="font-size:13px;font-weight:750">'+fmtPct(change)+'</div></div>';
+      }).join("");
+      const etfChange=quotes[sector.symbol]?.periodChanges?.[selectedSectorPeriod]??quotes[sector.symbol]?.changePercent;
+      return '<div style="border:1px solid #29364f;border-radius:10px;padding:9px;min-width:0"><div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:8px"><strong style="font-size:12px">'+sector.name+'</strong><span class="small">'+sector.symbol+' · '+fmtPct(etfChange)+'</span></div><div style="display:flex;flex-wrap:wrap;gap:5px">'+tiles+'</div></div>';
+    }).join("");
+    root.innerHTML=buttons+'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px">'+groups+'</div><div class="small" style="margin-top:10px">대표 대형주와 업종 ETF 기준입니다. 타일 크기는 상대적 시각화를 위한 참고값이며 정확한 시가총액 비례가 아닙니다. 기간 수익률은 Yahoo Finance 일별 종가를 기준으로 계산하며, 월간·6개월·연간은 각각 약 21·126·252 거래일 기준입니다.</div>';
+    root.querySelectorAll("[data-sector-period]").forEach(button=>button.addEventListener("click",()=>{selectedSectorPeriod=button.dataset.sectorPeriod;renderSectorHeatmap(quotes);}));
+  }
   function card(item,q){
     const price=q?.price??q?.regularMarketPrice, change=changeOf(q), color=Number(change)>=0?"#34d399":"#fb7185";
     return '<div style="padding:14px;border:1px solid #29364f;border-radius:12px;background:#111b2e;min-width:0"><div style="display:flex;justify-content:space-between;gap:8px"><strong>'+item.symbol+'</strong><span class="small">'+item.name+'</span></div><div style="font-size:22px;font-weight:700;margin-top:10px">'+fmtPrice(price)+'</div><div style="font-size:13px;color:'+color+';margin-top:4px">'+(change===null?"등락률 데이터 없음":fmtPct(change))+'</div></div>';
@@ -419,13 +454,12 @@ if(config.quoteUrl){refreshQuotes();setInterval(()=>{if(config.quoteUrl)refreshQ
     const cfg=JSON.parse(localStorage.getItem("investlab_config")||"{}");
     if(!cfg.quoteUrl){overview.innerHTML='<div class="status">연결 설정에서 시세 API URL을 먼저 등록해 주세요.</div>';sectorRoot.innerHTML='<div class="status">시세 API 연결이 필요합니다.</div>';return;}
     try{
-      const symbols=[...new Set([...marketItems.map(x=>x.symbol),...sectorItems.map(x=>x[0])])];
-      const response=await fetch(cfg.quoteUrl,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({symbols,includeFx:true})});
+      const symbols=[...new Set([...marketItems.map(x=>x.symbol),...sectorItems.flatMap(s=>[s.symbol,...s.companies.map(company=>company.symbol)])])];
+      const response=await fetch(cfg.quoteUrl,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({symbols,includeFx:true,includeHistory:true})});
       if(!response.ok)throw new Error("HTTP "+response.status);
       const data=await response.json(), quotes=data.quotes||{}, available=marketItems.filter(x=>quotes[x.symbol]);
       overview.innerHTML=available.length?available.map(x=>card(x,quotes[x.symbol])).join(""):'<div class="status">시장 지표 종목이 API에서 반환되지 않았습니다. Supabase quotes 함수의 허용 종목 목록을 확장해야 합니다.</div>';
-      const sectors=sectorItems.filter(x=>quotes[x[0]]);
-      sectorRoot.innerHTML=sectors.length?'<table style="width:100%;border-collapse:collapse"><thead><tr><th style="text-align:left;padding:10px">업종</th><th style="text-align:left;padding:10px">ETF</th><th style="text-align:right;padding:10px">현재가</th><th style="text-align:right;padding:10px">일간 등락률</th></tr></thead><tbody>'+sectors.map(x=>{const q=quotes[x[0]],ch=changeOf(q),color=Number(ch)>=0?"#34d399":"#fb7185";return '<tr style="border-top:1px solid #29364f"><td style="padding:10px">'+x[1]+'</td><td style="padding:10px;font-weight:700">'+x[0]+'</td><td style="padding:10px;text-align:right">'+fmtPrice(q.price??q.regularMarketPrice)+'</td><td style="padding:10px;text-align:right;color:'+color+'">'+(ch===null?"—":fmtPct(ch))+'</td></tr>';}).join("")+'</tbody></table>':'<div class="status">업종 ETF 데이터가 API에서 반환되지 않았습니다. Supabase quotes 함수의 허용 종목 목록을 확장해야 합니다.</div>';
+      renderSectorHeatmap(quotes);
       overviewStatus.textContent=available.length?"시세 API 응답 "+available.length+"/"+marketItems.length+"개 · "+new Date().toLocaleString("ko-KR"):"API 연결은 됐지만 시장 지표 종목은 아직 허용 목록에 없습니다.";
     }catch(e){overview.innerHTML='<div class="status">시장 지표를 불러오지 못했습니다: '+String(e.message).replace(/[<>&"]/g,"")+'</div>';sectorRoot.innerHTML='<div class="status">업종별 데이터 연결 실패</div>';overviewStatus.textContent="연결 설정 또는 Edge Function 응답을 확인해 주세요.";}
   }
