@@ -32,6 +32,19 @@ h1{font-size:clamp(25px,4vw,36px);margin:24px 0 4px}.grid{display:grid;grid-temp
   <div id="market-overview-status" class="small" style="margin-top:10px">시세 API 연결을 확인하고 있습니다.</div>
 </section>
 <!-- 시장 종합 홈 화면 끝 -->
+<!-- 금리·원자재 가격 추이 -->
+<section class="section panel" id="market-indicator-charts">
+  <div class="section-head">
+    <h2>금리·원자재 가격 추이</h2>
+    <span class="small">Yahoo Finance · 일별 데이터</span>
+  </div>
+  <div class="small" style="margin-bottom:12px">미국 10년물 국채금리, 금 선물, WTI 원유 선물의 과거 흐름입니다. 기간을 선택하면 그래프가 바뀝니다.</div>
+  <div id="market-indicator-chart-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">
+    <div class="status">금리·원자재 그래프 데이터를 불러오는 중입니다.</div>
+  </div>
+  <div id="market-indicator-chart-status" class="small" style="margin-top:10px"></div>
+</section>
+<!-- 금리·원자재 가격 추이 끝 -->
 <!-- 자체 업종별 ETF 표: TradingView 위젯 대체 -->
 <section class="section panel" id="sector-flow-panel">
   <div class="section-head">
@@ -395,7 +408,11 @@ if(config.quoteUrl){refreshQuotes();setInterval(()=>{if(config.quoteUrl)refreshQ
   const overview = document.getElementById("market-overview-grid");
   const overviewStatus = document.getElementById("market-overview-status");
   const sectorRoot = document.getElementById("sector-flow-table");
+  const indicatorRoot = document.getElementById("market-indicator-chart-grid");
+  const indicatorStatus = document.getElementById("market-indicator-chart-status");
   if (!overview || !sectorRoot) return;
+  const indicatorSymbols = ["^TNX", "GC=F", "CL=F"];
+  let selectedChartDays = 183;
   const marketItems = [
     {symbol:"SPY",name:"S&P 500 ETF"},
     {symbol:"QQQ",name:"나스닥 100 ETF"},
@@ -446,6 +463,31 @@ if(config.quoteUrl){refreshQuotes();setInterval(()=>{if(config.quoteUrl)refreshQ
     root.innerHTML=buttons+'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px">'+groups+'</div><div class="small" style="margin-top:10px">대표 대형주와 업종 ETF 기준입니다. 타일 크기는 상대적 시각화를 위한 참고값이며 정확한 시가총액 비례가 아닙니다. 기간 수익률은 Yahoo Finance 일별 종가를 기준으로 계산하며, 월간·6개월·연간은 각각 약 21·126·252 거래일 기준입니다.</div>';
     root.querySelectorAll("[data-sector-period]").forEach(button=>button.addEventListener("click",()=>{selectedSectorPeriod=button.dataset.sectorPeriod;renderSectorHeatmap(quotes);}));
   }
+  function renderIndicatorCharts(quotes){
+    if(!indicatorRoot)return;
+    const defs=[
+      {symbol:"^TNX",title:"미국 10년물 국채금리",unit:"%",scale:v=>v/10,decimals:2},
+      {symbol:"GC=F",title:"금 선물",unit:"USD/트로이온스",scale:v=>v,decimals:0},
+      {symbol:"CL=F",title:"WTI 원유 선물",unit:"USD/배럴",scale:v=>v,decimals:2}
+    ];
+    const fmt=(v,d)=>Number(v).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
+    const chart=def=>{
+      const series=(quotes[def.symbol]?.chartHistory||[]).map(p=>({date:p.date,value:def.scale(Number(p.value))})).filter(p=>Number.isFinite(p.value)&&p.value>0);
+      const sliced=series.slice(-selectedChartDays);
+      if(sliced.length<2)return '<div style="border:1px solid #29364f;border-radius:10px;padding:12px"><strong>'+def.title+'</strong><div class="status" style="margin-top:12px">과거 데이터가 없습니다 ('+def.symbol+')</div></div>';
+      const W=640,H=230,L=64,R=16,T=16,B=32,plotW=W-L-R,plotH=H-T-B;
+      const values=sliced.map(p=>p.value),min=Math.min(...values),max=Math.max(...values),pad=(max-min)*.08||Math.max(max*.02,.01),lo=min-pad,hi=max+pad;
+      const points=sliced.map((p,i)=>({x:L+i*plotW/(sliced.length-1),y:T+(hi-p.value)/(hi-lo)*plotH}));
+      const path=points.map((p,i)=>(i?"L":"M")+p.x.toFixed(1)+" "+p.y.toFixed(1)).join(" ");
+      const grid=[0,1,2,3].map(n=>{const y=T+n*plotH/3,v=hi-n*(hi-lo)/3;return '<line x1="'+L+'" y1="'+y+'" x2="'+(W-R)+'" y2="'+y+'" stroke="#29364f"/><text x="'+(L-8)+'" y="'+(y+4)+'" text-anchor="end" fill="#9ba8c4" font-size="11">'+fmt(v,def.decimals)+'</text>';}).join("");
+      const start=sliced[0].date,end=sliced[sliced.length-1].date,last=sliced[sliced.length-1].value,first=sliced[0].value,delta=(last/first-1)*100,color=last>=first?"#34d399":"#fb7185";
+      const buttons=[{days:30,label:"1개월"},{days:183,label:"6개월"},{days:365,label:"1년"}].map(o=>'<button type="button" data-chart-days="'+o.days+'" class="'+(selectedChartDays===o.days?'primary':'')+'">'+o.label+'</button>').join("");
+      return '<div style="border:1px solid #29364f;border-radius:10px;padding:12px;min-width:0"><div style="display:flex;justify-content:space-between;gap:8px;align-items:start"><div><strong>'+def.title+'</strong><div class="small" style="margin-top:4px">'+def.symbol+' · '+def.unit+'</div></div><div style="text-align:right"><div style="font-size:18px;font-weight:700">'+fmt(last,def.decimals)+(def.unit==="%"?"%":"")+'</div><div style="font-size:12px;color:'+color+'">'+(delta>=0?"+":"")+fmt(delta,2)+'% · 기간 변화</div></div></div><div class="actions" style="margin:10px 0">'+buttons+'</div><svg viewBox="0 0 '+W+' '+H+'" width="100%" role="img" aria-label="'+def.title+' historical chart">'+grid+'<path d="'+path+'" fill="none" stroke="'+color+'" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><text x="'+L+'" y="'+(H-8)+'" fill="#9ba8c4" font-size="11">'+start+'</text><text x="'+(W-R)+'" y="'+(H-8)+'" text-anchor="end" fill="#9ba8c4" font-size="11">'+end+'</text></svg></div>';
+    };
+    indicatorRoot.innerHTML=defs.map(chart).join("");
+    indicatorRoot.querySelectorAll("[data-chart-days]").forEach(button=>button.addEventListener("click",()=>{selectedChartDays=Number(button.dataset.chartDays);renderIndicatorCharts(quotes);}));
+    if(indicatorStatus)indicatorStatus.textContent="금리·원자재 그래프는 Yahoo Finance 일별 종가 기준입니다. 10년물 금리는 ^TNX 값을 % 단위로 환산했으며, 금·원유는 선물 가격입니다.";
+  }
   function card(item,q){
     const price=q?.price??q?.regularMarketPrice, change=changeOf(q), color=Number(change)>=0?"#34d399":"#fb7185";
     return '<div style="padding:14px;border:1px solid #29364f;border-radius:12px;background:#111b2e;min-width:0"><div style="display:flex;justify-content:space-between;gap:8px"><strong>'+item.symbol+'</strong><span class="small">'+item.name+'</span></div><div style="font-size:22px;font-weight:700;margin-top:10px">'+fmtPrice(price)+'</div><div style="font-size:13px;color:'+color+';margin-top:4px">'+(change===null?"등락률 데이터 없음":fmtPct(change))+'</div></div>';
@@ -454,14 +496,15 @@ if(config.quoteUrl){refreshQuotes();setInterval(()=>{if(config.quoteUrl)refreshQ
     const cfg=JSON.parse(localStorage.getItem("investlab_config")||"{}");
     if(!cfg.quoteUrl){overview.innerHTML='<div class="status">연결 설정에서 시세 API URL을 먼저 등록해 주세요.</div>';sectorRoot.innerHTML='<div class="status">시세 API 연결이 필요합니다.</div>';return;}
     try{
-      const symbols=[...new Set([...marketItems.map(x=>x.symbol),...sectorItems.flatMap(s=>[s.symbol,...s.companies.map(company=>company.symbol)])])];
+      const symbols=[...new Set([...marketItems.map(x=>x.symbol),...sectorItems.flatMap(s=>[s.symbol,...s.companies.map(company=>company.symbol)]),...indicatorSymbols])];
       const response=await fetch(cfg.quoteUrl,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({symbols,includeFx:true,includeHistory:true})});
       if(!response.ok)throw new Error("HTTP "+response.status);
       const data=await response.json(), quotes=data.quotes||{}, available=marketItems.filter(x=>quotes[x.symbol]);
       overview.innerHTML=available.length?available.map(x=>card(x,quotes[x.symbol])).join(""):'<div class="status">시장 지표 종목이 API에서 반환되지 않았습니다. Supabase quotes 함수의 허용 종목 목록을 확장해야 합니다.</div>';
       renderSectorHeatmap(quotes);
+      renderIndicatorCharts(quotes);
       overviewStatus.textContent=available.length?"시세 API 응답 "+available.length+"/"+marketItems.length+"개 · "+new Date().toLocaleString("ko-KR"):"API 연결은 됐지만 시장 지표 종목은 아직 허용 목록에 없습니다.";
-    }catch(e){overview.innerHTML='<div class="status">시장 지표를 불러오지 못했습니다: '+String(e.message).replace(/[<>&"]/g,"")+'</div>';sectorRoot.innerHTML='<div class="status">업종별 데이터 연결 실패</div>';overviewStatus.textContent="연결 설정 또는 Edge Function 응답을 확인해 주세요.";}
+    }catch(e){overview.innerHTML='<div class="status">시장 지표를 불러오지 못했습니다: '+String(e.message).replace(/[<>&"]/g,"")+'</div>';sectorRoot.innerHTML='<div class="status">업종별 데이터 연결 실패</div>';if(indicatorRoot)indicatorRoot.innerHTML='<div class="status">금리·원자재 그래프 데이터 연결 실패</div>';overviewStatus.textContent="연결 설정 또는 Edge Function 응답을 확인해 주세요.";}
   }
   load();
 })();
