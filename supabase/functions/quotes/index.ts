@@ -197,7 +197,7 @@ Deno.serve(async (req: Request) => {
 
     if (body?.includeHistory === true) {
       const historySymbols = symbols.filter((symbol) =>
-        !["BITU", "TQQQ", "USD", "SOXL", "SPY", "QQQ", "DIA", "IWM", "SOXX", "VIXY", "TLT", "GLD", "USO"].includes(symbol)
+        !["BITU", "TQQQ", "USD", "SOXL"].includes(symbol)
       );
       const historyResults = await Promise.all(historySymbols.map(async (symbol) => {
         try {
