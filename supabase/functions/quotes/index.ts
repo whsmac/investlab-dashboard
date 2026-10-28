@@ -96,7 +96,7 @@ async function fetchYahooQuote(symbol: string): Promise<Quote> {
 async function fetchYahooHistory(symbol: string) {
   const url =
     `https://query1.finance.yahoo.com/v8/finance/chart/` +
-    `${encodeURIComponent(symbol)}?range=1y&interval=1d`;
+    `${encodeURIComponent(symbol)}?range=5y&interval=1d`;
   const response = await fetch(url, {
     headers: { Accept: "application/json", "User-Agent": "Mozilla/5.0" },
     signal: AbortSignal.timeout(12000),
@@ -128,10 +128,10 @@ async function fetchYahooHistory(symbol: string) {
   return {
     price: current,
     changes: {
-      day: pct(Number.isFinite(prevCloseValue) && prevCloseValue > 0 ? prevCloseValue : base(1)),
+      week: pct(base(5)),
       month: pct(base(21)),
-      sixMonths: pct(base(126)),
       year: pct(base(252)),
+      threeYears: pct(base(756)),
     },
     series,
   };
