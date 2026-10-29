@@ -7,7 +7,7 @@ create table if not exists public.ledger_transactions (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
   transaction_date date not null,
-  sequence_no integer not null default 1 check (sequence_no > 0),
+  sequence_no integer not null check (sequence_no > 0),
   transaction_type text not null check (transaction_type in (
     'BUY', 'SELL', 'CASH_DEPOSIT', 'CASH_WITHDRAWAL',
     'FX_CONVERSION', 'OPENING_POSITION', 'OPENING_CASH'
