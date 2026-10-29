@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TQQQ 야간 시세 연결 테스트</title>
+<style>
+:root{color-scheme:light dark;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{max-width:780px;margin:0 auto;padding:20px;line-height:1.5}
+h1{font-size:1.45rem} h2{font-size:1.05rem;margin-bottom:8px}
+.card{border:1px solid #8886;border-radius:12px;padding:14px;margin:12px 0}
+button{padding:10px 14px;border:0;border-radius:8px;font-size:1rem;cursor:pointer}
+.status{font-weight:600}.muted{opacity:.75;font-size:.92rem}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.85rem}
+.price{font-size:1.4rem;font-weight:700}
+</style>
+</head>
+<body>
+<h1>TQQQ 야간 시세 연결 테스트</h1>
+<p>이 페이지는 연결 가능 여부만 검사합니다. 기존 대시보드와 Supabase 시세 로직에는 영향을 주지 않습니다.</p>
+<div class="card">
+  <h2>테스트 실행</h2>
+  <p class="muted">휴대폰 네트워크에서 실행해 주세요. 외부 공개 프록시(cors.dev)를 통한 요청도 검사하므로, 결과는 진단용이며 안정성이 보장되지는 않습니다.</p>
+  <button id="run">다시 검사</button>
+  <p id="overall" class="status">검사 전</p>
+</div>
+<div class="card">
+  <h2>1. Yahoo Finance 페이지를 브라우저에서 읽기</h2>
+  <p id="pageStatus" class="status">대기 중</p>
+  <div id="pagePrice" class="price"></div>
+  <pre id="pageDetails"></pre>
+</div>
+<div class="card">
+  <h2>2. Yahoo Chart API 직접 요청</h2>
+  <p id="directStatus" class="status">대기 중</p>
+  <pre id="directDetails"></pre>
+</div>
+<div class="card">
+  <h2>3. Yahoo Chart API 공개 CORS 프록시 경유</h2>
+  <p id="proxyStatus" class="status">대기 중</p>
+  <pre id="proxyDetails"></pre>
+</div>
+<p class="muted">참고: Chart API의 마지막 가격은 BOATS 야간 가격과 다를 수 있습니다. 이 페이지에서는 실제 Yahoo Finance 페이지에서 야간 가격을 읽을 수 있는지와 API 응답을 구분해 표시합니다.</p>
+<script>
+const $ = id => document.getElementById(id);
+const quoteUrl = "https://finance.yahoo.com/quote/TQQQ/";
+const chartUrl = "https://query1.finance.yahoo.com/v8/finance/chart/TQQQ?range=1d&interval=1m&includePrePost=true";
+const proxy = "https://proxy.cors.dev/";
+function set(id, text){ $(id).textContent = text; }
+function extractOvernight(html){
+  const patterns = [
+    /"overnightPrice"\s*:\s*\{[^}]*"raw"\s*:\s*([0-9.]+)/i,
+    /"overnightPrice"\s*:\s*([0-9.]+)/i,
+    /"overnightMarketPrice"\s*:\s*\{[^}]*"raw"\s*:\s*([0-9.]+)/i
+  ];
+  let price = null;
+  for (const re of patterns){ const m = html.match(re); if(m){price = Number(m[1]); break;} }
+  const match = html.match(/Overnight.{0,250}/is);
+  const text = match ? match[0].replace(/\\u003c/gi,"<").replace(/\\u003e/gi,">").slice(0,500) : "";
+  const hasOvernight = /overnightPrice|Overnight|overnightMarketPrice/i.test(html);
+  return {price, hasOvernight, snippet:text, title:html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.replace(/&amp;/g,"&") ?? null};
+}
+async function testPage(){
+  set("pageStatus","Yahoo Finance 페이지를 공개 프록시로 요청 중…");
+  set("pagePrice",""); set("pageDetails","");
+  try{
+    const r = await fetch(proxy + quoteUrl, {method:"GET"});
+    const html = await r.text();
+    if(!r.ok) throw new Error("HTTP "+r.status+"; "+html.slice(0,250));
+    const found = extractOvernight(html);
+    set("pageStatus","요청 성공 (HTTP "+r.status+"). 페이지 안의 야간 가격 추출 결과를 확인하세요.");
+    set("pagePrice", found.price !== null ? "추출 가격: $"+found.price.toFixed(2) : "야간 가격 숫자를 자동 추출하지 못했습니다.");
+    set("pageDetails",JSON.stringify({title:found.title,hasOvernightTerms:found.hasOvernight,priceFound:found.price!==null,overnightSnippet:found.snippet,htmlLength:html.length},null,2));
+    return {ok:true,price:found.price,hasOvernight:found.hasOvernight};
+  }catch(e){set("pageStatus","실패: "+e.message);return {ok:false,error:e.message};}
+}
+async function testChart(url, targetStatus, targetDetails){
+  try{
+    const r=await fetch(url);
+    const text=await r.text();
+    if(!r.ok) throw new Error("HTTP "+r.status+"; "+text.slice(0,250));
+    const d=JSON.parse(text), result=d?.chart?.result?.[0], meta=result?.meta??{}, ts=result?.timestamp??[], closes=result?.indicators?.quote?.[0]?.close??[];
+    const last=ts.length?ts[ts.length-1]:null;
+    const info={httpStatus:r.status,regularMarketPrice:meta.regularMarketPrice??null,regularMarketTime:meta.regularMarketTime?new Date(meta.regularMarketTime*1000).toISOString():null,lastChartTimestamp:last?new Date(last*1000).toISOString():null,lastChartPrice:last?closes[closes.length-1]??null:null,preMarketPrice:meta.preMarketPrice??null,postMarketPrice:meta.postMarketPrice??null,chartError:d?.chart?.error??null};
+    set(targetStatus,"성공 (HTTP "+r.status+")");
+    set(targetDetails,JSON.stringify(info,null,2));
+    return {ok:true,...info};
+  }catch(e){set(targetStatus,"실패: "+e.message);set(targetDetails,e.stack??e.message);return {ok:false,error:e.message};}
+}
+$("run").addEventListener("click",async()=>{
+  $("run").disabled=true;set("overall","검사 중…");
+  set("directStatus","검사 중…");set("proxyStatus","검사 중…");
+  const results=await Promise.all([
+    testPage(),
+    testChart(chartUrl,"directStatus","directDetails"),
+    testChart(proxy+chartUrl,"proxyStatus","proxyDetails")
+  ]);
+  const p=results[0];
+  set("overall",p.ok && p.price!==null ? "야간 가격 후보를 추출했습니다. Yahoo 페이지의 현재 표시값과 대조해 주세요." : "검사는 완료됐습니다. 아래 결과를 복사하거나 화면 캡처로 보내 주세요.");
+  $("run").disabled=false;
+});
+</script>
+</body>
+</html>
