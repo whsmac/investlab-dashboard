@@ -70,7 +70,7 @@ async function testPage(){
     const found = extractOvernight(html);
     set("pageStatus","요청 성공 (HTTP "+r.status+"). 페이지 안의 야간 가격 추출 결과를 확인하세요.");
     set("pagePrice", found.price !== null ? "추출 가격: $"+found.price.toFixed(2) : "야간 가격 숫자를 자동 추출하지 못했습니다.");
-    set("pageDetails",JSON.stringify({title:found.title,hasOvernightTerms:found.hasOvernight,priceFound:found.price!==null,matchedContexts:found.contexts,htmlLength:html.length},null,2));
+    set("pageDetails",JSON.stringify({title:found.title,hasOvernightTerms:found.hasOvernight,priceFound:found.price!==null,matchedContexts:found.contexts,embeddedScriptCount:found.embeddedScriptCount,embedded:found.embedded,htmlLength:html.length},null,2));
     return {ok:true,price:found.price,hasOvernight:found.hasOvernight};
   }catch(e){set("pageStatus","실패: "+e.message);return {ok:false,error:e.message};}
 }
