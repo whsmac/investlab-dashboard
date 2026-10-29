@@ -295,9 +295,10 @@ async function fetchYahooTqqqWebDiagnostics() {
       const raw = await response.text();
       let body: any = null;
       try { body = JSON.parse(raw); } catch { /* keep response summary */ }
-      const spark = Array.isArray(body) ? body.find((item: any) => item?.symbol === "TQQQ") : null;
-      const sparkTimestamp = spark?.timestamp ?? [];
-      const sparkClose = spark?.close ?? [];
+      const spark = body?.spark?.result?.find((item: any) => item?.symbol === "TQQQ") ?? null;
+      const sparkResponse = spark?.response?.[0] ?? null;
+      const sparkTimestamp = sparkResponse?.timestamp ?? [];
+      const sparkClose = sparkResponse?.indicators?.quote?.[0]?.close ?? [];
       const quote = body?.quoteResponse?.result?.[0] ?? null;
       return {
         name: endpoint.name,
@@ -305,7 +306,7 @@ async function fetchYahooTqqqWebDiagnostics() {
         status: response.status,
         contentType: response.headers.get("content-type"),
         responseLength: raw.length,
-        spark: spark ? {
+        spark: sparkResponse ? {
           symbol: spark.symbol,
           meta: spark.meta ?? null,
           timestampCount: sparkTimestamp.length,
