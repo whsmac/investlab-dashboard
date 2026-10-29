@@ -29,12 +29,13 @@ $("run").addEventListener("click",async()=>{
   const epoch=raw(q.overnightMarketTime)??raw(p.overnightMarketTime);
   const regular=raw(q.regularMarketPrice)??raw(p.regularMarketPrice);
   const post=raw(q.postMarketPrice)??raw(p.postMarketPrice);
-  const source=q.quoteSourceName||q.exchangeDataDelayedBy===0?"BOATS / Yahoo Finance":"Yahoo Finance";
+  const source=q.quoteSourceName||p.overnightMarketSource||"Yahoo Finance";
   const valid=Number.isFinite(Number(overnight))&&Number(overnight)>0&&Number.isFinite(Number(epoch))&&Number(epoch)>0;
   const ageMinutes=valid?(Date.now()-Number(epoch)*1000)/60000:null;
   const time=valid?new Date(Number(epoch)*1000):null;
   $("price").textContent=valid?"$"+Number(overnight).toFixed(2):"가격 추출 실패";
-  const changeFmt=q.overnightMarketChangePercent?.fmt||(p.overnightMarketChangePercent?.fmt)||(change!==undefined&&change!==null?(Math.abs(Number(change))<=1?(Number(change)*100).toFixed(2):Number(change).toFixed(2))+"%":null);\n  $("change").textContent=changeFmt?"야간 변동률 "+changeFmt:"야간 변동률 없음";
+  const changeFmt=q.overnightMarketChangePercent?.fmt||p.overnightMarketChangePercent?.fmt||(change!==undefined&&change!==null?(Math.abs(Number(change))<=1?(Number(change)*100).toFixed(2):Number(change).toFixed(2))+"%":null);
+  $("change").textContent=changeFmt?"야간 변동률 "+changeFmt:"야간 변동률 없음";
   $("time").textContent=time?"데이터 시각: "+time.toLocaleString("ko-KR",{timeZone:"Asia/Seoul",dateStyle:"medium",timeStyle:"medium",hour12:false})+" (한국시간)":"데이터 시각을 찾지 못했습니다.";
   $("fresh").textContent=ageMinutes===null?"신선도 판정 불가":ageMinutes<0?"시각 오류: 미래 시각":ageMinutes<=30?"최근 30분 이내 데이터":"마지막 업데이트 후 약 "+Math.round(ageMinutes)+"분 경과";
   const result={pageHttpStatus:res.status,htmlLength:html.length,embeddedScriptCount:embedded.length,parseErrorCount:parseErrors.length,quoteEndpointFound:!!quoteScript,quoteSummaryFound:!!summaryScript,source:q.quoteSourceName||p.overnightMarketSource||null,overnightMarketPrice:overnight??null,overnightMarketChange:raw(q.overnightMarketChange)??raw(p.overnightMarketChange)??null,overnightMarketChangePercent:change??null,overnightMarketTime:epoch??null,overnightTimeKorea:time?time.toLocaleString("sv-SE",{timeZone:"Asia/Seoul",hour12:false}):null,ageMinutes:ageMinutes===null?null:Math.round(ageMinutes*10)/10,regularMarketPrice:regular??null,postMarketPrice:post??null,priceValid:valid,parseErrors:parseErrors.slice(0,5)};
