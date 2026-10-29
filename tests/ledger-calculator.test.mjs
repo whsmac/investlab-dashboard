@@ -28,7 +28,7 @@ test("sell realizes profit at average cost and full sale resets position", () =>
     tx("SELL", { sequence_no: 3, symbol: "XYZ", quantity: 20, unit_price: 130 })
   ]);
   assert.deepEqual(result.positions.XYZ, { quantity: 0, costBasis: 0, averageCost: 0 });
-  assert.equal(result.realizedBySymbol.XYZ, 600);
+  assert.equal(result.realizedBySymbol.XYZ, 400);
   assert.equal(result.cash.USD, 400);
 });
 
