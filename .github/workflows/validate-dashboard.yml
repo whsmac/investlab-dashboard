@@ -56,6 +56,8 @@ jobs:
             echo "Checking $file"
             node --check "$file"
           done
+      - name: Run ledger calculator tests
+        run: node --test tests/ledger-calculator.test.mjs
       - name: Check required symbol-management elements
         run: |
           python3 - <<'PY'
