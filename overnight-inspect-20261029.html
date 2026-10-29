@@ -1,50 +1,45 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TQQQ Yahoo 데이터 진단</title>
-<style>body{font:16px/1.5 system-ui;margin:0 auto;padding:16px;max-width:800px}button{font-size:1rem;padding:12px;border-radius:8px}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px}.card{border:1px solid #9998;border-radius:12px;padding:14px;margin:12px 0}</style></head>
-<body><h1>TQQQ Yahoo 데이터 진단</h1><p>이 페이지는 새 주소에서 Yahoo 페이지 내부 데이터만 조사합니다. 기존 대시보드나 Supabase는 변경하지 않습니다.</p><button id="run">진단 실행</button><p id="status">대기 중</p><div class="card"><h2>결과</h2><pre id="out">버튼을 누르세요.</pre></div>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Cache-Control" content="no-cache"><title>TQQQ BOATS 추출 검증</title>
+<style>body{font:16px/1.5 system-ui;margin:0 auto;padding:16px;max-width:760px;background:#f7f8fa;color:#172033}button{font-size:1rem;padding:12px 16px;border-radius:8px;border:1px solid #888;background:#fff}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px}.card{background:white;border:1px solid #ddd;border-radius:12px;padding:14px;margin:12px 0}.price{font-size:2rem;font-weight:700}.muted{color:#555}</style></head>
+<body><h1>TQQQ BOATS 야간가격 검증</h1><p>독립 진단 페이지입니다. 투자 대시보드와 Supabase 데이터는 변경하지 않습니다.</p><button id="run">Yahoo 데이터 다시 읽기</button><p id="status">대기 중</p><section class="card"><div class="muted">야간거래 가격</div><div id="price" class="price">—</div><div id="change">—</div><div id="time" class="muted">—</div><div id="fresh" class="muted">—</div></section><section class="card"><h2>검증 결과</h2><pre id="out">버튼을 눌러 실행하세요.</pre></section>
 <script>
-const statusEl=document.getElementById("status"), out=document.getElementById("out");
-document.getElementById("run").addEventListener("click", async()=>{
-  statusEl.textContent="Yahoo Finance 페이지를 가져오는 중…";
-  out.textContent="";
-  try{
-    const target="https://finance.yahoo.com/quote/TQQQ/";
-    const response=await fetch("https://proxy.cors.dev/"+target);
-    const html=await response.text();
-    if(!response.ok) throw new Error("페이지 요청 HTTP "+response.status+": "+html.slice(0,200));
-    const scripts=[];
-    const re=/<script\b([^>]*data-sveltekit-fetched[^>]*)>([\s\S]*?)<\/script>/gi;
-    let m;
-    while((m=re.exec(html))!==null){
-      const attr=m[1];
-      const url=attr.match(/data-url="([^"]+)"/i)?.[1]?.replace(/&amp;/g,"&")??null;
-      let wrapper=null, body=null, parseError=null;
-      try{
-        wrapper=JSON.parse(m[2]);
-        body=typeof wrapper.body==="string"?JSON.parse(wrapper.body):wrapper.body;
-      }catch(e){parseError=String(e).slice(0,100);}
-      const priceFields=[];
-      const walk=(v,p="",d=0)=>{
-        if(!v||typeof v!=="object"||d>6||priceFields.length>=40)return;
-        for(const [k,val] of Object.entries(v)){
-          if(/overnight|boats|postMarket|preMarket|regularMarketPrice|lastPrice|marketPrice/i.test(k))
-            priceFields.push({path:p?p+"."+k:k,value:val&&typeof val==="object"?JSON.stringify(val).slice(0,160):val});
-          if(val&&typeof val==="object")walk(val,p?p+"."+k:k,d+1);
-        }
-      };
-      if(body)walk(body);
-      const spark=(body?.spark?.result??[]).find(x=>x?.symbol==="TQQQ")??null;
-      const sr=spark?.response?.[0], ts=sr?.timestamp??[], closes=sr?.indicators?.quote?.[0]?.close??[];
-      scripts.push({url,wrapperStatus:wrapper?.status??null,bodyKeys:body&&typeof body==="object"?Object.keys(body):[],priceFields,spark:spark?{lastTime:ts.length?new Date(ts[ts.length-1]*1000).toISOString():null,lastPrice:ts.length?closes[closes.length-1]??null:null}:null,parseError});
-    }
-    const contexts=[];
-    for(const key of ["overnightPrice","overnightMarketPrice","overnightChange","overnightChangePercent","boats"]){
-      const reKey=new RegExp(key,"ig");let x,n=0;
-      while((x=reKey.exec(html))&&n<3){contexts.push({key,index:x.index,context:html.slice(Math.max(0,x.index-120),Math.min(html.length,x.index+key.length+220))});n++;}
-    }
-    const result={httpStatus:response.status,htmlLength:html.length,title:html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]??null,embeddedScriptCount:scripts.length,scripts,keywordContexts:contexts};
-    out.textContent=JSON.stringify(result,null,2);
-    statusEl.textContent="완료. embeddedScriptCount와 scripts의 url 및 priceFields를 확인하세요.";
-  }catch(e){statusEl.textContent="실패";out.textContent=String(e?.stack??e);}
+const $=id=>document.getElementById(id);
+function get(obj,path){return path.split(".").reduce((v,k)=>v==null?undefined:v[k],obj)}
+function raw(v){return v&&typeof v==="object"&&"raw"in v?v.raw:v}
+$("run").addEventListener("click",async()=>{
+ $("status").textContent="Yahoo Finance 페이지 요청 중…";$("price").textContent="—";$("change").textContent="—";$("time").textContent="—";$("fresh").textContent="—";
+ try{
+  const target="https://finance.yahoo.com/quote/TQQQ/";
+  const res=await fetch("https://proxy.cors.dev/"+target,{cache:"no-store"});
+  const html=await res.text();
+  if(!res.ok)throw new Error("Yahoo 페이지 요청 실패: HTTP "+res.status+" "+html.slice(0,160));
+  const re=/<script\b([^>]*data-sveltekit-fetched[^>]*)>([\s\S]*?)<\/script>/gi;
+  let m;const embedded=[];const parseErrors=[];
+  while((m=re.exec(html))!==null){
+   const attr=m[1];const url=attr.match(/data-url="([^"]+)"/i)?.[1]?.replace(/&amp;/g,"&")||"";
+   try{const wrap=JSON.parse(m[2]);const body=typeof wrap.body==="string"?JSON.parse(wrap.body):wrap.body;embedded.push({url,status:wrap.status,body});}
+   catch(e){parseErrors.push({url,error:String(e).slice(0,100)});}
+  }
+  const quoteScript=embedded.find(x=>/\/v7\/finance\/quote\?/.test(x.url)&&/symbols=TQQQ/.test(x.url)&&/overnightPrice=true/.test(x.url)&&x.status===200&&get(x.body,"quoteResponse.result.0"));
+  const summaryScript=embedded.find(x=>/\/v10\/finance\/quoteSummary\/TQQQ/.test(x.url)&&x.status===200&&get(x.body,"quoteSummary.result.0.price"));
+  const q=get(quoteScript,"body.quoteResponse.result.0")||{};
+  const p=get(summaryScript,"body.quoteSummary.result.0.price")||{};
+  const overnight=raw(q.overnightMarketPrice)??raw(p.overnightMarketPrice);
+  const change=raw(q.overnightMarketChangePercent)??raw(p.overnightMarketChangePercent);
+  const epoch=raw(q.overnightMarketTime)??raw(p.overnightMarketTime);
+  const regular=raw(q.regularMarketPrice)??raw(p.regularMarketPrice);
+  const post=raw(q.postMarketPrice)??raw(p.postMarketPrice);
+  const source=q.quoteSourceName||q.exchangeDataDelayedBy===0?"BOATS / Yahoo Finance":"Yahoo Finance";
+  const valid=Number.isFinite(Number(overnight))&&Number(overnight)>0&&Number.isFinite(Number(epoch))&&Number(epoch)>0;
+  const ageMinutes=valid?(Date.now()-Number(epoch)*1000)/60000:null;
+  const time=valid?new Date(Number(epoch)*1000):null;
+  $("price").textContent=valid?"$"+Number(overnight).toFixed(2):"가격 추출 실패";
+  $("change").textContent=change!==undefined&&change!==null?"야간 변동률 "+(typeof change==="number"?(change*100).toFixed(2)+"%":String(change)):"야간 변동률 없음";
+  $("time").textContent=time?"데이터 시각: "+time.toLocaleString("ko-KR",{timeZone:"Asia/Seoul",dateStyle:"medium",timeStyle:"medium",hour12:false})+" (한국시간)":"데이터 시각을 찾지 못했습니다.";
+  $("fresh").textContent=ageMinutes===null?"신선도 판정 불가":ageMinutes<0?"시각 오류: 미래 시각":ageMinutes<=30?"최근 30분 이내 데이터":"마지막 업데이트 후 약 "+Math.round(ageMinutes)+"분 경과";
+  const result={pageHttpStatus:res.status,htmlLength:html.length,embeddedScriptCount:embedded.length,parseErrorCount:parseErrors.length,quoteEndpointFound:!!quoteScript,quoteSummaryFound:!!summaryScript,source:q.quoteSourceName||p.overnightMarketSource||null,overnightMarketPrice:overnight??null,overnightMarketChange:raw(q.overnightMarketChange)??raw(p.overnightMarketChange)??null,overnightMarketChangePercent:change??null,overnightMarketTime:epoch??null,overnightTimeKorea:time?time.toLocaleString("sv-SE",{timeZone:"Asia/Seoul",hour12:false}):null,ageMinutes:ageMinutes===null?null:Math.round(ageMinutes*10)/10,regularMarketPrice:regular??null,postMarketPrice:post??null,priceValid:valid,parseErrors:parseErrors.slice(0,5)};
+  $("out").textContent=JSON.stringify(result,null,2);
+  $("status").textContent=valid?"추출 성공. 가격·시각을 확인하세요.":"요청은 끝났지만 유효한 야간가격을 추출하지 못했습니다.";
+ }catch(e){$("status").textContent="검증 실패";$("out").textContent=String(e?.stack||e);}
 });
 </script></body></html>
