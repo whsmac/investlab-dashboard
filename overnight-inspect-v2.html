@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>TQQQ 야간가격 진단 v2</title>
+<style>body{font:16px/1.5 system-ui;padding:16px;max-width:760px;margin:auto;color:#172033}button{font-size:17px;padding:14px;border:1px solid #888;border-radius:8px;background:#fff}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f4f4f4;padding:12px}</style>
+</head>
+<body>
+<h2>TQQQ BOATS 야간가격 진단 v2</h2>
+<p id="js">JavaScript 상태 확인 중…</p>
+<button id="run" type="button">진단 실행</button>
+<p id="status">아직 실행하지 않았습니다.</p>
+<pre id="out">결과가 여기에 표시됩니다.</pre>
+<script>
+(function(){
+ const status=document.getElementById("status");
+ const out=document.getElementById("out");
+ document.getElementById("js").textContent="JavaScript 실행 확인됨";
+ document.getElementById("run").addEventListener("click",function(){
+  status.textContent="버튼 작동 확인됨. Yahoo 페이지 요청 중…";
+  out.textContent="요청을 시작했습니다.";
+  fetch("https://proxy.cors.dev/https://finance.yahoo.com/quote/TQQQ/",{cache:"no-store"})
+   .then(function(r){return r.text().then(function(t){return {status:r.status,html:t};});})
+   .then(function(x){
+    var scripts=(x.html.match(/data-sveltekit-fetched/g)||[]).length;
+    var hasOvernight=x.html.indexOf("overnightMarketPrice")!==-1;
+    status.textContent="페이지 요청 완료";
+    out.textContent=JSON.stringify({httpStatus:x.status,htmlLength:x.html.length,embeddedScriptCount:scripts,overnightFieldFound:hasOvernight,firstChars:x.html.slice(0,100)},null,2);
+   })
+   .catch(function(e){
+    status.textContent="요청 실패";
+    out.textContent=String(e && (e.stack||e.message)||e);
+   });
+ });
+})();
+</script>
+</body>
+</html>
