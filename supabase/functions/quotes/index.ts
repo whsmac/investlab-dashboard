@@ -292,7 +292,7 @@ async function fetchYahooTqqqWebDiagnostics() {
           parsedTopLevelKeys: parsedBody && typeof parsedBody === "object" ? Object.keys(parsedBody).slice(0, 12) : [],
         });
       }
-      const title = html.match(/<title[^>]*>([\\s\\S]*?)<\\/title>/i)?.[1]?.slice(0, 200) ?? null;
+      const title = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.slice(0, 200) ?? null;
       return {
         name: attempt.name,
         ok: response.ok,
