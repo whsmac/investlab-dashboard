@@ -147,3 +147,33 @@ test("negative amounts and unsupported currencies are rejected", () => {
     tx("CASH_DEPOSIT", { currency: "EUR", gross_amount: 10 })
   ]), /Unsupported currency/);
 });
+
+
+test("opening-balance reconciliation reproduces supplied non-TQQQ holdings and USD cash snapshot", () => {
+  // TQQQ is intentionally excluded from this fixture because its snapshot is stale.
+  const snapshot = [
+    tx("OPENING_POSITION", { sequence_no: 1, symbol: "BITU", quantity: 160, unit_price: 14 }),
+    tx("OPENING_POSITION", { sequence_no: 2, symbol: "SOXL", quantity: 13, unit_price: 106.97 }),
+    tx("OPENING_POSITION", { sequence_no: 3, symbol: "TSLA", quantity: 222, unit_price: 385.2 }),
+    tx("OPENING_POSITION", { sequence_no: 4, symbol: "USD", quantity: 107, unit_price: 83.6 }),
+    tx("OPENING_CASH", { sequence_no: 5, symbol: undefined, gross_amount: 3641, currency: "USD" })
+  ];
+  const result = calculateLedger(snapshot);
+  assert.deepEqual(
+    Object.fromEntries(["BITU", "SOXL", "TSLA", "USD"].map(symbol => [
+      symbol,
+      { quantity: result.positions[symbol].quantity, averageCost: result.positions[symbol].averageCost }
+    ])),
+    {
+      BITU: { quantity: 160, averageCost: 14 },
+      SOXL: { quantity: 13, averageCost: 106.97 },
+      TSLA: { quantity: 222, averageCost: 385.2 },
+      USD: { quantity: 107, averageCost: 83.6 }
+    }
+  );
+  assert.equal(result.positions.BITU.costBasis, 2240);
+  assert.equal(result.positions.SOXL.costBasis, 1390.61);
+  assert.equal(result.positions.TSLA.costBasis, 85514.4);
+  assert.equal(result.positions.USD.costBasis, 8945.2);
+  assert.equal(result.cash.USD, 3641);
+});
