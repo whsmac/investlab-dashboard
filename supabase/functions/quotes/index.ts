@@ -272,10 +272,76 @@ async function fetchYahooTqqqWebDiagnostics() {
     pageDiagnostics = { ok: false, error: error instanceof Error ? error.message : "fetch failed" };
   }
 
+  const apiEndpoints = [
+    {
+      name: "spark-query1",
+      url: "https://query1.finance.yahoo.com/v7/finance/spark?symbols=TQQQ&range=1d&interval=1m",
+    },
+    {
+      name: "spark-query2",
+      url: "https://query2.finance.yahoo.com/v7/finance/spark?symbols=TQQQ&range=1d&interval=1m",
+    },
+    {
+      name: "quote-query1-overnight",
+      url: "https://query1.finance.yahoo.com/v7/finance/quote?symbols=TQQQ&overnightPrice=true&formatted=true&lang=en-US&region=US",
+    },
+  ];
+  const apiResults = await Promise.all(apiEndpoints.map(async (endpoint) => {
+    try {
+      const response = await fetch(endpoint.url, {
+        headers: { Accept: "application/json", "User-Agent": "Mozilla/5.0" },
+        signal: AbortSignal.timeout(12000),
+      });
+      const raw = await response.text();
+      let body: any = null;
+      try { body = JSON.parse(raw); } catch { /* keep response summary */ }
+      const spark = Array.isArray(body) ? body.find((item: any) => item?.symbol === "TQQQ") : null;
+      const sparkTimestamp = spark?.timestamp ?? [];
+      const sparkClose = spark?.close ?? [];
+      const quote = body?.quoteResponse?.result?.[0] ?? null;
+      return {
+        name: endpoint.name,
+        ok: response.ok,
+        status: response.status,
+        contentType: response.headers.get("content-type"),
+        responseLength: raw.length,
+        spark: spark ? {
+          symbol: spark.symbol,
+          meta: spark.meta ?? null,
+          timestampCount: sparkTimestamp.length,
+          lastTimestamp: sparkTimestamp.length ? sparkTimestamp[sparkTimestamp.length - 1] : null,
+          lastIsoTime: sparkTimestamp.length ? new Date(sparkTimestamp[sparkTimestamp.length - 1] * 1000).toISOString() : null,
+          recentPoints: sparkTimestamp.slice(-5).map((timestamp: number, index: number) => ({
+            timestamp,
+            isoTime: new Date(timestamp * 1000).toISOString(),
+            close: sparkClose[index] ?? null,
+          })),
+        } : null,
+        quote: quote ? {
+          symbol: quote.symbol ?? null,
+          regularMarketPrice: quote.regularMarketPrice ?? null,
+          regularMarketTime: quote.regularMarketTime ?? null,
+          marketState: quote.marketState ?? null,
+          postMarketPrice: quote.postMarketPrice ?? null,
+          postMarketTime: quote.postMarketTime ?? null,
+          overnightPrice: quote.overnightPrice ?? null,
+          overnightChange: quote.overnightChange ?? null,
+          overnightChangePercent: quote.overnightChangePercent ?? null,
+          rawKeys: Object.keys(quote),
+        } : null,
+        error: body?.finance?.error?.description ?? body?.quoteResponse?.error?.description ?? null,
+        bodyPreview: !body ? raw.slice(0, 500) : null,
+      };
+    } catch (error) {
+      return { name: endpoint.name, ok: false, error: error instanceof Error ? error.message : "fetch failed" };
+    }
+  }));
+
   return {
     diagnostic: "Yahoo Finance TQQQ overnight-source comparison",
     fetchedAt: new Date().toISOString(),
     charts: chartResults,
+    apiEndpoints: apiResults,
     quotePage: pageDiagnostics,
   };
 }
