@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TQQQ Yahoo 데이터 진단</title>
+<style>body{font:16px/1.5 system-ui;margin:0 auto;padding:16px;max-width:800px}button{font-size:1rem;padding:12px;border-radius:8px}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px}.card{border:1px solid #9998;border-radius:12px;padding:14px;margin:12px 0}</style></head>
+<body><h1>TQQQ Yahoo 데이터 진단</h1><p>이 페이지는 새 주소에서 Yahoo 페이지 내부 데이터만 조사합니다. 기존 대시보드나 Supabase는 변경하지 않습니다.</p><button id="run">진단 실행</button><p id="status">대기 중</p><div class="card"><h2>결과</h2><pre id="out">버튼을 누르세요.</pre></div>
+<script>
+const statusEl=document.getElementById("status"), out=document.getElementById("out");
+document.getElementById("run").addEventListener("click", async()=>{
+  statusEl.textContent="Yahoo Finance 페이지를 가져오는 중…";
+  out.textContent="";
+  try{
+    const target="https://finance.yahoo.com/quote/TQQQ/";
+    const response=await fetch("https://proxy.cors.dev/"+target);
+    const html=await response.text();
+    if(!response.ok) throw new Error("페이지 요청 HTTP "+response.status+": "+html.slice(0,200));
+    const scripts=[];
+    const re=/<script\b([^>]*data-sveltekit-fetched[^>]*)>([\s\S]*?)<\/script>/gi;
+    let m;
+    while((m=re.exec(html))!==null){
+      const attr=m[1];
+      const url=attr.match(/data-url="([^"]+)"/i)?.[1]?.replace(/&amp;/g,"&")??null;
+      let wrapper=null, body=null, parseError=null;
+      try{
+        wrapper=JSON.parse(m[2]);
+        body=typeof wrapper.body==="string"?JSON.parse(wrapper.body):wrapper.body;
+      }catch(e){parseError=String(e).slice(0,100);}
+      const priceFields=[];
+      const walk=(v,p="",d=0)=>{
+        if(!v||typeof v!=="object"||d>6||priceFields.length>=40)return;
+        for(const [k,val] of Object.entries(v)){
+          if(/overnight|boats|postMarket|preMarket|regularMarketPrice|lastPrice|marketPrice/i.test(k))
+            priceFields.push({path:p?p+"."+k:k,value:val&&typeof val==="object"?JSON.stringify(val).slice(0,160):val});
+          if(val&&typeof val==="object")walk(val,p?p+"."+k:k,d+1);
+        }
+      };
+      if(body)walk(body);
+      const spark=(body?.spark?.result??[]).find(x=>x?.symbol==="TQQQ")??null;
+      const sr=spark?.response?.[0], ts=sr?.timestamp??[], closes=sr?.indicators?.quote?.[0]?.close??[];
+      scripts.push({url,wrapperStatus:wrapper?.status??null,bodyKeys:body&&typeof body==="object"?Object.keys(body):[],priceFields,spark:spark?{lastTime:ts.length?new Date(ts[ts.length-1]*1000).toISOString():null,lastPrice:ts.length?closes[closes.length-1]??null:null}:null,parseError});
+    }
+    const contexts=[];
+    for(const key of ["overnightPrice","overnightMarketPrice","overnightChange","overnightChangePercent","boats"]){
+      const reKey=new RegExp(key,"ig");let x,n=0;
+      while((x=reKey.exec(html))&&n<3){contexts.push({key,index:x.index,context:html.slice(Math.max(0,x.index-120),Math.min(html.length,x.index+key.length+220))});n++;}
+    }
+    const result={httpStatus:response.status,htmlLength:html.length,title:html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]??null,embeddedScriptCount:scripts.length,scripts,keywordContexts:contexts};
+    out.textContent=JSON.stringify(result,null,2);
+    statusEl.textContent="완료. embeddedScriptCount와 scripts의 url 및 priceFields를 확인하세요.";
+  }catch(e){statusEl.textContent="실패";out.textContent=String(e?.stack??e);}
+});
+</script></body></html>
