@@ -77,6 +77,31 @@ jobs:
               raise SystemExit("Base migration should remain additive; dividend belongs in follow-up migration")
           print("Dividend migration allowlist and tax constraints are present")
           PY
+
+      - name: Check ledger RLS, idempotency, and additive migration safety
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          base = Path("supabase/migrations/20261029_unified_ledger_schema.sql").read_text(encoding="utf-8")
+          dividend = Path("supabase/migrations/20261030_ledger_dividend_support.sql").read_text(encoding="utf-8")
+          required_base = [
+              "alter table public.ledger_transactions enable row level security",
+              "auth.uid() = user_id",
+              "with check (auth.uid() = user_id)",
+              "unique (user_id, idempotency_key)",
+              "unique (user_id, transaction_date, sequence_no)",
+              "create table if not exists public.ledger_transactions",
+          ]
+          missing = [item for item in required_base if item not in base]
+          if missing:
+              raise SystemExit("Missing ledger safety rules: " + ", ".join(missing))
+          for protected_table in ("public.holdings", "public.transactions", "public.instruments"):
+              if protected_table in base or protected_table in dividend:
+                  raise SystemExit("Ledger migration unexpectedly references protected table: " + protected_table)
+          if "enable row level security" not in base.lower():
+              raise SystemExit("Ledger RLS is not enabled")
+          print("Ledger RLS, idempotency, ordering uniqueness, and additive isolation checks passed")
+          PY
       - name: Check required symbol-management elements
         run: |
           python3 - <<'PY'
