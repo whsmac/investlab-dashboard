@@ -2,6 +2,18 @@
 -- Additive follow-up migration: safe for environments where the base ledger schema
 -- has already been applied. This does not touch existing holdings or transactions.
 
+-- The base schema's transaction-type allowlist must also admit DIVIDEND.
+alter table public.ledger_transactions
+  drop constraint if exists ledger_transactions_transaction_type_check;
+
+alter table public.ledger_transactions
+  add constraint ledger_transactions_transaction_type_check check (
+    transaction_type in (
+      'BUY', 'SELL', 'CASH_DEPOSIT', 'CASH_WITHDRAWAL',
+      'FX_CONVERSION', 'OPENING_POSITION', 'OPENING_CASH', 'DIVIDEND'
+    )
+  );
+
 alter table public.ledger_transactions
   add column if not exists withholding_tax numeric(20,8) not null default 0
   check (withholding_tax >= 0);
