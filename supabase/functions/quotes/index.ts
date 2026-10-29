@@ -259,7 +259,7 @@ async function fetchYahooTqqqWebDiagnostics() {
       });
       const html = await response.text();
       const scripts: Array<Record<string, unknown>> = [];
-      const scriptRegex = /<script\\b([^>]*data-sveltekit-fetched[^>]*)>([\\s\\S]*?)<\\/script>/gi;
+      const scriptRegex = /<script\b([^>]*data-sveltekit-fetched[^>]*)>([\s\S]*?)<\/script>/gi;
       let match: RegExpExecArray | null;
       while ((match = scriptRegex.exec(html)) !== null) {
         const attrs = match[1];
