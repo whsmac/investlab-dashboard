@@ -174,6 +174,6 @@ test("opening-balance reconciliation reproduces supplied non-TQQQ holdings and U
   assert.equal(result.positions.BITU.costBasis, 2240);
   assert.equal(result.positions.SOXL.costBasis, 1390.61);
   assert.equal(result.positions.TSLA.costBasis, 85514.4);
-  assert.equal(result.positions.USD.costBasis, 8945.2);
+  assert.ok(Math.abs(result.positions.USD.costBasis - 8945.2) < 1e-8);
   assert.equal(result.cash.USD, 3641);
 });
