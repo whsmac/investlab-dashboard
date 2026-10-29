@@ -40,7 +40,7 @@ pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.85rem}
   <p id="proxyStatus" class="status">대기 중</p>
   <pre id="proxyDetails"></pre>
 </div>
-<p class="muted">참고: Chart API의 마지막 가격은 BOATS 야간 가격과 다를 수 있습니다. 이 페이지에서는 실제 Yahoo Finance 페이지에서 야간 가격을 읽을 수 있는지와 API 응답을 구분해 표시합니다.</p>
+<p class="muted">참고: Chart API의 마지막 가격은 BOATS 야간 가격과 다를 수 있습니다. 1번 항목에는 야간 가격 관련 단어가 HTML에 나타난 주변 문맥을 표시해, 실제 가격 데이터가 포함됐는지 확인합니다.</p>
 <script>
 const $ = id => document.getElementById(id);
 const quoteUrl = "https://finance.yahoo.com/quote/TQQQ/";
@@ -70,7 +70,7 @@ async function testPage(){
     const found = extractOvernight(html);
     set("pageStatus","요청 성공 (HTTP "+r.status+"). 페이지 안의 야간 가격 추출 결과를 확인하세요.");
     set("pagePrice", found.price !== null ? "추출 가격: $"+found.price.toFixed(2) : "야간 가격 숫자를 자동 추출하지 못했습니다.");
-    set("pageDetails",JSON.stringify({title:found.title,hasOvernightTerms:found.hasOvernight,priceFound:found.price!==null,overnightSnippet:found.snippet,htmlLength:html.length},null,2));
+    set("pageDetails",JSON.stringify({title:found.title,hasOvernightTerms:found.hasOvernight,priceFound:found.price!==null,matchedContexts:found.contexts,htmlLength:html.length},null,2));
     return {ok:true,price:found.price,hasOvernight:found.hasOvernight};
   }catch(e){set("pageStatus","실패: "+e.message);return {ok:false,error:e.message};}
 }
