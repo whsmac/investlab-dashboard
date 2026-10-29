@@ -64,7 +64,7 @@ function extractOvernight(html){
     }
   }
   const embedded = [];
-  const scriptRe = /<script\\b([^>]*data-sveltekit-fetched[^>]*)>([\\s\\S]*?)<\\/script>/gi;
+  const scriptRe = /<script\b([^>]*data-sveltekit-fetched[^>]*)>([\s\S]*?)<\/script>/gi;
   let sm;
   while ((sm = scriptRe.exec(html)) !== null) {
     const dataUrl = sm[1].match(/data-url="([^"]+)"/i)?.[1]?.replace(/&amp;/g,"&") ?? null;
