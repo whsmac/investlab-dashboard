@@ -241,36 +241,75 @@ async function fetchYahooTqqqWebDiagnostics() {
     }
   }));
 
-  let pageDiagnostics: Record<string, unknown>;
-  try {
-    const response = await fetch("https://finance.yahoo.com/quote/TQQQ/", {
-      headers: {
-        Accept: "text/html,application/xhtml+xml",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/130.0.0.0 Safari/537.36",
-      },
-      signal: AbortSignal.timeout(15000),
-    });
-    const html = await response.text();
-    const terms = ["overnightPrice", "overnightMarketPrice", "overnightChange", "BOATS", "Blue Ocean", "69.48"];
-    const matches = terms.map((term) => {
-      const index = html.toLowerCase().indexOf(term.toLowerCase());
+  const pageAttempts = [
+    { name: "quote-page", url: "https://finance.yahoo.com/quote/TQQQ/" },
+    { name: "quote-page-query", url: "https://finance.yahoo.com/quote/TQQQ/?guccounter=1" },
+    { name: "chart-page", url: "https://finance.yahoo.com/chart/TQQQ" },
+  ];
+  const pageResults = await Promise.all(pageAttempts.map(async (attempt) => {
+    try {
+      const response = await fetch(attempt.url, {
+        headers: {
+          Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+          "Accept-Encoding": "identity",
+          "Accept-Language": "en-US,en;q=0.9",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+        },
+        signal: AbortSignal.timeout(15000),
+      });
+      const html = await response.text();
+      const scripts: Array<Record<string, unknown>> = [];
+      const scriptRegex = /<script\\b([^>]*data-sveltekit-fetched[^>]*)>([\\s\\S]*?)<\\/script>/gi;
+      let match: RegExpExecArray | null;
+      while ((match = scriptRegex.exec(html)) !== null) {
+        const attrs = match[1];
+        const dataUrl = attrs.match(/data-url="([^"]+)"/i)?.[1]?.replace(/&amp;/g, "&") ?? null;
+        let wrapper: any = null;
+        let parsedBody: any = null;
+        try {
+          wrapper = JSON.parse(match[2]);
+          if (typeof wrapper?.body === "string") {
+            try { parsedBody = JSON.parse(wrapper.body); } catch { /* keep wrapper summary */ }
+          }
+        } catch { /* ignore non-JSON script */ }
+        const bodyText = typeof wrapper?.body === "string" ? wrapper.body : "";
+        const overnightKeys = ["overnightPrice", "overnightMarketPrice", "overnightChange", "overnightChangePercent", "boats"];
+        const foundKeys = overnightKeys.filter((key) => bodyText.toLowerCase().includes(key.toLowerCase()));
+        const sparkItems = parsedBody?.spark?.result ?? [];
+        const tqqqSpark = sparkItems.find((item: any) => item?.symbol === "TQQQ");
+        const sparkResponse = tqqqSpark?.response?.[0];
+        const timestamps = sparkResponse?.timestamp ?? [];
+        const closes = sparkResponse?.indicators?.quote?.[0]?.close ?? [];
+        scripts.push({
+          dataUrl,
+          wrapperStatus: wrapper?.status ?? null,
+          bodyLength: bodyText.length,
+          foundOvernightKeys: foundKeys,
+          sparkSymbol: tqqqSpark?.symbol ?? null,
+          sparkTimestampCount: timestamps.length,
+          sparkLastTime: timestamps.length ? new Date(timestamps[timestamps.length - 1] * 1000).toISOString() : null,
+          sparkLastPrice: timestamps.length ? closes[closes.length - 1] ?? null : null,
+          parsedTopLevelKeys: parsedBody && typeof parsedBody === "object" ? Object.keys(parsedBody).slice(0, 12) : [],
+        });
+      }
+      const title = html.match(/<title[^>]*>([\\s\\S]*?)<\\/title>/i)?.[1]?.slice(0, 200) ?? null;
       return {
-        term,
-        found: index >= 0,
-        context: index >= 0 ? html.slice(Math.max(0, index - 220), Math.min(html.length, index + 500)).replace(/\s+/g, " ").slice(0, 720) : null,
+        name: attempt.name,
+        ok: response.ok,
+        status: response.status,
+        contentType: response.headers.get("content-type"),
+        htmlLength: html.length,
+        title,
+        embeddedScriptCount: scripts.length,
+        embeddedScripts: scripts.slice(0, 20),
+        htmlContainsOvernight: /overnightPrice|overnightMarketPrice|BOATS|Blue Ocean/i.test(html),
+        error: null,
       };
-    });
-    pageDiagnostics = {
-      ok: response.ok,
-      status: response.status,
-      contentType: response.headers.get("content-type"),
-      htmlLength: html.length,
-      title: html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.slice(0, 250) ?? null,
-      matches,
-    };
-  } catch (error) {
-    pageDiagnostics = { ok: false, error: error instanceof Error ? error.message : "fetch failed" };
-  }
+    } catch (error) {
+      return { name: attempt.name, ok: false, error: error instanceof Error ? error.message : "fetch failed" };
+    }
+  }));
+  const pageDiagnostics = { attempts: pageResults };
 
   const apiEndpoints = [
     {
