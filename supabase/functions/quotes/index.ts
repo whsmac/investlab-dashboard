@@ -281,7 +281,12 @@ Deno.serve(async (req: Request) => {
       }));
       for (const item of historyResults) {
         if (item.history && quotes[item.symbol]) {
-          (quotes[item.symbol] as any).periodChanges = item.history.changes;
+          (quotes[item.symbol] as any).periodChanges = {
+            ...item.history.changes,
+            // Daily change must use the short-range quote vs. previous regular close,
+            // not the long-range history chart baseline.
+            day: quotes[item.symbol].changePercent,
+          };
           if (["^TNX", "GC=F", "CL=F"].includes(item.symbol)) {
             (quotes[item.symbol] as any).chartHistory = item.history.series;
           }
