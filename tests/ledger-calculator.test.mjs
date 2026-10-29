@@ -94,3 +94,56 @@ test("editing or deleting a transaction is represented by replaying the remainin
   assert.equal(calculateLedger(all).positions.XYZ.averageCost, 15);
   assert.equal(calculateLedger([all[0]]).positions.XYZ.averageCost, 10);
 });
+
+
+test("transactions are replayed in date and sequence order regardless of input order", () => {
+  const result = calculateLedger([
+    tx("SELL", { transaction_date: "2026-01-02", sequence_no: 1, symbol: "XYZ", quantity: 1, unit_price: 15 }),
+    tx("BUY", { transaction_date: "2026-01-01", sequence_no: 1, symbol: "XYZ", quantity: 1, unit_price: 10 })
+  ]);
+  assert.equal(result.positions.XYZ.quantity, 0);
+  assert.equal(result.realizedBySymbol.XYZ, 5);
+});
+
+test("dividend does not change stock quantity or average cost", () => {
+  const result = calculateLedger([
+    tx("BUY", { sequence_no: 1, symbol: "ABC", quantity: 4, unit_price: 25 }),
+    tx("DIVIDEND", { sequence_no: 2, symbol: "ABC", gross_amount: 8, withholding_tax: 1 })
+  ]);
+  assert.deepEqual(result.positions.ABC, { quantity: 4, costBasis: 100, averageCost: 25 });
+  assert.equal(result.cash.USD, -93);
+});
+
+test("dividend rejects tax plus fees greater than gross amount", () => {
+  assert.throws(() => calculateLedger([
+    tx("DIVIDEND", { symbol: "ABC", gross_amount: 10, withholding_tax: 9, fees: 2 })
+  ]), /cannot exceed gross amount/);
+});
+
+test("buy fees are included in cost basis and sell fees reduce proceeds", () => {
+  const result = calculateLedger([
+    tx("BUY", { sequence_no: 1, symbol: "XYZ", quantity: 2, unit_price: 10, fees: 2 }),
+    tx("SELL", { sequence_no: 2, symbol: "XYZ", quantity: 1, unit_price: 15, fees: 1 })
+  ]);
+  assert.equal(result.positions.XYZ.costBasis, 11);
+  assert.equal(result.positions.XYZ.averageCost, 11);
+  assert.equal(result.realizedBySymbol.XYZ, 3);
+  assert.equal(result.cash.USD, -8);
+});
+
+test("fractional quantities and prices are retained without premature rounding", () => {
+  const result = calculateLedger([
+    tx("BUY", { symbol: "XYZ", quantity: 0.125, unit_price: 80.1234 })
+  ]);
+  assert.equal(result.positions.XYZ.quantity, 0.125);
+  assert.ok(Math.abs(result.positions.XYZ.costBasis - 10.015425) < 1e-10);
+});
+
+test("negative amounts and unsupported currencies are rejected", () => {
+  assert.throws(() => calculateLedger([
+    tx("CASH_DEPOSIT", { gross_amount: -1 })
+  ]), /Invalid gross_amount/);
+  assert.throws(() => calculateLedger([
+    tx("CASH_DEPOSIT", { currency: "EUR", gross_amount: 10 })
+  ]), /Unsupported currency/);
+});
