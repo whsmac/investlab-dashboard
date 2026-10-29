@@ -58,6 +58,25 @@ jobs:
           done
       - name: Run ledger calculator tests
         run: node --test tests/ledger-calculator.test.mjs
+      - name: Check ledger migration includes dividend type and tax field
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          base = Path("supabase/migrations/20261029_unified_ledger_schema.sql").read_text(encoding="utf-8")
+          dividend = Path("supabase/migrations/20261030_ledger_dividend_support.sql").read_text(encoding="utf-8")
+          required = [
+              "'DIVIDEND'",
+              "withholding_tax",
+              "ledger_transactions_transaction_type_check",
+              "withholding_tax + fees <= gross_amount",
+          ]
+          missing = [item for item in required if item not in dividend]
+          if missing:
+              raise SystemExit("Missing dividend schema rules: " + ", ".join(missing))
+          if "'DIVIDEND'" in base:
+              raise SystemExit("Base migration should remain additive; dividend belongs in follow-up migration")
+          print("Dividend migration allowlist and tax constraints are present")
+          PY
       - name: Check required symbol-management elements
         run: |
           python3 - <<'PY'
