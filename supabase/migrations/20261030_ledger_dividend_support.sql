@@ -76,5 +76,5 @@ alter table public.ledger_transactions
 alter table public.ledger_transactions
   add constraint ledger_transactions_dividend_amount check (
     transaction_type <> 'DIVIDEND'
-    or (gross_amount > 0 and withholding_tax >= 0 and withholding_tax <= gross_amount)
+    or (gross_amount > 0 and withholding_tax >= 0 and withholding_tax + fees <= gross_amount)
   );
