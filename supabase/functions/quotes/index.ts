@@ -324,6 +324,10 @@ async function fetchYahooTqqqWebDiagnostics() {
       name: "quote-query1-overnight",
       url: "https://query1.finance.yahoo.com/v7/finance/quote?symbols=TQQQ&overnightPrice=true&formatted=true&lang=en-US&region=US",
     },
+    {
+      name: "quoteType-query1-overnight",
+      url: "https://query1.finance.yahoo.com/v1/finance/quoteType/TQQQ?formatted=true&enablePrivateCompany=true&overnightPrice=true&lang=en-US&region=US",
+    },
   ];
   const apiResults = await Promise.all(apiEndpoints.map(async (endpoint) => {
     try {
@@ -339,6 +343,7 @@ async function fetchYahooTqqqWebDiagnostics() {
       const sparkTimestamp = sparkResponse?.timestamp ?? [];
       const sparkClose = sparkResponse?.indicators?.quote?.[0]?.close ?? [];
       const quote = body?.quoteResponse?.result?.[0] ?? null;
+      const quoteType = body?.quoteType?.result?.[0] ?? null;
       return {
         name: endpoint.name,
         ok: response.ok,
@@ -369,7 +374,16 @@ async function fetchYahooTqqqWebDiagnostics() {
           overnightChangePercent: quote.overnightChangePercent ?? null,
           rawKeys: Object.keys(quote),
         } : null,
-        error: body?.finance?.error?.description ?? body?.quoteResponse?.error?.description ?? null,
+        quoteType: quoteType ? {
+          symbol: quoteType.symbol ?? null,
+          quoteType: quoteType.quoteType ?? null,
+          exchange: quoteType.exchange ?? null,
+          overnightPrice: quoteType.overnightPrice ?? null,
+          overnightChange: quoteType.overnightChange ?? null,
+          overnightChangePercent: quoteType.overnightChangePercent ?? null,
+          rawKeys: Object.keys(quoteType),
+        } : null,
+        error: body?.finance?.error?.description ?? body?.quoteResponse?.error?.description ?? body?.quoteType?.error?.description ?? null,
         bodyPreview: !body ? raw.slice(0, 500) : null,
       };
     } catch (error) {
