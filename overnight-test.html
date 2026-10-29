@@ -49,16 +49,45 @@ const proxy = "https://proxy.cors.dev/";
 function set(id, text){ $(id).textContent = text; }
 function extractOvernight(html){
   const patterns = [
-    /"overnightPrice"\s*:\s*\{[^}]*"raw"\s*:\s*([0-9.]+)/i,
-    /"overnightPrice"\s*:\s*([0-9.]+)/i,
-    /"overnightMarketPrice"\s*:\s*\{[^}]*"raw"\s*:\s*([0-9.]+)/i
+    /"overnightPrice"\\s*:\\s*\\{[^}]*"raw"\\s*:\\s*([0-9.]+)/i,
+    /"overnightPrice"\\s*:\\s*([0-9.]+)/i,
+    /"overnightMarketPrice"\\s*:\\s*\\{[^}]*"raw"\\s*:\\s*([0-9.]+)/i
   ];
   let price = null;
   for (const re of patterns){ const m = html.match(re); if(m){price = Number(m[1]); break;} }
-  const match = html.match(/Overnight.{0,250}/is);
-  const text = match ? match[0].replace(/\\u003c/gi,"<").replace(/\\u003e/gi,">").slice(0,500) : "";
-  const hasOvernight = /overnightPrice|Overnight|overnightMarketPrice/i.test(html);
-  return {price, hasOvernight, snippet:text, title:html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.replace(/&amp;/g,"&") ?? null};
+  const contexts = [];
+  for (const key of ["overnightPrice","overnightMarketPrice","overnightChange","overnightChangePercent","boats"]) {
+    const re = new RegExp(key, "ig"); let m, count = 0;
+    while ((m = re.exec(html)) && count < 3) {
+      contexts.push({key, at:m.index, text:html.slice(Math.max(0,m.index-160),Math.min(html.length,m.index+key.length+240))});
+      count++;
+    }
+  }
+  const embedded = [];
+  const scriptRe = /<script\\b([^>]*data-sveltekit-fetched[^>]*)>([\\s\\S]*?)<\\/script>/gi;
+  let sm;
+  while ((sm = scriptRe.exec(html)) !== null) {
+    const dataUrl = sm[1].match(/data-url="([^"]+)"/i)?.[1]?.replace(/&amp;/g,"&") ?? null;
+    try {
+      const wrapper = JSON.parse(sm[2]);
+      const body = typeof wrapper.body === "string" ? JSON.parse(wrapper.body) : wrapper.body;
+      const quoteType = body?.quoteType?.result?.[0] ?? null;
+      const spark = (body?.spark?.result ?? []).find(x => x?.symbol === "TQQQ") ?? null;
+      const sr = spark?.response?.[0] ?? null, ts = sr?.timestamp ?? [], closes = sr?.indicators?.quote?.[0]?.close ?? [];
+      const priceFields = [];
+      const walk = (v,p="",d=0) => {
+        if (!v || typeof v !== "object" || d>5 || priceFields.length>=35) return;
+        for (const [k,val] of Object.entries(v)) {
+          if (/overnight|boats|postMarket|preMarket|regularMarketPrice|lastPrice/i.test(k))
+            priceFields.push({path:p?p+"."+k:k,value:val&&typeof val==="object"?JSON.stringify(val).slice(0,120):val});
+          if (val && typeof val==="object") walk(val,p?p+"."+k:k,d+1);
+        }
+      };
+      walk(body);
+      embedded.push({dataUrl,bodyKeys:body&&typeof body==="object"?Object.keys(body):[],quoteType:quoteType?{symbol:quoteType.symbol,quoteType:quoteType.quoteType,keys:Object.keys(quoteType)}:null,spark:spark?{lastTime:ts.length?new Date(ts[ts.length-1]*1000).toISOString():null,lastPrice:ts.length?closes[closes.length-1]??null:null}:null,priceFields});
+    } catch(e) { embedded.push({dataUrl,parseError:String(e).slice(0,100)}); }
+  }
+  return {price,hasOvernight:/overnightPrice|Overnight|overnightMarketPrice/i.test(html),contexts,embedded,embeddedScriptCount:embedded.length,title:html.match(/<title[^>]*>([\\s\\S]*?)<\\/title>/i)?.[1]??null};
 }
 async function testPage(){
   set("pageStatus","Yahoo Finance 페이지를 공개 프록시로 요청 중…");
