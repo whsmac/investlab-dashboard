@@ -141,6 +141,56 @@ async function fetchYahooHistory(symbol: string) {
   };
 }
 
+
+async function fetchTqqqDiagnostics(includePrePost: boolean) {
+  const query = new URLSearchParams({ range: "1d", interval: "1m" });
+  if (includePrePost) query.set("includePrePost", "true");
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/TQQQ?${query.toString()}`;
+  const response = await fetch(url, {
+    headers: { Accept: "application/json", "User-Agent": "Mozilla/5.0" },
+    signal: AbortSignal.timeout(12000),
+  });
+  if (!response.ok) {
+    return { ok: false, status: response.status, error: `Yahoo Finance HTTP ${response.status}` };
+  }
+  const data = await response.json();
+  const result = data?.chart?.result?.[0];
+  const meta = result?.meta ?? {};
+  const timestamps: number[] = result?.timestamp ?? [];
+  const closes: unknown[] = result?.indicators?.quote?.[0]?.close ?? [];
+  const points = timestamps.map((timestamp, index) => ({
+    timestamp,
+    isoTime: new Date(timestamp * 1000).toISOString(),
+    close: Number.isFinite(Number(closes[index])) ? Number(closes[index]) : null,
+  })).slice(-20);
+  return {
+    ok: true,
+    status: response.status,
+    request: { range: "1d", interval: "1m", includePrePost },
+    meta: {
+      currency: meta.currency ?? null,
+      exchangeName: meta.exchangeName ?? null,
+      instrumentType: meta.instrumentType ?? null,
+      regularMarketPrice: meta.regularMarketPrice ?? null,
+      regularMarketTime: meta.regularMarketTime ?? null,
+      regularMarketPreviousClose: meta.regularMarketPreviousClose ?? null,
+      chartPreviousClose: meta.chartPreviousClose ?? null,
+      currentTradingPeriod: meta.currentTradingPeriod ?? null,
+      dataGranularity: meta.dataGranularity ?? null,
+      validRanges: meta.validRanges ?? null,
+      preMarketPrice: meta.preMarketPrice ?? null,
+      preMarketTime: meta.preMarketTime ?? null,
+      postMarketPrice: meta.postMarketPrice ?? null,
+      postMarketTime: meta.postMarketTime ?? null,
+    },
+    timestampCount: timestamps.length,
+    firstTimestamp: timestamps.length ? timestamps[0] : null,
+    lastTimestamp: timestamps.length ? timestamps[timestamps.length - 1] : null,
+    recentPoints: points,
+    chartError: data?.chart?.error ?? null,
+  };
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -155,6 +205,24 @@ Deno.serve(async (req: Request) => {
 
   try {
     const body = await req.json();
+
+    // Opt-in diagnostic mode; normal dashboard requests are unchanged.
+    // Compare Yahoo's standard chart response with its pre/post-market response.
+    if (body?.debugTqqq === true) {
+      const [standard, extended] = await Promise.all([
+        fetchTqqqDiagnostics(false),
+        fetchTqqqDiagnostics(true),
+      ]);
+      return Response.json(
+        {
+          diagnostic: "TQQQ Yahoo Finance chart API",
+          fetchedAt: new Date().toISOString(),
+          standard,
+          includePrePost: extended,
+        },
+        { headers: corsHeaders },
+      );
+    }
     const requested = Array.isArray(body?.symbols)
       ? body.symbols
       : ALLOWED_SYMBOLS;
