@@ -541,14 +541,14 @@ if(config.quoteUrl){refreshQuotes();setInterval(()=>{if(config.quoteUrl)refreshQ
    const response=await fetch("https://proxy.cors.dev/https://finance.yahoo.com/quote/TQQQ/",{cache:"no-store"});
    const html=await response.text();
    if(!response.ok)throw new Error("페이지 요청 HTTP "+response.status);
-   const re=/<script\\b([^>]*data-sveltekit-fetched[^>]*)>([\\s\\S]*?)<\\/script>/gi;
+   const re=/<script\b([^>]*data-sveltekit-fetched[^>]*)>([\s\S]*?)<\/script>/gi;
    let match;const entries=[];
    while((match=re.exec(html))!==null){
     const url=match[1].match(/data-url="([^"]+)"/i)?.[1]?.replace(/&amp;/g,"&")||"";
     try{const wrap=JSON.parse(match[2]);const body=typeof wrap.body==="string"?JSON.parse(wrap.body):wrap.body;entries.push({url,status:wrap.status,body});}catch(_){}
    }
-   const quote=entries.find(x=>/\\/v7\\/finance\\/quote\\?/.test(x.url)&&/symbols=TQQQ/.test(x.url)&&/overnightPrice=true/.test(x.url)&&x.status===200&&get(x.body,"quoteResponse.result.0"));
-   const summary=entries.find(x=>/\\/v10\\/finance\\/quoteSummary\\/TQQQ/.test(x.url)&&x.status===200&&get(x.body,"quoteSummary.result.0.price"));
+   const quote=entries.find(x=>/\/v7\/finance\/quote\?/.test(x.url)&&/symbols=TQQQ/.test(x.url)&&/overnightPrice=true/.test(x.url)&&x.status===200&&get(x.body,"quoteResponse.result.0"));
+   const summary=entries.find(x=>/\/v10\/finance\/quoteSummary\/TQQQ/.test(x.url)&&x.status===200&&get(x.body,"quoteSummary.result.0.price"));
    const q=get(quote,"body.quoteResponse.result.0")||{},p=get(summary,"body.quoteSummary.result.0.price")||{};
    const price=raw(q.overnightMarketPrice)??raw(p.overnightMarketPrice);
    const pct=raw(q.overnightMarketChangePercent)??raw(p.overnightMarketChangePercent);
