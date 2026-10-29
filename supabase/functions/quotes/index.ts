@@ -257,7 +257,7 @@ async function fetchYahooTqqqWebDiagnostics() {
       return {
         term,
         found: index >= 0,
-        context: index >= 0 ? html.slice(Math.max(0, index - 220), Math.min(html.length, index + 500)).replace(/\\s+/g, " ").slice(0, 720) : null,
+        context: index >= 0 ? html.slice(Math.max(0, index - 220), Math.min(html.length, index + 500)).replace(/\s+/g, " ").slice(0, 720) : null,
       };
     });
     pageDiagnostics = {
@@ -265,7 +265,7 @@ async function fetchYahooTqqqWebDiagnostics() {
       status: response.status,
       contentType: response.headers.get("content-type"),
       htmlLength: html.length,
-      title: html.match(/<title[^>]*>([\\s\\S]*?)<\\/title>/i)?.[1]?.slice(0, 250) ?? null,
+      title: html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.slice(0, 250) ?? null,
       matches,
     };
   } catch (error) {
