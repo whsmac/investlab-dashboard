@@ -191,6 +191,95 @@ async function fetchTqqqDiagnostics(includePrePost: boolean) {
   };
 }
 
+
+async function fetchYahooTqqqWebDiagnostics() {
+  const endpoints = [
+    {
+      name: "chart-query1-extended",
+      url: "https://query1.finance.yahoo.com/v8/finance/chart/TQQQ?range=1d&interval=1m&includePrePost=true",
+    },
+    {
+      name: "chart-query2-extended",
+      url: "https://query2.finance.yahoo.com/v8/finance/chart/TQQQ?range=1d&interval=1m&includePrePost=true",
+    },
+  ];
+
+  const chartResults = await Promise.all(endpoints.map(async (endpoint) => {
+    try {
+      const response = await fetch(endpoint.url, {
+        headers: { Accept: "application/json", "User-Agent": "Mozilla/5.0" },
+        signal: AbortSignal.timeout(12000),
+      });
+      if (!response.ok) {
+        return { name: endpoint.name, ok: false, status: response.status };
+      }
+      const data = await response.json();
+      const result = data?.chart?.result?.[0];
+      if (!result) {
+        return { name: endpoint.name, ok: false, status: response.status, chartError: data?.chart?.error ?? null };
+      }
+      const timestamps: number[] = result.timestamp ?? [];
+      const closes: unknown[] = result?.indicators?.quote?.[0]?.close ?? [];
+      const recentPoints = timestamps.map((timestamp, index) => ({
+        timestamp,
+        isoTime: new Date(timestamp * 1000).toISOString(),
+        close: Number.isFinite(Number(closes[index])) ? Number(closes[index]) : null,
+      })).slice(-5);
+      return {
+        name: endpoint.name,
+        ok: true,
+        status: response.status,
+        regularMarketPrice: result.meta?.regularMarketPrice ?? null,
+        regularMarketTime: result.meta?.regularMarketTime ?? null,
+        timestampCount: timestamps.length,
+        lastTimestamp: timestamps.length ? timestamps[timestamps.length - 1] : null,
+        lastIsoTime: timestamps.length ? new Date(timestamps[timestamps.length - 1] * 1000).toISOString() : null,
+        recentPoints,
+      };
+    } catch (error) {
+      return { name: endpoint.name, ok: false, error: error instanceof Error ? error.message : "fetch failed" };
+    }
+  }));
+
+  let pageDiagnostics: Record<string, unknown>;
+  try {
+    const response = await fetch("https://finance.yahoo.com/quote/TQQQ/", {
+      headers: {
+        Accept: "text/html,application/xhtml+xml",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/130.0.0.0 Safari/537.36",
+      },
+      signal: AbortSignal.timeout(15000),
+    });
+    const html = await response.text();
+    const terms = ["overnightPrice", "overnightMarketPrice", "overnightChange", "BOATS", "Blue Ocean", "69.48"];
+    const matches = terms.map((term) => {
+      const index = html.toLowerCase().indexOf(term.toLowerCase());
+      return {
+        term,
+        found: index >= 0,
+        context: index >= 0 ? html.slice(Math.max(0, index - 220), Math.min(html.length, index + 500)).replace(/\\s+/g, " ").slice(0, 720) : null,
+      };
+    });
+    pageDiagnostics = {
+      ok: response.ok,
+      status: response.status,
+      contentType: response.headers.get("content-type"),
+      htmlLength: html.length,
+      title: html.match(/<title[^>]*>([\\s\\S]*?)<\\/title>/i)?.[1]?.slice(0, 250) ?? null,
+      matches,
+    };
+  } catch (error) {
+    pageDiagnostics = { ok: false, error: error instanceof Error ? error.message : "fetch failed" };
+  }
+
+  return {
+    diagnostic: "Yahoo Finance TQQQ overnight-source comparison",
+    fetchedAt: new Date().toISOString(),
+    charts: chartResults,
+    quotePage: pageDiagnostics,
+  };
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -206,7 +295,11 @@ Deno.serve(async (req: Request) => {
   try {
     const body = await req.json();
 
-    // Opt-in diagnostic mode; normal dashboard requests are unchanged.
+    // Opt-in diagnostic modes; normal dashboard requests are unchanged.
+    if (body?.debugTqqqWeb === true) {
+      return Response.json(await fetchYahooTqqqWebDiagnostics(), { headers: corsHeaders });
+    }
+
     // Compare Yahoo's standard chart response with its pre/post-market response.
     if (body?.debugTqqq === true) {
       const [standard, extended] = await Promise.all([
