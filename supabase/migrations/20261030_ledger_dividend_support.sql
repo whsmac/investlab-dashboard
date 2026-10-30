@@ -70,7 +70,6 @@ alter table public.ledger_transactions
       and to_amount is not null
       and from_currency <> to_currency
     )
-  )
 );
 
 alter table public.ledger_transactions
