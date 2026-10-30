@@ -120,3 +120,36 @@ jobs:
               raise SystemExit("Missing required elements: " + ", ".join(missing))
           print("Required symbol-management elements are present")
           PY
+  ledger-postgres-integration:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: investlab_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d investlab_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      PGPASSWORD: postgres
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGDATABASE: investlab_test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Prepare isolated Supabase-like auth schema and legacy-table sentinels
+        run: psql -v ON_ERROR_STOP=1 -f tests/ledger-postgres-setup.sql
+      - name: Apply base ledger migration
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261029_unified_ledger_schema.sql
+      - name: Apply dividend migration
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261030_ledger_dividend_support.sql
+      - name: Verify RLS, idempotency, sequence uniqueness, dividends, and legacy isolation
+        run: psql -v ON_ERROR_STOP=1 -f tests/ledger-postgres-integration.sql
