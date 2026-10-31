@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { calculateCompanySeries, aggregateQuarterlyCapex, calculateMarketPerformance } from "../src/ai-investment-cycle/metrics.mjs";
+import { calculateCompanySeries, aggregateQuarterlyCapex, calculateMarketPerformance, deriveQuarterlyMarketPerformance } from "../src/ai-investment-cycle/metrics.mjs";
 import { calculateYoYPercent, calculateOperatingMarginPercent, deriveBusinessPerformance, deriveQuarterlyBusinessSeries } from "../src/ai-investment-cycle/business-performance.mjs";
 import { calculateLaggedBusinessLinkage } from "../src/ai-investment-cycle/cycle-linkage.mjs";
 import { deriveHistoricalCycleLinkage } from "../src/ai-investment-cycle/historical-linkage.mjs";
