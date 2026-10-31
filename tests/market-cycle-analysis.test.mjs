@@ -63,11 +63,11 @@ test("rejects duplicate quarter labels in market return input", () => {
 test("aligns CAPEX growth and shareholder returns by exact quarter and labels correlation descriptive-only", () => {
   const capexRows = Array.from({ length: 6 }, (_, i) => ({
     company: "Microsoft",
-    quarter: `2024-Q${i + 1}`,
+    quarter: `${2024 + Math.floor(i / 4)}-Q${(i % 4) + 1}`,
     capexYoYPercent: [1, 2, 3, 4, 5, 6][i],
   }));
   const results = Array.from({ length: 6 }, (_, i) => ({
-    quarter: `2024-Q${i + 1}`,
+    quarter: `${2024 + Math.floor(i / 4)}-Q${(i % 4) + 1}`,
     companyReturnPercent: [2, 4, 6, 8, 10, 12][i],
     excessReturnPp: [1, 2, 3, 4, 5, 6][i],
     status: "ok",
