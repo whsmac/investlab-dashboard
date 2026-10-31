@@ -257,3 +257,19 @@ test("quarterly business history rejects duplicate quarters and invalid source r
   delete missingMetric.series[0].observations[0].revenueUsdM;
   assert.throws(() => deriveQuarterlyBusinessSeries(missingMetric), /revenueUsdM must be present/);
 });
+
+
+test("Alphabet quarterly Google Cloud history derives a continuous 12-quarter series", () => {
+  const dataset = JSON.parse(readFileSync(new URL("../data/ai-investment-cycle/business-performance-alphabet-quarterly-2023-2026.json", import.meta.url), "utf8"));
+  const [series] = deriveQuarterlyBusinessSeries(dataset);
+  assert.equal(series.company, "Alphabet");
+  assert.equal(series.observations.length, 12);
+  const q4_2024 = series.observations.find(row => row.quarter === "2024-Q4");
+  assert.ok(Math.abs(q4_2024.businessGrowthPercent - ((11955 / 9192 - 1) * 100)) < 1e-8);
+  assert.ok(Math.abs(q4_2024.operatingMarginPercent - (2093 / 11955 * 100)) < 1e-8);
+  const q3_2026 = series.observations.find(row => row.quarter === "2026-Q3");
+  assert.ok(Math.abs(q3_2026.businessGrowthPercent - ((30709 / 15157 - 1) * 100)) < 1e-8);
+  assert.ok(Math.abs(q3_2026.operatingMarginPercent - (11121 / 30709 * 100)) < 1e-8);
+  assert.equal(series.aiLinkage, "ai_and_core_cloud_mixed");
+  assert.ok(series.observations.every(row => row.reported && row.sourceUrl.startsWith("https://")));
+});
