@@ -6,6 +6,7 @@
  */
 export function calculateLedger(inputTransactions) {
   if (!Array.isArray(inputTransactions)) throw new Error("Transactions must be an array");
+  const seenSequences = new Set();
   for (const tx of inputTransactions) {
     const dateText = String(tx.transaction_date ?? "");
     const dateMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateText);
@@ -18,6 +19,9 @@ export function calculateLedger(inputTransactions) {
     if (!Number.isInteger(Number(tx.sequence_no)) || Number(tx.sequence_no) <= 0) {
       throw new Error("Invalid sequence_no; expected a positive integer");
     }
+    const sequenceKey = `${dateText}:${tx.sequence_no}`;
+    if (seenSequences.has(sequenceKey)) throw new Error("Duplicate sequence_no for transaction_date");
+    seenSequences.add(sequenceKey);
   }
   const txs = [...inputTransactions].sort((a, b) =>
     String(a.transaction_date).localeCompare(String(b.transaction_date)) ||
