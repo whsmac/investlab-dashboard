@@ -78,7 +78,7 @@ jobs:
               "watchlistDeleteError",
               "else if(result.data.length===0)",
               "기존 브라우저 종목을 계정에 처음 동기화했습니다.",
-              'renderSymbolManagement();$("symbolFormStatus").textContent="관심 목록에서는 제거했지만 클라우드 삭제에 실패했습니다:'
+              '$("symbolFormStatus").textContent="관심 목록에서는 제거했지만 클라우드 삭제에 실패했습니다: "+result.error.message;renderSymbolManagement();return;'
           ]
           missing = [item for item in checks if item not in html]
           if missing:
