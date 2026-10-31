@@ -1,7 +1,7 @@
 # Six-company business and market monitor
 
 Updated: 2026-10-31
-Status: scope approved; implementation foundation. Live ingestion is gated on a market-data provider and its redistribution/storage rights.
+Status: scope approved; free-data-first implementation. Live ingestion must use sources whose terms permit the intended automated retrieval, retention, and display.
 
 ## Product decision
 
@@ -48,17 +48,21 @@ SpaceX listing is confirmed by its official investor FAQ and IPO closing release
 - Report quarterly values, not trailing-four-quarter sums, unless the user later requests an additional view.
 - Convert financial statement values to USD billions; retain source currency and original units in raw records.
 
-## Automated ingestion architecture
+## Free-first automated ingestion architecture
 
+- The user explicitly prefers free data acquisition; do not select or require a paid market-data subscription or paid API.
 - No manual CSV workflow in the user-facing monitor.
-- Market prices: a licensed market-data provider adapter is required for daily history and scheduled updates. Provider selection must confirm symbol coverage (including SPCX), historical depth, corporate-action handling, cloud storage/derived-display rights, rate limits, and pricing.
-- Financials: prefer official SEC EDGAR company submissions/XBRL companyfacts for US-listed issuers, supplemented by issuer filings where a tag is missing or company presentation needs interpretation. Use a server-side scheduled job with a descriptive User-Agent and SEC fair-access limits; never fetch SEC data from the browser.
+- First investigate free sources with documented public endpoints or explicit permission for automated retrieval, retention, and personal dashboard display. Verify six-symbol coverage including SPCX, daily history, refresh cadence, corporate-action fields, rate limits, and terms before implementation.
+- Yahoo Finance may be considered only within its documented and permitted access routes. Yahoo Help states historical CSV downloads require Yahoo Finance Gold and that download availability may be restricted by licensing. Yahoo's Japanese Finance support explicitly prohibits automated scraping. The open-source yfinance project states it is unaffiliated with Yahoo, uses publicly available Yahoo endpoints, and that Yahoo Finance data is intended for personal use. Do not treat yfinance as an official Yahoo API or assume its use grants permission for automated server collection, cloud retention, or dashboard display.
+- Do not scrape undocumented Yahoo endpoints or evade access controls, rate limits, blocks, or subscription restrictions. If a source's terms prohibit automation, do not use it for scheduled ingestion.
+- If no free source with suitable permissions covers all six symbols, report the gap clearly. Do not silently switch to a paid API or unauthorized scraping; ask the user before any paid alternative is considered.
+- Financials: use official SEC EDGAR company submissions/XBRL companyfacts and issuer filings for US-listed issuers, subject to SEC fair-access requirements. Use a server-side scheduled job with a descriptive User-Agent; never fetch SEC data from the browser.
 - SEC companyfacts are not a guaranteed uniform CAPEX dataset. Map tags per company and reconcile with the relevant 10-Q/10-K cash-flow statement. Preserve source accession and filing period.
-- SpaceX quarterly filings are now available as a public issuer; use its SEC CIK 0001181412. Do not infer missing pre-IPO daily prices.
+- SpaceX quarterly filings are available as a public issuer; use its SEC CIK 0001181412. Do not infer missing pre-IPO daily prices.
 - Store raw observations with source, source URL/accession, retrieved_at, period_start, period_end, currency, unit, metric_definition, and quality status.
 - Normalize and validate before writing to the test database. Production Supabase, existing holdings, and the live dashboard remain untouched until explicit approval.
-- Keep provider credentials server-side only (secrets/Edge Function or approved server environment); never commit API keys or expose them in browser JavaScript.
-- Do not scrape undocumented endpoints or use sources whose terms prohibit automated collection, cloud retention, or display.
+- Any provider credentials must remain server-side; never commit API keys or expose them in browser JavaScript.
+- Do not use sources whose terms prohibit automated collection, cloud retention, or display.
 
 ## Validation and quality controls
 
@@ -74,14 +78,14 @@ SpaceX listing is confirmed by its official investor FAQ and IPO closing release
 
 1. Simplify preview UI and metric schema to the six-company / three-metric scope; remove the manual CSV import and shareholder-return analysis from the new monitor.
 2. Implement and test SEC financial statement ingestion and per-company XBRL mapping in an isolated server-side job.
-3. Select a market-data vendor only after licensing, coverage, and cost review; implement daily price ingestion adapter.
+3. Compare free market-data sources and document permission, coverage, reliability, and limitations. Implement only a source with suitable permitted automated access.
 4. Validate data completeness and company-specific CAPEX definitions with filings.
 5. Connect to an isolated Supabase test project after work hours; no production changes.
 6. Browser visual check and user review; keep all work in a Draft PR until explicit approval.
 
 ## Provider decision gate
 
-Automated daily share prices cannot responsibly be enabled until a provider is selected and its rights are confirmed. SEC financial statements can be collected separately from official filings, but this does not solve daily price ingestion. Do not substitute free scraping or manual CSV while presenting the result as automatic.
+The default is free-only. Daily price automation is not considered complete until a suitable free source is identified and its terms permit the intended automated use. If no such source is available for one or more symbols, mark the coverage gap and request direction rather than using paid data or prohibited scraping.
 
 ## Safety boundary
 
