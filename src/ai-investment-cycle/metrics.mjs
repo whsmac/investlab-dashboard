@@ -112,6 +112,42 @@ export function calculateCompanySeries(records) {
 }
 
 /**
+ * Calculates market total return from adjusted-close observations. The benchmark
+ * comparison is kept separate from operating AI revenue/CAPEX metrics.
+ */
+export function calculateMarketPerformance(companyPrices, benchmarkPrices, startDate, endDate) {
+  const index = points => {
+    if (!Array.isArray(points)) throw new TypeError("price observations must be arrays");
+    const map = new Map();
+    for (const point of points) {
+      const value = Number(point?.adjustedClose);
+      if (!point?.date || !Number.isFinite(value) || value <= 0) continue;
+      map.set(String(point.date), value);
+    }
+    return map;
+  };
+  const company = index(companyPrices);
+  const benchmark = index(benchmarkPrices);
+  const dates = [...company.keys()].filter(date =>
+    date >= String(startDate) && date <= String(endDate) && benchmark.has(date)
+  ).sort();
+  if (dates.length < 2) {
+    return { startDate: null, endDate: null, companyReturnPercent: null, benchmarkReturnPercent: null, excessReturnPp: null, observations: dates.length };
+  }
+  const first = dates[0], last = dates[dates.length - 1];
+  const companyReturnPercent = pctChange(company.get(last), company.get(first));
+  const benchmarkReturnPercent = pctChange(benchmark.get(last), benchmark.get(first));
+  return {
+    startDate: first,
+    endDate: last,
+    companyReturnPercent,
+    benchmarkReturnPercent,
+    excessReturnPp: companyReturnPercent - benchmarkReturnPercent,
+    observations: dates.length,
+  };
+}
+
+/**
  * Sums reported company CAPEX for a quarter and reports coverage explicitly.
  * A partial sum is never labelled as the universe total.
  */
