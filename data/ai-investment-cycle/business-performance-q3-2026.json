@@ -48,7 +48,7 @@
           "metric": "AWS segment revenue",
           "category": "cloud_segment_revenue",
           "currentUsdM": 46000,
-          "priorYearUsdM": 35100,
+          "priorYearUsdM": 33006,
           "reportedGrowthPercent": 39.3,
           "aiLinkage": "ai_and_core_cloud_mixed",
           "comparability": "broad_cloud_segment",
@@ -58,7 +58,7 @@
           "metric": "AWS segment operating income",
           "category": "segment_operating_income",
           "currentUsdM": 17800,
-          "priorYearUsdM": 11400,
+          "priorYearUsdM": 11434,
           "reportedGrowthPercent": null,
           "aiLinkage": "ai_and_core_cloud_mixed",
           "comparability": "broad_cloud_segment",
@@ -131,7 +131,8 @@
           "reportedGrowthPercent": 10,
           "aiLinkage": "management_says_ai_contributes_to_monetization",
           "comparability": "operational_indicator_not_revenue",
-          "note": "Ad impressions increased 10% YoY. Management attributes incremental advertising revenue partly to AI-driven engagement and recommendations; no AI-attributable revenue amount disclosed."
+          "note": "Ad impressions increased 10% YoY. Management attributes incremental advertising revenue partly to AI-driven engagement and recommendations; no AI-attributable revenue amount disclosed.",
+          "priorYearReportedGrowthPercent": 14
         },
         {
           "metric": "Average price per ad growth",
@@ -142,7 +143,8 @@
           "reportedGrowthPercent": 14,
           "aiLinkage": "management_says_ai_contributes_to_monetization",
           "comparability": "operational_indicator_not_revenue",
-          "note": "Average price per ad increased 14% YoY; not a direct AI revenue measurement."
+          "note": "Average price per ad increased 14% YoY; not a direct AI revenue measurement.",
+          "priorYearReportedGrowthPercent": 10
         },
         {
           "metric": "Total company revenue",
