@@ -100,7 +100,7 @@ test("Q3 2026 source snapshot preserves CAPEX definitions and does not mislabel 
   assert.equal(new Set(snapshot.records.map(row => row.capexBasis)).size, 1);
   assert.ok(snapshot.records.every(row => row.capexBasis === "cash_purchases_ppe_gross"));
   assert.ok(snapshot.records.every(row => row.businessSignal === null || row.businessSignal.comparability === "not_ai_specific"));
-  assert.ok(snapshot.limitations.some(note => note.includes("must not be summed")));
+  assert.ok(snapshot.limitations.some(note => note.includes("common cash-flow")));
 });
 
 test("historical hyperscaler series contains source-backed calendar quarters and preserves missing Amazon Q4", () => {
