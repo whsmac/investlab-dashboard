@@ -9,9 +9,9 @@
       "ticker": "GOOGL",
       "quarter": "2026-Q3",
       "fiscalPeriod": "2026-Q3",
-      "capexUsdM": 51400,
-      "capexBasis": "company_reported_capex",
-      "capexDefinition": "Company-reported capital expenditures; primarily technical infrastructure.",
+      "capexUsdM": 51355,
+      "capexBasis": "cash_purchases_ppe_gross",
+      "capexDefinition": "Cash purchases of property and equipment, Q3 2026 cash-flow statement.",
       "aiRevenueUsdM": null,
       "businessSignal": {
         "metricName": "Google Cloud segment revenue",
@@ -33,9 +33,9 @@
       "ticker": "AMZN",
       "quarter": "2026-Q3",
       "fiscalPeriod": "2026-Q3",
-      "capexUsdM": 75900,
-      "capexBasis": "cash_capex",
-      "capexDefinition": "Cash capital expenditures for the quarter; primarily technology infrastructure and fulfillment capacity.",
+      "capexUsdM": 77259,
+      "capexBasis": "cash_purchases_ppe_gross",
+      "capexDefinition": "Gross cash purchases of property and equipment; excludes offsetting proceeds and incentives (USD 1,381M).",
       "aiRevenueUsdM": null,
       "businessSignal": {
         "metricName": "AWS segment net sales",
@@ -57,9 +57,9 @@
       "ticker": "MSFT",
       "quarter": "2026-Q3",
       "fiscalPeriod": "FY2027-Q1",
-      "capexUsdM": 45200,
-      "capexBasis": "management_capex_including_finance_leases",
-      "capexDefinition": "Management-reported CAPEX including finance leases; cash paid for property and equipment was USD 39.4 billion.",
+      "capexUsdM": 39400,
+      "capexBasis": "cash_purchases_ppe_gross",
+      "capexDefinition": "Cash paid for property and equipment; management CAPEX including finance leases was USD 45.2B.",
       "cashPaidForPpeUsdM": 39400,
       "aiRevenueUsdM": null,
       "businessSignal": {
@@ -82,9 +82,9 @@
       "ticker": "META",
       "quarter": "2026-Q3",
       "fiscalPeriod": "2026-Q3",
-      "capexUsdM": 34910,
-      "capexBasis": "capex_including_finance_lease_principal",
-      "capexDefinition": "Capital expenditures including principal payments on finance leases.",
+      "capexUsdM": 33900,
+      "capexBasis": "cash_purchases_ppe_gross",
+      "capexDefinition": "Cash purchases of property and equipment, rounded to USD 0.1B in the SEC XBRL compilation; excludes finance lease principal used in management CAPEX.",
       "aiRevenueUsdM": null,
       "businessSignal": null,
       "sourceName": "Meta Q3 2026 earnings release",
@@ -96,9 +96,9 @@
     }
   ],
   "limitations": [
-    "The four CAPEX values use different reported bases and must not be summed as a comparable hyperscaler total.",
-    "None of the segment revenue signals above is classified as AI-only revenue.",
-    "Quarterly AI revenue is null where no comparable company disclosure was identified; no estimate has been substituted.",
-    "This is a one-quarter source snapshot, not a historical trend series."
+    "These values use cash purchases of PP&E, a common cash-flow statement line item; they are not identical to management-defined CAPEX that may include finance lease principal.",
+    "Amazon is shown at gross purchases of PP&E (USD 77.259B), not net purchases after proceeds and incentives (USD 75.878B).",
+    "Microsoft cash purchases of PP&E (USD 39.4B) are shown separately from management CAPEX including finance leases (USD 45.2B).",
+    "None of these amounts is AI-only CAPEX. No comparable quarterly AI revenue was identified; no estimate has been substituted."
   ]
 }
