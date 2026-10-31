@@ -59,6 +59,25 @@ The calculation module in `src/ai-investment-cycle/metrics.mjs` accepts normaliz
 
 CAPEX definition differences must be documented. Where the filing reports “purchases of property and equipment” in cash flow, reconcile it to management's stated CAPEX definition; do not assume every company uses an identical definition.
 
+## First source-backed snapshot — calendar Q3 2026
+
+These observations are useful to validate the source schema, but **must not be summed into one hyperscaler CAPEX total** because the companies describe CAPEX on different bases.
+
+| Company | Q3 2026 reported CAPEX | Reported basis / caveat | Operating AI/cloud signal (not pure AI revenue) |
+|---|---:|---|---|
+| Alphabet | $51.4B | Company-reported capital expenditures, primarily technical infrastructure | Google Cloud revenue $30.709B, +103% YoY; includes core cloud, AI infrastructure/solutions and TPU systems |
+| Amazon | $75.9B | Cash capital expenditures; purchases of property/equipment, net of incentives and proceeds may be reported on a different TTM basis | AWS revenue $46.0B, +39.3% YoY; broad AWS segment, not AI-only |
+| Microsoft | $45.2B | Management CAPEX including finance leases; cash paid for PP&E was $39.4B | “Agents and Infra” revenue $76.8B, +25%; newly presented segment, not pure AI revenue |
+| Meta | $34.91B | Capital expenditures including principal payments on finance leases | No comparable separately quantified AI revenue disclosed in the cited release |
+
+Sources:
+- Alphabet Q3 2026 earnings release and Q3 10-Q: https://www.sec.gov/Archives/edgar/data/1652044/000165204426000080/googexhibit991q32026.htm and https://www.sec.gov/Archives/edgar/data/1652044/000165204426000084/goog-20260930.htm
+- Amazon Q3 2026 earnings release and 10-Q: https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Third-Quarter-Results/default.aspx and https://www.sec.gov/Archives/edgar/data/1018724/000101872426000040/amzn-20260930.htm
+- Microsoft FY27 Q1 earnings release and call: https://www.microsoft.com/en-us/Investor/earnings/FY-2027-Q1/press-release-webcast and https://www.microsoft.com/en-us/Investor/events/fy-2027/earnings-fy-2027-q1
+- Meta Q3 2026 earnings release: https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-Third-Quarter-2026-Results/default.aspx
+
+The Q3 2026 snapshot is intentionally not yet inserted as normalized calculation input: each source's CAPEX definition must first be mapped to a stable `capexBasis`. The aggregation function now returns a comparable total only when every requested company is present and all records share the same explicit basis. Otherwise it returns a partial sum with a non-comparable status.
+
 ## Next implementation stages
 1. Build source-backed quarterly dataset and company fiscal-calendar mapping.
 2. Validate CAPEX figures against filings and calculate a consistent reported series.
