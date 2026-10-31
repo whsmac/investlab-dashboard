@@ -231,3 +231,19 @@ test("invalid applied FX rates are rejected while positive rates are accepted", 
   ]);
   assert.equal(result.cash.KRW, 1300);
 });
+
+
+test("invalid calendar dates and duplicate date-sequence pairs are rejected", () => {
+  assert.throws(() => calculateLedger([
+    tx("CASH_DEPOSIT", { transaction_date: "2026-02-30", gross_amount: 10 })
+  ]), /real calendar date/);
+  assert.throws(() => calculateLedger([
+    tx("CASH_DEPOSIT", { sequence_no: 1, gross_amount: 10 }),
+    tx("CASH_WITHDRAWAL", { sequence_no: 1, gross_amount: 5 })
+  ]), /Duplicate sequence_no/);
+  const valid = calculateLedger([
+    tx("CASH_DEPOSIT", { transaction_date: "2026-01-01", sequence_no: 1, gross_amount: 10 }),
+    tx("CASH_DEPOSIT", { transaction_date: "2026-01-02", sequence_no: 1, gross_amount: 5 })
+  ]);
+  assert.equal(valid.cash.USD, 15);
+});
