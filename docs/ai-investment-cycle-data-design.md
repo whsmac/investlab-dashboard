@@ -30,7 +30,7 @@ All stored financial amounts use USD millions and fiscal-quarter labels (YYYY-Qn
 3. YoY growth acceleration (percentage-point change in YoY growth).
 4. Disclosed AI revenue / AI business metric and YoY growth, only for comparable definitions.
 5. Trailing-four-quarter disclosed AI revenue divided by trailing-four-quarter CAPEX, labelled **AI revenue-to-total-CAPEX proxy**, never “ROI” or “investment return”. It is not profit, cash flow, or attributable return on AI CAPEX.
-6. Market response: company share-price total return over selected horizons, shown separately from operating results and CAPEX.
+6. Market response: adjusted-close total return over selected horizons and excess return versus a benchmark (initially S&P 500), shown separately from operating results and CAPEX. This measures shareholder market performance, not the return earned directly on AI CAPEX.
 
 ## Cycle signal
 Initial transparent rules:
@@ -49,7 +49,7 @@ Each company-quarter record:
 - currency, sourceName, sourceUrl, sourcePublishedAt, retrievedAt
 - reported | estimated, confidence, notes
 
-The calculation module in `src/ai-investment-cycle/metrics.mjs` accepts normalized company-quarter records with `company`, `quarter`, `capexUsdM`, and nullable `aiRevenueUsdM`. It intentionally does not fetch or invent source data.
+The calculation module in `src/ai-investment-cycle/metrics.mjs` accepts normalized company-quarter records with `company`, `quarter`, `capexUsdM`, and nullable `aiRevenueUsdM`; it also calculates adjusted-close market return against an aligned benchmark series. It intentionally does not fetch or invent source data.
 
 ## Data source hierarchy
 1. Company quarterly earnings releases and investor-relations materials.
