@@ -92,8 +92,8 @@ The separately stored `data/ai-investment-cycle/business-performance-q3-2026.jso
 
 | Company | Reported Q3 2026 indicator | YoY | Profitability / caveat |
 |---|---|---:|---|
-| Alphabet | Google Cloud revenue USD 30.709B | +103% | Cloud operating income USD 11.121B; 36.2% segment margin. Includes AI infrastructure/solutions and core GCP. |
-| Amazon | AWS revenue USD 46.0B | +39.3% | AWS operating income USD 17.8B; 38.7% segment margin. Includes AI and core cloud workloads. |
+| Alphabet | Google Cloud revenue USD 30.709B | +103% | Cloud operating income USD 11.121B; 36.2% segment margin versus 23.7% a year earlier. Includes AI infrastructure/solutions and core GCP. |
+| Amazon | AWS revenue USD 46.0B | +39.3% | AWS operating income USD 17.8B; 38.7% segment margin versus 34.6% a year earlier. Includes AI and core cloud workloads. |
 | Microsoft | Azure revenue USD 33.165B | +48% | Azure-only operating income not separately disclosed. |
 | Microsoft | Agents and Infra segment revenue USD 76.795B | +25% | Segment operating income USD 40.558B; 52.8% margin. FY2027 recast segment, not AI-only. |
 | Meta | Ad impressions +10%; average price per ad +14% | reported | Management says AI contributes to improved engagement, recommendations and monetization, but does not quantify AI-attributable revenue. |
