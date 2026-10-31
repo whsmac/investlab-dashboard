@@ -28,7 +28,7 @@ test("CAPEX chart aligns all companies to the same quarter axis and preserves mi
 test("preview explicitly distinguishes company-wide CAPEX, mixed business metrics, and unavailable shareholder returns", () => {
   assert.match(html, /AI 전용 CAPEX가 아닙니다/);
   assert.match(html, /AI와 비AI 사업이 혼합된 지표/);
-  assert.match(html, /주가 데이터가 아직 등록되지 않았습니다/);
+  assert.match(html, /5개 CSV 검증 및 분석/);\n  assert.match(html, /marketQuarterlyChart/);\n  assert.match(html, /marketTrailingChart/);\n  assert.match(html, /CAPEX 증가율과 주주 수익률의 관계/);
   assert.match(html, /AI CAPEX의 투자수익률\(ROI\)이 아닙니다/);
   assert.match(html, /매수·매도 신호를 제공하지 않습니다/);
 });
@@ -36,5 +36,5 @@ test("preview explicitly distinguishes company-wide CAPEX, mixed business metric
 test("preview does not introduce live market-price fetching or provider credentials", () => {
   assert.doesNotMatch(html, /fetch\(["']https?:\/\//i);
   assert.doesNotMatch(html, /apiKey|apikey|SUPABASE_URL|supabase-js/i);
-  assert.match(html, /조정주가 데이터 미수집/);
+  assert.match(html, /조정주가 데이터 미등록/);\n  assert.match(html, /서버나 Supabase로 전송·저장하지 않습니다/);
 });
