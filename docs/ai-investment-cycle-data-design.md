@@ -59,24 +59,32 @@ The calculation module in `src/ai-investment-cycle/metrics.mjs` accepts normaliz
 
 CAPEX definition differences must be documented. Where the filing reports “purchases of property and equipment” in cash flow, reconcile it to management's stated CAPEX definition; do not assume every company uses an identical definition.
 
-## First source-backed snapshot — calendar Q3 2026
+## Historical CAPEX dataset — calendar 2024-Q1 to 2026-Q3
 
-These observations are useful to validate the source schema, but **must not be summed into one hyperscaler CAPEX total** because the companies describe CAPEX on different bases.
+The initial 11-quarter dataset is stored in `data/ai-investment-cycle/hyperscaler-capex-quarterly-2024-2026.json`. It contains Microsoft, Alphabet, Amazon and Meta quarterly cash purchases of property, plant and equipment (PP&E), aligned to calendar quarters.
 
-| Company | Q3 2026 reported CAPEX | Reported basis / caveat | Operating AI/cloud signal (not pure AI revenue) |
-|---|---:|---|---|
-| Alphabet | $51.4B | Company-reported capital expenditures, primarily technical infrastructure | Google Cloud revenue $30.709B, +103% YoY; includes core cloud, AI infrastructure/solutions and TPU systems |
-| Amazon | $75.9B | Cash capital expenditures; purchases of property/equipment, net of incentives and proceeds may be reported on a different TTM basis | AWS revenue $46.0B, +39.3% YoY; broad AWS segment, not AI-only |
-| Microsoft | $45.2B | Management CAPEX including finance leases; cash paid for PP&E was $39.4B | “Agents and Infra” revenue $76.8B, +25%; newly presented segment, not pure AI revenue |
-| Meta | $34.91B | Capital expenditures including principal payments on finance leases | No comparable separately quantified AI revenue disclosed in the cited release |
+This uses one consistent cash-flow line item: **cash purchases of PP&E (gross)**. It is intentionally narrower than some management CAPEX definitions that include finance-lease principal. It is also company-wide investment, not AI-only CAPEX.
 
-Sources:
-- Alphabet Q3 2026 earnings release and Q3 10-Q: https://www.sec.gov/Archives/edgar/data/1652044/000165204426000080/googexhibit991q32026.htm and https://www.sec.gov/Archives/edgar/data/1652044/000165204426000084/goog-20260930.htm
-- Amazon Q3 2026 earnings release and 10-Q: https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Third-Quarter-Results/default.aspx and https://www.sec.gov/Archives/edgar/data/1018724/000101872426000040/amzn-20260930.htm
-- Microsoft FY27 Q1 earnings release and call: https://www.microsoft.com/en-us/Investor/earnings/FY-2027-Q1/press-release-webcast and https://www.microsoft.com/en-us/Investor/events/fy-2027/earnings-fy-2027-q1
-- Meta Q3 2026 earnings release: https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-Third-Quarter-2026-Results/default.aspx
+Source compilation: [tradmap — Big Tech Capital Expenditures](https://tradmap.com/stats/big-tech-capex), updated 2026-10-30, which attributes its quarterly figures to SEC EDGAR/XBRL cash-flow statements. Most historical observations are rounded to USD 0.1B. Amazon Q3 2026 is taken from its earnings-release cash-flow statement: gross PP&E purchases USD 77.259B; proceeds and incentives USD 1.381B. Alphabet Q3 2026 cash PP&E purchases are USD 51.355B. Microsoft Q3 2026 cash PP&E purchases are USD 39.4B, distinct from management CAPEX including leases of USD 45.2B. Meta Q3 2026 is approximately USD 33.9B on the cash PP&E series, distinct from lease-inclusive management CAPEX.
 
-The Q3 2026 source observations are stored in `data/ai-investment-cycle/source-snapshot-2026-q3.json` as a raw, source-attributed snapshot, not yet fed into the normalized calculation input: each source's CAPEX definition must first be mapped to a stable `capexBasis`. The aggregation function now returns a comparable total only when every requested company is present and all records share the same explicit basis. Otherwise it returns a partial sum with a non-comparable status.
+The four-company Q3 2026 gross cash PP&E total is approximately USD 201.96B. This is a common cash-flow metric, not a claim that every company's broader management CAPEX definition is identical. The dataset preserves missing Amazon Q4 observations as missing; it does not interpolate or treat them as zero.
+
+### First trend observations
+
+- The four-company cash PP&E series rose from approximately USD 44.3B in 2024-Q1 to USD 201.96B in 2026-Q3.
+- This is a steep increase in reported infrastructure and other PP&E cash spending, but not proof that all spending is AI-related.
+- The historical dataset currently has 11 calendar quarters. It is enough to begin quarterly trend charts and YoY growth calculations where complete prior-year observations exist, but not enough to treat cycle-warning thresholds as statistically calibrated.
+- Company-specific lines and a combined series should both be displayed. Aggregate quarters with missing company data must show coverage and must not be presented as a full-universe total.
+
+### Business performance data remains separate
+
+For Q3 2026, Google Cloud revenue (USD 30.709B, +103% YoY) and AWS revenue (USD 46.0B, +39.3% YoY) are stored as broad cloud-segment indicators, not AI-only revenue. Microsoft's Agents and Infra segment is similarly not pure AI revenue. These should appear in a separate operating-indicator panel with explicit labels; they must not be divided by CAPEX and presented as an AI investment ROI.
+
+Sources for the Q3 2026 disclosures:
+- [Amazon Q3 2026 earnings release](https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Third-Quarter-Results/default.aspx)
+- [Alphabet Q3 2026 earnings release / SEC filing](https://www.sec.gov/Archives/edgar/data/1652044/000165204426000080/googexhibit991q32026.htm)
+- [Microsoft FY2027 Q1 earnings release](https://www.microsoft.com/en-us/Investor/earnings/FY-2027-Q1/press-release-webcast)
+- [Meta Q3 2026 earnings release](https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-Third-Quarter-2026-Results/default.aspx)
 
 ## Next implementation stages
 1. Build source-backed quarterly dataset and company fiscal-calendar mapping.
