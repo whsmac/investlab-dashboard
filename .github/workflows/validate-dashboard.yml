@@ -105,6 +105,24 @@ jobs:
                   raise SystemExit("Migration contains a mutation of a protected legacy table: " + statement.strip())
           print("Ledger RLS, idempotency, ordering uniqueness, and legacy-table isolation checks passed")
           PY
+      - name: Check FX rate and cash fee validation migration
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          fx = Path("supabase/migrations/20261031_ledger_fx_validation.sql").read_text(encoding="utf-8")
+          required = [
+              "applied_fx_rate is not null",
+              "to_amount / from_amount",
+              "fees <= to_amount",
+              "fees <= gross_amount",
+              "fees = 0",
+          ]
+          missing = [item for item in required if item not in fx]
+          if missing:
+              raise SystemExit("Missing FX/cash fee rules: " + ", ".join(missing))
+          print("FX rate direction and cash fee constraints are present")
+          PY
+
       - name: Check required symbol-management elements
         run: |
           python3 - <<'PY'
@@ -151,5 +169,7 @@ jobs:
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261029_unified_ledger_schema.sql
       - name: Apply dividend migration
         run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261030_ledger_dividend_support.sql
-      - name: Verify RLS, idempotency, sequence uniqueness, dividends, and legacy isolation
+      - name: Apply FX validation migration
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261031_ledger_fx_validation.sql
+      - name: Verify RLS, idempotency, sequence uniqueness, dividends, FX, and legacy isolation
         run: psql -v ON_ERROR_STOP=1 -f tests/ledger-postgres-integration.sql
