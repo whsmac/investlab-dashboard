@@ -1,51 +1,101 @@
-# 2023 CAPEX primary-filing audit — initial pass
+# 2023 CAPEX primary-filing audit — completed
 
 Audit date: 2026-10-31  
-Scope: 2023-Q1 cash purchases/additions of property and equipment for Microsoft, Alphabet, Amazon, and Meta.  
-Status: **Q1 primary-source checks complete; Q2–Q4 remain pending.** This is an audit record only. The historical CAPEX dataset has not been changed.
+Scope: 2023-Q1 through 2023-Q4 cash purchases/additions of property and equipment for Microsoft, Alphabet, Amazon, and Meta.  
+Status: **All 16 company-quarter observations checked against primary issuer filings or issuer investor-relations cash-flow statements. All match the stored USD 0.01B display precision.** No CAPEX dataset value change is required.
 
 ## Method
 
-- Compare the stored quarterly observation with the issuer's primary quarterly filing or earnings-release cash-flow statement.
+- Compare the stored quarterly observation with the issuer's primary quarterly filing, annual filing, or official earnings-release cash-flow statement.
 - Use gross cash purchases/additions of property and equipment, not net purchases after proceeds, and exclude finance-lease additions/repayments.
-- Preserve the dataset's rounded display precision (USD 0.01B). Differences below that precision are not corrections.
+- For cumulative statements, derive standalone quarters as the current YTD amount less the immediately preceding YTD amount for the same issuer and same cash-flow line.
+- For annual statements, derive Q4 as the annual gross amount less Q1–Q3 gross amounts where a standalone Q4 cash-flow line is not presented.
+- Compare after rounding to the dataset's USD 0.01B precision. Small raw differences below that display precision are not corrections.
 - Do not equate company-wide PP&E cash spending with AI-only CAPEX.
 
-## Q1 2023 results
+## Results
 
-| Company | Stored value (USD M) | Primary filing value (USD M) | Primary source | Result |
-|---|---:|---:|---|---|
-| Microsoft | 6,610 | 6,607 | [FY23 Q3 earnings release — cash flows](https://www.microsoft.com/en-us/investor/earnings/fy-2023-q3/press-release-webcast) | Matches at stored precision |
-| Alphabet | 6,290 | 6,289 | [2023 Q1 Form 10-Q](https://www.sec.gov/Archives/edgar/data/1652044/000165204423000045/goog-20230331.htm) | Matches at stored precision |
-| Amazon | 14,210 | 14,207 | [2023 Q1 Form 10-Q](https://www.sec.gov/Archives/edgar/data/1018724/000101872423000008/amzn-20230331.htm) | Matches at stored precision |
-| Meta | 6,840 | 6,842 | [2023 Q1 Form 10-Q](https://www.sec.gov/Archives/edgar/data/1326801/000132680123000067/meta-20230331.htm) | Matches at stored precision |
+All amounts below are USD millions. “Primary-source calculation” is the independently derived standalone-quarter amount; “stored” is the dataset value.
 
-All four values agree with their primary-source gross cash PP&E line after rounding to the dataset's nearest USD 10 million. No Q1 value change is warranted.
+| Quarter | Company | Primary-source calculation | Stored | Result |
+|---|---|---:|---:|---|
+| 2023-Q1 | Microsoft | 6,607 | 6,610 | Match at USD 0.01B |
+| 2023-Q1 | Alphabet | 6,289 | 6,290 | Match at USD 0.01B |
+| 2023-Q1 | Amazon | 14,207 | 14,210 | Match at USD 0.01B |
+| 2023-Q1 | Meta | 6,842 | 6,840 | Match at USD 0.01B |
+| 2023-Q2 | Microsoft | 8,943 | 8,940 | Match at USD 0.01B |
+| 2023-Q2 | Alphabet | 6,888 | 6,890 | Match at USD 0.01B |
+| 2023-Q2 | Amazon | 11,455 | 11,460 | Match at USD 0.01B |
+| 2023-Q2 | Meta | 6,216 | 6,220 | Match at USD 0.01B |
+| 2023-Q3 | Microsoft | 9,917 | 9,920 | Match at USD 0.01B |
+| 2023-Q3 | Alphabet | 8,055 | 8,050 | Match at USD 0.01B |
+| 2023-Q3 | Amazon | 12,479 | 12,480 | Match at USD 0.01B |
+| 2023-Q3 | Meta | 6,543 | 6,540 | Match at USD 0.01B |
+| 2023-Q4 | Microsoft | 9,735 | 9,730 | Match at USD 0.01B |
+| 2023-Q4 | Alphabet | 11,019 | 11,020 | Match at USD 0.01B |
+| 2023-Q4 | Amazon | 14,588 | 14,590 | Match at USD 0.01B |
+| 2023-Q4 | Meta | 7,665 | 7,670 | Match at USD 0.01B |
 
-### Source-definition observations
+## Calculation trail and primary sources
 
-- Microsoft labels the cash-flow line **“Additions to property and equipment”**; Q1 2023 reports USD 6,607M.
-- Alphabet, Amazon, and Meta label the cash-flow line **“Purchases of property and equipment”**; Q1 2023 reports USD 6,289M, USD 14,207M, and USD 6,842M respectively.
-- Amazon separately reports proceeds from property/equipment sales and incentives. The stored series uses gross purchases (USD 14,207M), not the net-of-proceeds free-cash-flow deduction.
-- Meta likewise reports purchases (USD 6,842M) and proceeds relating to PP&E (USD 19M) separately. The stored series uses gross purchases.
+### Microsoft
 
-The labels are close enough for a common *gross cash PP&E purchases/additions* analytical series, but the underlying reported label and company must remain available. This does not establish that management-defined CAPEX is identical across issuers.
+- Q1 2023: USD 6,607M reported for the three months ended March 31, 2023.
+- Q2 2023: FY2023 annual additions USD 28,107M less nine-month additions USD 19,164M = USD 8,943M.
+- Q3 2023: USD 9,917M reported for the three months ended September 30, 2023.
+- Q4 2023: USD 9,735M reported for the three months ended December 31, 2023.
 
-## Remaining audit work
+Primary sources:
+- [FY2023 Q3 cash flows (three and nine months ended March 31)](https://www.microsoft.com/en-us/Investor/earnings/FY-2023-Q3/cash-flows)
+- [FY2023 Q4 cash flows (year ended June 30)](https://www.microsoft.com/en-us/investor/earnings/fy-2023-q4/cash-flows)
+- [FY2024 Q1 cash flows (three months ended September 30)](https://www.microsoft.com/en-us/investor/earnings/fy-2024-q1/cash-flows)
+- [FY2024 Q2 cash flows (three and six months ended December 31)](https://www.microsoft.com/en-us/investor/earnings/fy-2024-q2/cash-flows)
 
-The following 12 observations still require independent primary-filing verification:
+### Alphabet
 
-- 2023-Q2: Microsoft, Alphabet, Amazon, Meta
-- 2023-Q3: Microsoft, Alphabet, Amazon, Meta
-- 2023-Q4: Microsoft, Alphabet, Amazon, Meta
+- Q1: USD 6,289M directly reported.
+- Q2: six-month USD 13,177M less Q1 USD 6,289M = USD 6,888M.
+- Q3: nine-month USD 21,232M less six-month USD 13,177M = USD 8,055M.
+- Q4: annual USD 32,251M less nine-month USD 21,232M = USD 11,019M.
 
-For cumulative cash-flow statements, calculate standalone quarters only as the difference between the current year-to-date amount and the preceding year-to-date amount for the same issuer and same cash-flow line. For annual statements, reconcile the Q4 residual against the annual amount. Retain both source accessions and the derivation formula.
+Primary sources:
+- [2023 Q1 Form 10-Q](https://www.sec.gov/Archives/edgar/data/1652044/000165204423000045/goog-20230331.htm)
+- [2023 Q2 Form 10-Q](https://www.sec.gov/Archives/edgar/data/1652044/000165204423000070/goog-20230630.htm)
+- [2023 Q3 Form 10-Q](https://www.sec.gov/Archives/edgar/data/1652044/000165204423000094/goog-20230930.htm)
+- [2023 Form 10-K](https://www.sec.gov/Archives/edgar/data/1652044/000165204424000022/goog-20231231.htm)
 
-Do not promote the 2023 historical series to production-ready until all 16 company-quarter observations have passed primary-source checks and the Amazon concept/line-item continuity has been reviewed against the 2024–2026 series.
+### Amazon
 
-## References
+- Q1: USD 14,207M directly reported.
+- Q2: USD 11,455M directly reported for the three months ended June 30.
+- Q3: USD 12,479M directly reported for the three months ended September 30.
+- Q4: annual gross purchases USD 52,729M less Q1–Q3 gross purchases (USD 14,207M + USD 11,455M + USD 12,479M = USD 38,141M) = USD 14,588M.
 
-- Microsoft FY23 Q3 cash-flow statement: https://www.microsoft.com/en-us/investor/earnings/fy-2023-q3/press-release-webcast
-- Alphabet Q1 2023 Form 10-Q: https://www.sec.gov/Archives/edgar/data/1652044/000165204423000045/goog-20230331.htm
-- Amazon Q1 2023 Form 10-Q: https://www.sec.gov/Archives/edgar/data/1018724/000101872423000008/amzn-20230331.htm
-- Meta Q1 2023 Form 10-Q: https://www.sec.gov/Archives/edgar/data/1326801/000132680123000067/meta-20230331.htm
+Primary sources:
+- [2023 Q1 Form 10-Q](https://www.sec.gov/Archives/edgar/data/1018724/000101872423000008/amzn-20230331.htm)
+- [2023 Q2 Form 10-Q](https://www.sec.gov/Archives/edgar/data/1018724/000101872423000012/amzn-20230630.htm)
+- [2023 Q3 Form 10-Q](https://www.sec.gov/Archives/edgar/data/1018724/000101872423000018/amzn-20230930.htm)
+- [2023 Form 10-K](https://www.sec.gov/Archives/edgar/data/1018724/000101872424000008/amzn-20231231.htm)
+
+Amazon definition note: The annual filing's cash-flow statement reports gross purchases of USD 52,729M and proceeds from property/equipment sales and incentives of USD 4,596M. The resulting net figure, USD 48,133M, is the FCF deduction and is not the gross cash-purchases series used here. The quarterly source records likewise use gross purchases. Do not substitute Amazon's USD 48,133M net measure for gross CAPEX.
+
+### Meta
+
+- Q1: USD 6,842M directly reported.
+- Q2: six-month USD 13,058M less Q1 USD 6,842M = USD 6,216M.
+- Q3: nine-month USD 19,601M less six-month USD 13,058M = USD 6,543M.
+- Q4: annual gross purchases USD 27,266M less nine-month gross purchases USD 19,601M = USD 7,665M.
+
+Primary sources:
+- [2023 Q1 Form 10-Q](https://www.sec.gov/Archives/edgar/data/1326801/000132680123000067/meta-20230331.htm)
+- [2023 Q2 Form 10-Q](https://www.sec.gov/Archives/edgar/data/1326801/000132680123000093/meta-20230630.htm)
+- [2023 Q3 Form 10-Q](https://www.sec.gov/Archives/edgar/data/1326801/000132680123000103/meta-20230930.htm)
+- [2023 Form 10-K](https://www.sec.gov/Archives/edgar/data/1326801/000132680124000012/meta-20231231.htm)
+
+Meta definition note: The 2023 annual filing reports gross purchases of USD 27,266M and proceeds relating to property and equipment of USD 221M. The net figure USD 27,045M is not the gross series used here.
+
+## Conclusion
+
+All 16 2023 company-quarter observations are consistent with primary issuer source disclosures when rounded to the dataset's USD 0.01B precision. No changes were made to the CAPEX JSON values. The dataset may retain its provisional 2023-source flag as a provenance/vintage note, but the four-company 2023 values have now passed this primary-source cross-check.
+
+This validation confirms the reported gross cash PP&E series only. It does not make these company-wide amounts AI-only CAPEX, does not make the companies' broader management CAPEX definitions identical, and does not establish an AI investment ROI.
