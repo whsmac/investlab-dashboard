@@ -1,0 +1,136 @@
+{
+  "dataAsOf": "2026-10-31",
+  "currency": "USD",
+  "amountUnit": "USD millions",
+  "methodology": "Source-backed quarterly AWS segment revenue and operating income, taken from Amazon earnings-release supplemental financial information. AWS includes AI and non-AI cloud workloads; these are business-performance indicators, not AI-only revenue or profit.",
+  "series": [
+    {
+      "company": "Amazon",
+      "ticker": "AMZN",
+      "metricId": "aws_segment_revenue",
+      "metricName": "AWS segment revenue",
+      "metricType": "cloud_segment_revenue",
+      "unit": "USD millions",
+      "aiLinkage": "ai_and_core_cloud_mixed",
+      "comparability": "aws_segment",
+      "fiscalCalendar": "calendar_year",
+      "operatingIncomeMetricName": "AWS segment operating income",
+      "observations": [
+        {
+          "quarter": "2023-Q4",
+          "revenueUsdM": 24204,
+          "operatingIncomeUsdM": 7167,
+          "sourcePublishedAt": "2024-10-31",
+          "sourceUrl": "https://ir.aboutamazon.com/news-release/news-release-details/2024/Amazon-com-Announces-Third-Quarter-Results/",
+          "sourceName": "Amazon quarterly earnings release",
+          "reported": true
+        },
+        {
+          "quarter": "2024-Q1",
+          "revenueUsdM": 25037,
+          "operatingIncomeUsdM": 9421,
+          "sourcePublishedAt": "2024-10-31",
+          "sourceUrl": "https://ir.aboutamazon.com/news-release/news-release-details/2024/Amazon-com-Announces-Third-Quarter-Results/",
+          "sourceName": "Amazon quarterly earnings release",
+          "reported": true
+        },
+        {
+          "quarter": "2024-Q2",
+          "revenueUsdM": 26281,
+          "operatingIncomeUsdM": 9334,
+          "sourcePublishedAt": "2024-10-31",
+          "sourceUrl": "https://ir.aboutamazon.com/news-release/news-release-details/2024/Amazon-com-Announces-Third-Quarter-Results/",
+          "sourceName": "Amazon quarterly earnings release",
+          "reported": true
+        },
+        {
+          "quarter": "2024-Q3",
+          "revenueUsdM": 27452,
+          "operatingIncomeUsdM": 10447,
+          "sourcePublishedAt": "2024-10-31",
+          "sourceUrl": "https://ir.aboutamazon.com/news-release/news-release-details/2024/Amazon-com-Announces-Third-Quarter-Results/",
+          "sourceName": "Amazon quarterly earnings release",
+          "reported": true
+        },
+        {
+          "quarter": "2024-Q4",
+          "revenueUsdM": 28786,
+          "operatingIncomeUsdM": 10632,
+          "sourcePublishedAt": "2025-05-01",
+          "sourceUrl": "https://ir.aboutamazon.com/news-release/news-release-details/2025/Amazon-com-Announces-First-Quarter-Results/default.aspx",
+          "sourceName": "Amazon quarterly earnings release",
+          "reported": true
+        },
+        {
+          "quarter": "2025-Q1",
+          "revenueUsdM": 29267,
+          "operatingIncomeUsdM": 11547,
+          "sourcePublishedAt": "2025-05-01",
+          "sourceUrl": "https://ir.aboutamazon.com/news-release/news-release-details/2025/Amazon-com-Announces-First-Quarter-Results/default.aspx",
+          "sourceName": "Amazon quarterly earnings release",
+          "reported": true
+        },
+        {
+          "quarter": "2025-Q2",
+          "revenueUsdM": 30873,
+          "operatingIncomeUsdM": 10160,
+          "sourcePublishedAt": "2025-10-30",
+          "sourceUrl": "https://ir.aboutamazon.com/news-release/news-release-details/2025/Amazon-com-Announces-Third-Quarter-Results/",
+          "sourceName": "Amazon quarterly earnings release",
+          "reported": true
+        },
+        {
+          "quarter": "2025-Q3",
+          "revenueUsdM": 33006,
+          "operatingIncomeUsdM": 11434,
+          "sourcePublishedAt": "2025-10-30",
+          "sourceUrl": "https://ir.aboutamazon.com/news-release/news-release-details/2025/Amazon-com-Announces-Third-Quarter-Results/",
+          "sourceName": "Amazon quarterly earnings release",
+          "reported": true
+        },
+        {
+          "quarter": "2025-Q4",
+          "revenueUsdM": 35579,
+          "operatingIncomeUsdM": 12465,
+          "sourcePublishedAt": "2026-10-29",
+          "sourceUrl": "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Third-Quarter-Results/default.aspx",
+          "sourceName": "Amazon quarterly earnings release",
+          "reported": true
+        },
+        {
+          "quarter": "2026-Q1",
+          "revenueUsdM": 37587,
+          "operatingIncomeUsdM": 14161,
+          "sourcePublishedAt": "2026-10-29",
+          "sourceUrl": "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Third-Quarter-Results/default.aspx",
+          "sourceName": "Amazon quarterly earnings release",
+          "reported": true
+        },
+        {
+          "quarter": "2026-Q2",
+          "revenueUsdM": 42232,
+          "operatingIncomeUsdM": 16621,
+          "sourcePublishedAt": "2026-10-29",
+          "sourceUrl": "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Third-Quarter-Results/default.aspx",
+          "sourceName": "Amazon quarterly earnings release",
+          "reported": true
+        },
+        {
+          "quarter": "2026-Q3",
+          "revenueUsdM": 45984,
+          "operatingIncomeUsdM": 17773,
+          "sourcePublishedAt": "2026-10-29",
+          "sourceUrl": "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Third-Quarter-Results/default.aspx",
+          "sourceName": "Amazon quarterly earnings release",
+          "reported": true
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "AWS segment revenue and operating income include both AI and non-AI cloud workloads; neither is an AI-only revenue or profit measure.",
+    "This first historical operating series covers Amazon only. Do not infer that other hyperscalers have equivalent definitions.",
+    "No missing quarter has been interpolated. A missing prior-year quarter produces null YoY growth.",
+    "AWS reported quarterly values are presented in USD millions; growth calculated from reported dollar values may differ slightly from rounded company-reported growth rates."
+  ]
+}

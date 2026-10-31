@@ -50,12 +50,21 @@ jobs:
               raise SystemExit("No inline JavaScript blocks found")
           for i, code in enumerate(parser.scripts, 1):
               Path(f"/tmp/investlab-inline-{i}.js").write_text(code, encoding="utf-8")
-          print(f"Extracted {len(parser.scripts)} inline JavaScript blocks")
+
+          preview = InlineScripts()
+          preview.feed(Path("ai-investment-cycle-preview.html").read_text(encoding="utf-8"))
+          if not preview.scripts:
+              raise SystemExit("No preview module script found")
+          for i, code in enumerate(preview.scripts, 1):
+              Path(f"/tmp/investlab-preview-{i}.mjs").write_text(code, encoding="utf-8")
+          print(f"Extracted {len(parser.scripts)} production inline blocks and {len(preview.scripts)} preview module blocks")
           PY
-          for file in /tmp/investlab-inline-*.js; do
+          for file in /tmp/investlab-inline-*.js /tmp/investlab-preview-*.mjs; do
             echo "Checking $file"
             node --check "$file"
           done
+      - name: Run isolated investment-cycle tests
+        run: node --test tests/ai-investment-cycle.test.mjs tests/market-data-csv.test.mjs tests/market-data-bundle.test.mjs tests/market-cycle-analysis.test.mjs tests/ai-investment-cycle-preview.test.mjs
       - name: Check required symbol-management elements
         run: |
           python3 - <<'PY'

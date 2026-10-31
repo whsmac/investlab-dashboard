@@ -1,0 +1,194 @@
+{
+  "dataAsOf": "2026-10-31",
+  "calendarQuarter": "2026-Q3",
+  "currency": "USD",
+  "amountUnit": "USD millions",
+  "methodology": "Quarterly operating indicators from company earnings releases. Values are reported segment/product metrics, not a harmonized measure of AI revenue. AI linkage and comparability are labelled per metric. Year-over-year comparisons use the same reported quarter where available.",
+  "companies": [
+    {
+      "company": "Alphabet",
+      "ticker": "GOOGL",
+      "directAiRevenueUsdM": null,
+      "metrics": [
+        {
+          "metric": "Google Cloud revenue",
+          "category": "cloud_segment_revenue",
+          "currentUsdM": 30709,
+          "priorYearUsdM": 15157,
+          "reportedGrowthPercent": 103,
+          "aiLinkage": "ai_and_core_cloud_mixed",
+          "comparability": "broad_cloud_segment",
+          "note": "Includes AI infrastructure and AI solutions as well as core GCP services; not AI-only revenue."
+        },
+        {
+          "metric": "Google Cloud operating income",
+          "category": "segment_operating_income",
+          "currentUsdM": 11121,
+          "priorYearUsdM": 3594,
+          "reportedGrowthPercent": null,
+          "aiLinkage": "ai_and_core_cloud_mixed",
+          "comparability": "broad_cloud_segment",
+          "note": "Segment operating income; not an AI-only profit measure."
+        }
+      ],
+      "sources": [
+        {
+          "name": "Alphabet Q3 2026 earnings release",
+          "publishedAt": "2026-10-28",
+          "url": "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000080/googexhibit991q32026.htm"
+        }
+      ]
+    },
+    {
+      "company": "Amazon",
+      "ticker": "AMZN",
+      "directAiRevenueUsdM": null,
+      "metrics": [
+        {
+          "metric": "AWS segment revenue",
+          "category": "cloud_segment_revenue",
+          "currentUsdM": 46000,
+          "priorYearUsdM": 33006,
+          "reportedGrowthPercent": 39.3,
+          "aiLinkage": "ai_and_core_cloud_mixed",
+          "comparability": "broad_cloud_segment",
+          "note": "AWS includes core cloud workloads and AI workloads; no separate AI revenue value disclosed here."
+        },
+        {
+          "metric": "AWS segment operating income",
+          "category": "segment_operating_income",
+          "currentUsdM": 17800,
+          "priorYearUsdM": 11434,
+          "reportedGrowthPercent": null,
+          "aiLinkage": "ai_and_core_cloud_mixed",
+          "comparability": "broad_cloud_segment",
+          "note": "AWS segment profit, not profit attributable solely to AI workloads."
+        }
+      ],
+      "sources": [
+        {
+          "name": "Amazon Q3 2026 earnings release",
+          "publishedAt": "2026-10-29",
+          "url": "https://press.aboutamazon.com/2026/10/amazon-com-announces-third-quarter-results"
+        }
+      ]
+    },
+    {
+      "company": "Microsoft",
+      "ticker": "MSFT",
+      "directAiRevenueUsdM": null,
+      "metrics": [
+        {
+          "metric": "Azure revenue",
+          "category": "cloud_product_revenue",
+          "currentUsdM": 33165,
+          "priorYearUsdM": 22384,
+          "reportedGrowthPercent": 48,
+          "aiLinkage": "ai_and_core_cloud_mixed",
+          "comparability": "cloud_product_revenue",
+          "note": "Azure revenue growth reported as 48%; product/service revenue table shows USD 33.165B versus USD 22.384B. Azure-only operating income is not separately disclosed."
+        },
+        {
+          "metric": "Agents and Infra segment revenue",
+          "category": "segment_revenue",
+          "currentUsdM": 76795,
+          "priorYearUsdM": 61672,
+          "reportedGrowthPercent": 25,
+          "aiLinkage": "ai_and_non_ai_mixed",
+          "comparability": "newly_recast_segment",
+          "note": "New FY2027 reporting segment includes infrastructure and agents; it is not an AI-only revenue measure."
+        },
+        {
+          "metric": "Agents and Infra segment operating income",
+          "category": "segment_operating_income",
+          "currentUsdM": 40558,
+          "priorYearUsdM": 32718,
+          "reportedGrowthPercent": null,
+          "aiLinkage": "ai_and_non_ai_mixed",
+          "comparability": "newly_recast_segment",
+          "note": "Segment operating income, not AI-only profit; prior period recast to FY2027 segment presentation."
+        }
+      ],
+      "sources": [
+        {
+          "name": "Microsoft FY2027 Q1 earnings release",
+          "publishedAt": "2026-10-28",
+          "url": "https://www.microsoft.com/en-us/Investor/earnings/FY-2027-Q1/press-release-webcast"
+        }
+      ]
+    },
+    {
+      "company": "Meta",
+      "ticker": "META",
+      "directAiRevenueUsdM": null,
+      "metrics": [
+        {
+          "metric": "Family of Apps ad impressions growth",
+          "category": "advertising_operating_indicator",
+          "currentValue": 10,
+          "priorValue": null,
+          "unit": "percent YoY",
+          "reportedGrowthPercent": 10,
+          "aiLinkage": "management_says_ai_contributes_to_monetization",
+          "comparability": "operational_indicator_not_revenue",
+          "note": "Ad impressions increased 10% YoY. Management attributes incremental advertising revenue partly to AI-driven engagement and recommendations; no AI-attributable revenue amount disclosed.",
+          "priorYearReportedGrowthPercent": 14
+        },
+        {
+          "metric": "Average price per ad growth",
+          "category": "advertising_operating_indicator",
+          "currentValue": 14,
+          "priorValue": null,
+          "unit": "percent YoY",
+          "reportedGrowthPercent": 14,
+          "aiLinkage": "management_says_ai_contributes_to_monetization",
+          "comparability": "operational_indicator_not_revenue",
+          "note": "Average price per ad increased 14% YoY; not a direct AI revenue measurement.",
+          "priorYearReportedGrowthPercent": 10
+        },
+        {
+          "metric": "Total company revenue",
+          "category": "company_revenue",
+          "currentUsdM": 64601,
+          "priorYearUsdM": 51242,
+          "reportedGrowthPercent": 26,
+          "aiLinkage": "ai_monetization_claim_not_quantified",
+          "comparability": "whole_company",
+          "note": "Company-wide revenue; cannot be treated as AI revenue."
+        },
+        {
+          "metric": "Operating income (GAAP)",
+          "category": "company_operating_income",
+          "currentUsdM": 12988,
+          "priorYearUsdM": 20535,
+          "reportedGrowthPercent": -37,
+          "aiLinkage": "not_ai_specific",
+          "comparability": "whole_company_affected_by_one_time_charge",
+          "note": "Includes a USD 9,890M litigation-related charge. Company stated operating income excluding this charge would be USD 22,880M; that adjusted figure is not GAAP."
+        }
+      ],
+      "specialItems": [
+        {
+          "name": "Litigation-related charge",
+          "amountUsdM": 9890,
+          "treatment": "included_in_reported_operating_expenses",
+          "note": "Materially affects year-over-year operating income comparison."
+        }
+      ],
+      "sources": [
+        {
+          "name": "Meta Q3 2026 earnings release",
+          "publishedAt": "2026-10-21",
+          "url": "https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-Third-Quarter-2026-Results/default.aspx"
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "No company in this snapshot provides a directly comparable, separately quantified quarterly AI revenue amount; directAiRevenueUsdM remains null for all four.",
+    "Cloud segment revenue includes both AI and non-AI workloads and must not be labelled AI revenue.",
+    "Microsoft Agents and Infra is a newly recast segment and its prior-period figures were recast; compare only within this definition.",
+    "Meta advertising indicators are operational proxies. Management attributes some monetization improvement to AI, but does not quantify AI-attributable revenue.",
+    "Meta Q3 2026 GAAP operating income includes a USD 9.89B litigation-related charge; show this caveat alongside any margin or growth chart."
+  ]
+}

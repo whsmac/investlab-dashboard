@@ -1,0 +1,136 @@
+{
+  "dataAsOf": "2026-10-31",
+  "currency": "USD",
+  "amountUnit": "USD millions",
+  "methodology": "Quarterly Google Cloud segment revenue and operating income transcribed from Alphabet earnings releases and SEC-filed exhibits. Google Cloud includes core cloud services, AI infrastructure and AI solutions; it is not an AI-only revenue or profit measure.",
+  "series": [
+    {
+      "company": "Alphabet",
+      "ticker": "GOOGL",
+      "metricId": "google_cloud_segment_revenue",
+      "metricName": "Google Cloud segment revenue",
+      "metricType": "cloud_segment_revenue",
+      "unit": "USD millions",
+      "aiLinkage": "ai_and_core_cloud_mixed",
+      "comparability": "google_cloud_segment",
+      "fiscalCalendar": "calendar_year",
+      "operatingIncomeMetricName": "Google Cloud segment operating income",
+      "observations": [
+        {
+          "quarter": "2023-Q4",
+          "revenueUsdM": 9192,
+          "operatingIncomeUsdM": 864,
+          "sourcePublishedAt": "2025-02-04",
+          "sourceUrl": "https://www.sec.gov/Archives/edgar/data/1652044/000165204425000010/googexhibit991q42024.htm",
+          "sourceName": "Alphabet quarterly earnings release / SEC exhibit",
+          "reported": true
+        },
+        {
+          "quarter": "2024-Q1",
+          "revenueUsdM": 9574,
+          "operatingIncomeUsdM": 900,
+          "sourcePublishedAt": "2024-04-25",
+          "sourceUrl": "https://www.sec.gov/Archives/edgar/data/1652044/000165204424000047/googexhibit991q12024.htm",
+          "sourceName": "Alphabet quarterly earnings release / SEC exhibit",
+          "reported": true
+        },
+        {
+          "quarter": "2024-Q2",
+          "revenueUsdM": 10347,
+          "operatingIncomeUsdM": 1172,
+          "sourcePublishedAt": "2024-07-23",
+          "sourceUrl": "https://abc.xyz/assets/19/e4/3dc1d4d6439c81206370167db1bd/2024q2-alphabet-earnings-release.pdf",
+          "sourceName": "Alphabet quarterly earnings release / SEC exhibit",
+          "reported": true
+        },
+        {
+          "quarter": "2024-Q3",
+          "revenueUsdM": 11353,
+          "operatingIncomeUsdM": 1947,
+          "sourcePublishedAt": "2024-10-29",
+          "sourceUrl": "https://www.sec.gov/Archives/edgar/data/1652044/000165204424000115/googexhibit991q32024.htm",
+          "sourceName": "Alphabet quarterly earnings release / SEC exhibit",
+          "reported": true
+        },
+        {
+          "quarter": "2024-Q4",
+          "revenueUsdM": 11955,
+          "operatingIncomeUsdM": 2093,
+          "sourcePublishedAt": "2025-02-04",
+          "sourceUrl": "https://www.sec.gov/Archives/edgar/data/1652044/000165204425000010/googexhibit991q42024.htm",
+          "sourceName": "Alphabet quarterly earnings release / SEC exhibit",
+          "reported": true
+        },
+        {
+          "quarter": "2025-Q1",
+          "revenueUsdM": 12260,
+          "operatingIncomeUsdM": 2177,
+          "sourcePublishedAt": "2025-04-24",
+          "sourceUrl": "https://www.sec.gov/Archives/edgar/data/1652044/000165204425000040/googexhibit991q12025.htm",
+          "sourceName": "Alphabet quarterly earnings release / SEC exhibit",
+          "reported": true
+        },
+        {
+          "quarter": "2025-Q2",
+          "revenueUsdM": 13624,
+          "operatingIncomeUsdM": 2826,
+          "sourcePublishedAt": "2025-07-23",
+          "sourceUrl": "https://abc.xyz/assets/cc/27/3ada14014efbadd7a58472f1f3f4/2025q2-alphabet-earnings-release.pdf",
+          "sourceName": "Alphabet quarterly earnings release / SEC exhibit",
+          "reported": true
+        },
+        {
+          "quarter": "2025-Q3",
+          "revenueUsdM": 15157,
+          "operatingIncomeUsdM": 3594,
+          "sourcePublishedAt": "2025-10-29",
+          "sourceUrl": "https://www.sec.gov/Archives/edgar/data/1652044/000165204425000087/googexhibit991q32025.htm",
+          "sourceName": "Alphabet quarterly earnings release / SEC exhibit",
+          "reported": true
+        },
+        {
+          "quarter": "2025-Q4",
+          "revenueUsdM": 17664,
+          "operatingIncomeUsdM": 5313,
+          "sourcePublishedAt": "2026-02-04",
+          "sourceUrl": "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000012/googexhibit991q42025.htm",
+          "sourceName": "Alphabet quarterly earnings release / SEC exhibit",
+          "reported": true
+        },
+        {
+          "quarter": "2026-Q1",
+          "revenueUsdM": 20028,
+          "operatingIncomeUsdM": 6598,
+          "sourcePublishedAt": "2026-04-23",
+          "sourceUrl": "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000043/googexhibit991q12026.htm",
+          "sourceName": "Alphabet quarterly earnings release / SEC exhibit",
+          "reported": true
+        },
+        {
+          "quarter": "2026-Q2",
+          "revenueUsdM": 24768,
+          "operatingIncomeUsdM": 8814,
+          "sourcePublishedAt": "2026-07-22",
+          "sourceUrl": "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000066/googexhibit991q22026.htm",
+          "sourceName": "Alphabet quarterly earnings release / SEC exhibit",
+          "reported": true
+        },
+        {
+          "quarter": "2026-Q3",
+          "revenueUsdM": 30709,
+          "operatingIncomeUsdM": 11121,
+          "sourcePublishedAt": "2026-10-28",
+          "sourceUrl": "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000080/googexhibit991q32026.htm",
+          "sourceName": "Alphabet quarterly earnings release / SEC exhibit",
+          "reported": true
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Google Cloud includes core Google Cloud Platform, Workspace and other enterprise services as well as AI infrastructure and AI solutions; these values are not AI-only revenue or profit.",
+    "This is a separately identified Google Cloud segment metric and must not be merged with Azure, AWS or Meta advertising metrics.",
+    "No missing quarter has been interpolated. A missing prior-year quarter produces null YoY growth.",
+    "Values are reported in USD millions. Calculated growth from reported dollar values may differ slightly from rounded company-reported percentages."
+  ]
+}

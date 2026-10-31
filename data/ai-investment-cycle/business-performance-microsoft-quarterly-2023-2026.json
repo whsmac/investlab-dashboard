@@ -1,0 +1,158 @@
+{
+  "dataAsOf": "2026-10-31",
+  "currency": "USD",
+  "amountUnit": "USD millions",
+  "methodology": "Microsoft Intelligent Cloud segment revenue and operating income, mapped from Microsoft fiscal quarters to calendar quarters by quarter-end date. Fiscal Q4 quarterly values are derived from annual segment totals less reported nine-month cumulative totals where the earnings-release table does not provide a standalone quarter. Intelligent Cloud includes Azure and other cloud services, server products and enterprise/partner services; it is not an Azure-only or AI-only metric.",
+  "series": [
+    {
+      "company": "Microsoft",
+      "ticker": "MSFT",
+      "metricId": "intelligent_cloud_segment_revenue",
+      "metricName": "Intelligent Cloud segment revenue",
+      "metricType": "cloud_segment_revenue",
+      "unit": "USD millions",
+      "aiLinkage": "ai_and_core_cloud_mixed",
+      "comparability": "microsoft_intelligent_cloud_segment",
+      "fiscalCalendar": "fiscal_year_ends_june_30",
+      "operatingIncomeMetricName": "Intelligent Cloud segment operating income",
+      "observations": [
+        {
+          "quarter": "2023-Q2",
+          "revenueUsdM": 23993,
+          "operatingIncomeUsdM": 10526,
+          "sourcePublishedAt": "2023-07-25",
+          "sourceUrl": "https://www.microsoft.com/en-us/investor/earnings/fy-2023-q4/segment-revenues",
+          "additionalSourceUrls": [
+            "https://www.microsoft.com/en-us/investor/earnings/fy-2023-q3/segment-revenues"
+          ],
+          "sourceName": "Microsoft quarterly earnings release — Segment Revenue and Operating Income",
+          "reported": true,
+          "sourceNote": "Quarterly value derived as FY2023 annual Intelligent Cloud result less the nine-month FY2023 result."
+        },
+        {
+          "quarter": "2023-Q3",
+          "revenueUsdM": 24259,
+          "operatingIncomeUsdM": 11751,
+          "sourcePublishedAt": "2023-10-24",
+          "sourceUrl": "https://www.microsoft.com/en-us/investor/earnings/fy-2024-q1/segment-revenues",
+          "additionalSourceUrls": [],
+          "sourceName": "Microsoft quarterly earnings release — Segment Revenue and Operating Income",
+          "reported": true
+        },
+        {
+          "quarter": "2023-Q4",
+          "revenueUsdM": 25880,
+          "operatingIncomeUsdM": 12461,
+          "sourcePublishedAt": "2024-01-30",
+          "sourceUrl": "https://www.microsoft.com/en-us/investor/earnings/fy-2024-q2/segment-revenues",
+          "additionalSourceUrls": [],
+          "sourceName": "Microsoft quarterly earnings release — Segment Revenue and Operating Income",
+          "reported": true
+        },
+        {
+          "quarter": "2024-Q1",
+          "revenueUsdM": 26708,
+          "operatingIncomeUsdM": 12513,
+          "sourcePublishedAt": "2024-04-25",
+          "sourceUrl": "https://www.microsoft.com/en-us/investor/earnings/fy-2024-q3/segment-revenues",
+          "additionalSourceUrls": [],
+          "sourceName": "Microsoft quarterly earnings release — Segment Revenue and Operating Income",
+          "reported": true
+        },
+        {
+          "quarter": "2024-Q2",
+          "revenueUsdM": 28515,
+          "operatingIncomeUsdM": 12859,
+          "sourcePublishedAt": "2024-07-30",
+          "sourceUrl": "https://www.microsoft.com/en-us/investor/earnings/fy-2024-q4/segment-revenues",
+          "additionalSourceUrls": [
+            "https://www.microsoft.com/en-us/investor/earnings/fy-2024-q3/segment-revenues"
+          ],
+          "sourceName": "Microsoft quarterly earnings release — Segment Revenue and Operating Income",
+          "reported": true,
+          "sourceNote": "Quarterly value derived as FY2024 annual Intelligent Cloud result less the nine-month FY2024 result."
+        },
+        {
+          "quarter": "2024-Q3",
+          "revenueUsdM": 24092,
+          "operatingIncomeUsdM": 10503,
+          "sourcePublishedAt": "2024-10-30",
+          "sourceUrl": "https://www.microsoft.com/en-us/investor/earnings/fy-2025-q1/segment-revenues",
+          "additionalSourceUrls": [],
+          "sourceName": "Microsoft quarterly earnings release — Segment Revenue and Operating Income",
+          "reported": true
+        },
+        {
+          "quarter": "2024-Q4",
+          "revenueUsdM": 25544,
+          "operatingIncomeUsdM": 10851,
+          "sourcePublishedAt": "2025-01-29",
+          "sourceUrl": "https://www.microsoft.com/en-us/investor/earnings/fy-2025-q2/segment-revenues",
+          "additionalSourceUrls": [],
+          "sourceName": "Microsoft quarterly earnings release — Segment Revenue and Operating Income",
+          "reported": true
+        },
+        {
+          "quarter": "2025-Q1",
+          "revenueUsdM": 26751,
+          "operatingIncomeUsdM": 11095,
+          "sourcePublishedAt": "2025-04-30",
+          "sourceUrl": "https://www.microsoft.com/en-us/investor/earnings/fy-2025-q3/segment-revenues",
+          "additionalSourceUrls": [],
+          "sourceName": "Microsoft quarterly earnings release — Segment Revenue and Operating Income",
+          "reported": true
+        },
+        {
+          "quarter": "2025-Q2",
+          "revenueUsdM": 29878,
+          "operatingIncomeUsdM": 12140,
+          "sourcePublishedAt": "2025-07-30",
+          "sourceUrl": "https://www.microsoft.com/en-us/investor/earnings/fy-2025-q4/segment-revenues",
+          "additionalSourceUrls": [
+            "https://www.microsoft.com/en-us/investor/earnings/fy-2025-q3/segment-revenues"
+          ],
+          "sourceName": "Microsoft quarterly earnings release — Segment Revenue and Operating Income",
+          "reported": true,
+          "sourceNote": "Quarterly value derived as FY2025 annual Intelligent Cloud result less the nine-month FY2025 result."
+        },
+        {
+          "quarter": "2025-Q3",
+          "revenueUsdM": 30897,
+          "operatingIncomeUsdM": 13391,
+          "sourcePublishedAt": "2025-10-29",
+          "sourceUrl": "https://www.microsoft.com/en-us/investor/earnings/fy-2026-q1/segment-revenues",
+          "additionalSourceUrls": [],
+          "sourceName": "Microsoft quarterly earnings release — Segment Revenue and Operating Income",
+          "reported": true
+        },
+        {
+          "quarter": "2025-Q4",
+          "revenueUsdM": 32907,
+          "operatingIncomeUsdM": 13873,
+          "sourcePublishedAt": "2026-01-28",
+          "sourceUrl": "https://www.microsoft.com/en-us/investor/earnings/fy-2026-q2/segment-revenues",
+          "additionalSourceUrls": [],
+          "sourceName": "Microsoft quarterly earnings release — Segment Revenue and Operating Income",
+          "reported": true
+        },
+        {
+          "quarter": "2026-Q1",
+          "revenueUsdM": 34681,
+          "operatingIncomeUsdM": 13753,
+          "sourcePublishedAt": "2026-04-29",
+          "sourceUrl": "https://www.microsoft.com/en-us/investor/earnings/fy-2026-q3/segment-revenues",
+          "additionalSourceUrls": [],
+          "sourceName": "Microsoft quarterly earnings release — Segment Revenue and Operating Income",
+          "reported": true
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Microsoft fiscal quarters are mapped to calendar quarters by their quarter-end dates; FY2024 Q1 ended September 30, 2023 and is calendar 2023-Q3.",
+    "Intelligent Cloud includes Azure and other cloud services, server products, and enterprise/partner services. It is not Azure-only revenue, nor AI-only revenue or profit.",
+    "FY2023 Q4, FY2024 Q4 and FY2025 Q4 quarterly values are arithmetic differences between reported annual segment totals and reported nine-month cumulative segment totals. The source URLs for both inputs are retained.",
+    "Segment disclosures may be recast in later reports. The series retains the original period-specific report values and should be reviewed for accounting presentation changes before statistical inference.",
+    "No missing quarter has been interpolated."
+  ]
+}
