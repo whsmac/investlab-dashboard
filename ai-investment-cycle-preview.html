@@ -114,7 +114,8 @@ function latest(rows){return rows.length?rows[rows.length-1]:null;}
 
 function renderCapexChart(){
   const companies=Object.keys(COMPANY_META);
-  const series=companies.map(company=>({label:company,color:COMPANY_META[company].color,values:capexRows.filter(r=>r.company===company).map(r=>({quarter:r.quarter,value:r.capexUsdM/1000}))}));
+  const quarters=[...new Set(capexRows.map(r=>r.quarter))].sort();
+  const series=companies.map(company=>({label:company,color:COMPANY_META[company].color,values:quarters.map(quarter=>{const row=capexRows.find(r=>r.company===company&&r.quarter===quarter);return {quarter,value:row?r.capexUsdM/1000:null};})}));
   $("capexChart").innerHTML=svgLineChart(series,{aria:"4개 하이퍼스케일러 기업 전체 PP&E 현금 지출"});
   legend(series);
 }
