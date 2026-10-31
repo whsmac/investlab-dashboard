@@ -177,3 +177,28 @@ test("opening-balance reconciliation reproduces supplied non-TQQQ holdings and U
   assert.ok(Math.abs(result.positions.USD.costBasis - 8945.2) < 1e-8);
   assert.equal(result.cash.USD, 3641);
 });
+
+
+test("a position cannot be bought or sold in a different currency while open", () => {
+  const opening = tx("BUY", { symbol: "XYZ", quantity: 2, unit_price: 10, currency: "USD" });
+  assert.throws(() => calculateLedger([
+    opening,
+    tx("BUY", { sequence_no: 2, symbol: "XYZ", quantity: 1, unit_price: 13000, currency: "KRW" })
+  ]), /Currency mismatch for XYZ/);
+  assert.throws(() => calculateLedger([
+    opening,
+    tx("SELL", { sequence_no: 2, symbol: "XYZ", quantity: 1, unit_price: 13000, currency: "KRW" })
+  ]), /Currency mismatch for XYZ/);
+});
+
+test("different positions may use different currencies and full sale clears position currency", () => {
+  const result = calculateLedger([
+    tx("BUY", { sequence_no: 1, symbol: "USX", quantity: 1, unit_price: 10, currency: "USD" }),
+    tx("BUY", { sequence_no: 2, symbol: "KRX", quantity: 1, unit_price: 13000, currency: "KRW" }),
+    tx("SELL", { sequence_no: 3, symbol: "USX", quantity: 1, unit_price: 12, currency: "USD" })
+  ]);
+  assert.equal(result.positions.USX.currency, null);
+  assert.equal(result.positions.KRX.currency, "KRW");
+  assert.equal(result.realizedByCurrency.USD, 2);
+  assert.equal(result.cash.KRW, -13000);
+});
