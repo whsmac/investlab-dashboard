@@ -86,6 +86,36 @@ Sources for the Q3 2026 disclosures:
 - [Microsoft FY2027 Q1 earnings release](https://www.microsoft.com/en-us/Investor/earnings/FY-2027-Q1/press-release-webcast)
 - [Meta Q3 2026 earnings release](https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-Third-Quarter-2026-Results/default.aspx)
 
+## Q3 2026 business performance snapshot
+
+The separately stored `data/ai-investment-cycle/business-performance-q3-2026.json` adds reported cloud and AI-adjacent business indicators. It deliberately keeps directly disclosed AI revenue separate from broad cloud-segment revenue and operational proxies.
+
+| Company | Reported Q3 2026 indicator | YoY | Profitability / caveat |
+|---|---|---:|---|
+| Alphabet | Google Cloud revenue USD 30.709B | +103% | Cloud operating income USD 11.121B; 36.2% segment margin. Includes AI infrastructure/solutions and core GCP. |
+| Amazon | AWS revenue USD 46.0B | +39.3% | AWS operating income USD 17.8B; 38.7% segment margin. Includes AI and core cloud workloads. |
+| Microsoft | Azure revenue USD 33.165B | +48% | Azure-only operating income not separately disclosed. |
+| Microsoft | Agents and Infra segment revenue USD 76.795B | +25% | Segment operating income USD 40.558B; 52.8% margin. FY2027 recast segment, not AI-only. |
+| Meta | Ad impressions +10%; average price per ad +14% | reported | Management says AI contributes to improved engagement, recommendations and monetization, but does not quantify AI-attributable revenue. |
+| Meta | Company revenue USD 64.601B | +26% | GAAP operating income fell 37%, including a USD 9.89B litigation-related charge; the company also provided a non-GAAP-style exclusion illustration. |
+
+Sources:
+- Alphabet Q3 2026 earnings release: https://www.sec.gov/Archives/edgar/data/1652044/000165204426000080/googexhibit991q32026.htm
+- Amazon Q3 2026 earnings release: https://press.aboutamazon.com/2026/10/amazon-com-announces-third-quarter-results
+- Microsoft FY2027 Q1 earnings release: https://www.microsoft.com/en-us/Investor/earnings/FY-2027-Q1/press-release-webcast
+- Meta Q3 2026 earnings release: https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-Third-Quarter-2026-Results/default.aspx
+
+### Interpretation rules
+
+- Direct quarterly AI revenue is null for all four companies in this snapshot: no comparable, separately quantified figure was identified.
+- Cloud revenue is an AI-and-core-cloud mixed indicator, not AI revenue.
+- Microsoft's Azure revenue and Agents and Infra segment are separate metrics. Do not add them together; the reporting segment was recast for FY2027.
+- Meta's ad impressions and price-per-ad growth are operational proxies, not direct revenue attribution.
+- Meta's GAAP operating income trend must be annotated with the USD 9.89B litigation charge.
+- Operating margin is calculated only where both revenue and operating income belong to the same reported segment and period.
+
+The new `src/ai-investment-cycle/business-performance.mjs` helpers calculate YoY changes and segment operating margins while preserving disclosure labels and null direct-AI-revenue values. They do not estimate AI revenue or attribute broad segment profits to AI.
+
 ## Next implementation stages
 1. Build source-backed quarterly dataset and company fiscal-calendar mapping.
 2. Validate CAPEX figures against filings and calculate a consistent reported series.
