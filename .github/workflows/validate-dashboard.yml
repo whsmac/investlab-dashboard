@@ -57,7 +57,7 @@ jobs:
             node --check "$file"
           done
       - name: Run isolated investment-cycle tests
-        run: node --test tests/ai-investment-cycle.test.mjs
+        run: node --test tests/ai-investment-cycle.test.mjs tests/market-data-csv.test.mjs
       - name: Check required symbol-management elements
         run: |
           python3 - <<'PY'
