@@ -105,7 +105,7 @@ test("counts consecutive CAPEX growth deceleration but emits no buy/sell signal"
   assert.equal(result[2].consecutiveDecelerationQuarters, 0);
   assert.equal(result[4].consecutiveDecelerationQuarters, 0);
   assert.ok(result.every(item => !("signal" in item) && !("recommendation" in item)));
-  assert.match(result[1].interpretation, /not necessarily falling CAPEX/);
+  assert.match(result[1].interpretation, /not necessarily that CAPEX itself is falling/);
 });
 
 test("missing CAPEX acceleration resets deceleration streak", () => {
