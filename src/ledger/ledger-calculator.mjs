@@ -5,6 +5,16 @@
  * is intentionally outside this module.
  */
 export function calculateLedger(inputTransactions) {
+  if (!Array.isArray(inputTransactions)) throw new Error("Transactions must be an array");
+  for (const tx of inputTransactions) {
+    if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(String(tx.transaction_date ?? "")) ||
+        Number.isNaN(Date.parse(`${tx.transaction_date}T00:00:00Z`))) {
+      throw new Error("Invalid transaction_date; expected YYYY-MM-DD");
+    }
+    if (!Number.isInteger(Number(tx.sequence_no)) || Number(tx.sequence_no) <= 0) {
+      throw new Error("Invalid sequence_no; expected a positive integer");
+    }
+  }
   const txs = [...inputTransactions].sort((a, b) =>
     String(a.transaction_date).localeCompare(String(b.transaction_date)) ||
     Number(a.sequence_no) - Number(b.sequence_no) ||
@@ -37,6 +47,9 @@ export function calculateLedger(inputTransactions) {
     const currency = tx.currency ?? "USD";
     if (!Object.hasOwn(cash, currency)) throw new Error(`Unsupported currency: ${currency}`);
     const fees = amount(tx.fees ?? 0, "fees");
+    if (tx.applied_fx_rate != null && !(Number(tx.applied_fx_rate) > 0 && Number.isFinite(Number(tx.applied_fx_rate)))) {
+      throw new Error("Invalid applied_fx_rate");
+    }
     const gross = tx.gross_amount == null ? null : amount(tx.gross_amount, "gross_amount");
 
     if (["BUY", "OPENING_POSITION"].includes(type)) {
