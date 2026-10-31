@@ -139,6 +139,16 @@ test("business performance derives cloud segment growth and operating margins wi
   assert.equal(alphabet.directAiRevenueUsdM, null);
 });
 
+test("AWS revenue and operating income growth use the correct Q3 2025 reported comparatives", () => {
+  const snapshot = JSON.parse(readFileSync(new URL("../data/ai-investment-cycle/business-performance-q3-2026.json", import.meta.url), "utf8"));
+  const amazon = deriveBusinessPerformance(snapshot).find(row => row.company === "Amazon");
+  const revenue = amazon.metrics.find(row => row.metric === "AWS segment revenue");
+  const income = amazon.metrics.find(row => row.metric === "AWS segment operating income");
+  assert.ok(Math.abs(revenue.calculatedGrowthPercent - ((46000 / 33006 - 1) * 100)) < 1e-8);
+  assert.ok(Math.abs(income.calculatedGrowthPercent - ((17800 / 11434 - 1) * 100)) < 1e-8);
+  assert.ok(Math.abs(income.operatingMarginPercent - (17800 / 46000 * 100)) < 1e-8);
+});
+
 test("business performance keeps Microsoft recast segment and Azure revenue as separate metrics", () => {
   const snapshot = JSON.parse(readFileSync(new URL("../data/ai-investment-cycle/business-performance-q3-2026.json", import.meta.url), "utf8"));
   const microsoft = deriveBusinessPerformance(snapshot).find(row => row.company === "Microsoft");
