@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { calculateCompanySeries, aggregateQuarterlyCapex, calculateMarketPerformance } from "../src/ai-investment-cycle/metrics.mjs";
-import { calculateYoYPercent, calculateOperatingMarginPercent, deriveBusinessPerformance } from "../src/ai-investment-cycle/business-performance.mjs";
+import { calculateYoYPercent, calculateOperatingMarginPercent, deriveBusinessPerformance, deriveQuarterlyBusinessSeries } from "../src/ai-investment-cycle/business-performance.mjs";
 import { calculateLaggedBusinessLinkage } from "../src/ai-investment-cycle/cycle-linkage.mjs";
 
 const sample = [
@@ -215,4 +215,38 @@ test("lagged linkage requires enough aligned observations and rejects duplicate 
   assert.ok(result.every(row => row.status === "insufficient-or-constant-data"));
   assert.throws(() => calculateLaggedBusinessLinkage([...capex, capex[0]], business), /Duplicate/);
   assert.throws(() => calculateLaggedBusinessLinkage(capex, business, { maxLag: 13 }), /maxLag/);
+});
+
+
+test("AWS quarterly history derives a continuous 12-quarter series with YoY growth and margins", () => {
+  const dataset = JSON.parse(readFileSync(new URL("../data/ai-investment-cycle/business-performance-aws-quarterly-2023-2026.json", import.meta.url), "utf8"));
+  const [series] = deriveQuarterlyBusinessSeries(dataset);
+  assert.equal(series.company, "Amazon");
+  assert.equal(series.observations.length, 12);
+  assert.equal(series.observations[0].quarter, "2023-Q4");
+  const q4_2024 = series.observations.find(row => row.quarter === "2024-Q4");
+  assert.ok(Math.abs(q4_2024.businessGrowthPercent - ((28786 / 24204 - 1) * 100)) < 1e-8);
+  assert.ok(Math.abs(q4_2024.operatingMarginPercent - (10632 / 28786 * 100)) < 1e-8);
+  const q3_2026 = series.observations.find(row => row.quarter === "2026-Q3");
+  assert.ok(Math.abs(q3_2026.businessGrowthPercent - ((45984 / 33006 - 1) * 100)) < 1e-8);
+  assert.ok(series.observations.every(row => row.aiLinkage === undefined || row.aiLinkage !== "direct_ai_revenue"));
+});
+
+test("quarterly business history does not interpolate missing prior-year quarters", () => {
+  const dataset = JSON.parse(readFileSync(new URL("../data/ai-investment-cycle/business-performance-aws-quarterly-2023-2026.json", import.meta.url), "utf8"));
+  const copy = structuredClone(dataset);
+  copy.series[0].observations = copy.series[0].observations.filter(row => row.quarter !== "2025-Q3");
+  const [series] = deriveQuarterlyBusinessSeries(copy);
+  const q3_2026 = series.observations.find(row => row.quarter === "2026-Q3");
+  assert.equal(q3_2026.businessGrowthPercent, null);
+});
+
+test("quarterly business history rejects duplicate quarters and invalid source records", () => {
+  const dataset = JSON.parse(readFileSync(new URL("../data/ai-investment-cycle/business-performance-aws-quarterly-2023-2026.json", import.meta.url), "utf8"));
+  const duplicate = structuredClone(dataset);
+  duplicate.series[0].observations.push(duplicate.series[0].observations[0]);
+  assert.throws(() => deriveQuarterlyBusinessSeries(duplicate), /Duplicate business quarter/);
+  const missingSource = structuredClone(dataset);
+  delete missingSource.series[0].observations[0].sourceUrl;
+  assert.throws(() => deriveQuarterlyBusinessSeries(missingSource), /HTTPS sourceUrl/);
 });
