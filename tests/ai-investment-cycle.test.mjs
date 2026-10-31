@@ -374,3 +374,55 @@ test("historical linkage refuses multiple business metrics for the same company"
   const aws = JSON.parse(readFileSync(new URL("../data/ai-investment-cycle/business-performance-aws-quarterly-2023-2026.json", import.meta.url), "utf8"));
   assert.throws(() => deriveHistoricalCycleLinkage(capex, [aws, aws]), /Multiple business metric series/);
 });
+
+
+test("derives quarterly adjusted total returns against the benchmark on common quarter-end dates", () => {
+  const company = [
+    { date: "2024-12-31", adjustedClose: 100 },
+    { date: "2025-03-31", adjustedClose: 110 },
+    { date: "2025-06-30", adjustedClose: 120 },
+  ];
+  const benchmark = [
+    { date: "2024-12-31", adjustedClose: 100 },
+    { date: "2025-03-31", adjustedClose: 105 },
+    { date: "2025-06-30", adjustedClose: 110 },
+  ];
+  const result = deriveQuarterlyMarketPerformance(company, benchmark, ["2025-Q1", "2025-Q2"]);
+  assert.equal(result[0].startDate, "2024-12-31");
+  assert.equal(result[0].endDate, "2025-03-31");
+  assert.equal(result[0].companyReturnPercent, 10);
+  assert.equal(result[0].benchmarkReturnPercent, 5);
+  assert.equal(result[0].excessReturnPp, 5);
+  assert.equal(result[0].status, "ok");
+  assert.equal(result[1].companyReturnPercent, 120 / 110 * 100 - 100);
+  assert.equal(result[1].benchmarkReturnPercent, 110 / 105 * 100 - 100);
+});
+
+test("quarterly market returns reject stale quarter-end observations instead of silently carrying prices forward", () => {
+  const company = [
+    { date: "2024-12-20", adjustedClose: 100 },
+    { date: "2025-03-31", adjustedClose: 110 },
+  ];
+  const benchmark = [
+    { date: "2024-12-20", adjustedClose: 100 },
+    { date: "2025-03-31", adjustedClose: 105 },
+  ];
+  const result = deriveQuarterlyMarketPerformance(company, benchmark, ["2025-Q1"]);
+  assert.equal(result[0].status, "stale-observation");
+  assert.equal(result[0].companyReturnPercent, null);
+});
+
+test("quarterly market returns require common dates and reject duplicate daily observations", () => {
+  assert.throws(() => deriveQuarterlyMarketPerformance(
+    [{ date: "2024-12-31", adjustedClose: 100 }, { date: "2024-12-31", adjustedClose: 101 }],
+    [{ date: "2024-12-31", adjustedClose: 100 }],
+    ["2025-Q1"],
+  ), /Duplicate company price date/);
+  const result = deriveQuarterlyMarketPerformance(
+    [{ date: "2024-12-31", adjustedClose: 100 }, { date: "2025-03-31", adjustedClose: 110 }],
+    [{ date: "2024-12-30", adjustedClose: 100 }, { date: "2025-03-31", adjustedClose: 105 }],
+    ["2025-Q1"],
+  );
+  assert.equal(result[0].status, "insufficient-data");
+  assert.equal(result[0].companyReturnPercent, null);
+});
