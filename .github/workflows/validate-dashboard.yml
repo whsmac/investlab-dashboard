@@ -85,6 +85,7 @@ jobs:
           import re
           base = Path("supabase/migrations/20261029_unified_ledger_schema.sql").read_text(encoding="utf-8")
           dividend = Path("supabase/migrations/20261030_ledger_dividend_support.sql").read_text(encoding="utf-8")
+          fx_validation = Path("supabase/migrations/20261031_ledger_fx_validation.sql").read_text(encoding="utf-8")
           required_base = [
               "alter table public.ledger_transactions enable row level security",
               "auth.uid() = user_id",
@@ -97,7 +98,7 @@ jobs:
           if missing:
               raise SystemExit("Missing ledger safety rules: " + ", ".join(missing))
           # Ignore SQL comments before checking that migrations do not mutate legacy tables.
-          sql = re.sub(r"--[^\\n]*|/\\*[\\s\\S]*?\\*/", "", base + "\\n" + dividend)
+          sql = re.sub(r"--[^\\n]*|/\\*[\\s\\S]*?\\*/", "", base + "\\n" + dividend + "\\n" + fx_validation)
           protected = r"public\\.(?:holdings|transactions|instruments)\\b"
           mutating = r"\\b(?:alter\\s+table|insert\\s+into|update|delete\\s+from|drop\\s+table|truncate)\\b"
           for statement in re.split(r";", sql, flags=re.S):
