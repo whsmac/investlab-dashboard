@@ -8,7 +8,7 @@ export function calculateLedger(inputTransactions) {
   if (!Array.isArray(inputTransactions)) throw new Error("Transactions must be an array");
   for (const tx of inputTransactions) {
     const dateText = String(tx.transaction_date ?? "");
-    const dateMatch = /^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(dateText);
+    const dateMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateText);
     if (!dateMatch) throw new Error("Invalid transaction_date; expected YYYY-MM-DD");
     const [, year, month, day] = dateMatch.map((part, index) => index === 0 ? part : Number(part));
     const date = new Date(Date.UTC(year, month - 1, day));
