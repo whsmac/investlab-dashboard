@@ -229,7 +229,9 @@ test("AWS quarterly history derives a continuous 12-quarter series with YoY grow
   assert.ok(Math.abs(q4_2024.operatingMarginPercent - (10632 / 28786 * 100)) < 1e-8);
   const q3_2026 = series.observations.find(row => row.quarter === "2026-Q3");
   assert.ok(Math.abs(q3_2026.businessGrowthPercent - ((45984 / 33006 - 1) * 100)) < 1e-8);
-  assert.ok(series.observations.every(row => row.aiLinkage === undefined || row.aiLinkage !== "direct_ai_revenue"));
+  assert.equal(series.aiLinkage, "ai_and_core_cloud_mixed");
+  assert.equal(series.comparability, "aws_segment");
+  assert.ok(series.observations.every(row => row.sourceUrl.startsWith("https://")));
 });
 
 test("quarterly business history does not interpolate missing prior-year quarters", () => {
