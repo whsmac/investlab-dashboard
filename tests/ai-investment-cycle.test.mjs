@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { calculateCompanySeries, aggregateQuarterlyCapex, calculateMarketPerformance } from "../src/ai-investment-cycle/metrics.mjs";
 import { calculateYoYPercent, calculateOperatingMarginPercent, deriveBusinessPerformance } from "../src/ai-investment-cycle/business-performance.mjs";
+import { calculateLaggedBusinessLinkage } from "../src/ai-investment-cycle/cycle-linkage.mjs";
 
 const sample = [
   { company: "A", capexBasis: "cash_capex_net", quarter: "2024-Q1", capexUsdM: 100, aiRevenueUsdM: 20 },
@@ -172,4 +173,46 @@ test("business performance helpers return null for missing or invalid comparison
   assert.equal(calculateYoYPercent(10, 0), null);
   assert.equal(calculateYoYPercent(null, null), null);
   assert.equal(calculateOperatingMarginPercent(10, 0), null);
+});
+
+test("lagged linkage detects a two-quarter lead without claiming causation", () => {
+  const values = [5, 80, 20, 65, 10, 95, 35, 50];
+  const quarters = Array.from({ length: 10 }, (_, i) => {
+    const year = 2024 + Math.floor(i / 4);
+    return `${year}-Q${(i % 4) + 1}`;
+  });
+  const capex = values.map((value, i) => ({
+    company: "Example",
+    quarter: quarters[i],
+    capexYoYPercent: value,
+  }));
+  const business = values.map((value, i) => ({
+    company: "Example",
+    quarter: quarters[i + 2],
+    businessGrowthPercent: value,
+  }));
+  const result = calculateLaggedBusinessLinkage(capex, business, { maxLag: 3, minObservations: 6 });
+  const twoQuarterLead = result.find(row => row.lagQuarters === 2);
+  assert.equal(twoQuarterLead.observations, 8);
+  assert.ok(Math.abs(twoQuarterLead.correlation - 1) < 1e-12);
+  assert.equal(twoQuarterLead.status, "descriptive-only");
+  assert.match(twoQuarterLead.interpretation, /leads business growth by 2 quarter/);
+});
+
+test("lagged linkage requires enough aligned observations and rejects duplicate quarters", () => {
+  const capex = [
+    { company: "A", quarter: "2024-Q1", capexYoYPercent: 10 },
+    { company: "A", quarter: "2024-Q2", capexYoYPercent: 20 },
+    { company: "A", quarter: "2024-Q3", capexYoYPercent: 30 },
+  ];
+  const business = [
+    { company: "A", quarter: "2024-Q1", businessGrowthPercent: 5 },
+    { company: "A", quarter: "2024-Q2", businessGrowthPercent: 10 },
+    { company: "A", quarter: "2024-Q3", businessGrowthPercent: 15 },
+  ];
+  const result = calculateLaggedBusinessLinkage(capex, business, { maxLag: 1, minObservations: 6 });
+  assert.ok(result.every(row => row.correlation === null));
+  assert.ok(result.every(row => row.status === "insufficient-or-constant-data"));
+  assert.throws(() => calculateLaggedBusinessLinkage([...capex, capex[0]], business), /Duplicate/);
+  assert.throws(() => calculateLaggedBusinessLinkage(capex, business, { maxLag: 13 }), /maxLag/);
 });
