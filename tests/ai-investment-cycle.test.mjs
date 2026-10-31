@@ -317,3 +317,17 @@ test("Microsoft Intelligent Cloud history maps fiscal quarters to calendar quart
   assert.equal(series.aiLinkage, "ai_and_core_cloud_mixed");
   assert.ok(series.observations.every(row => row.reported && row.sourceUrl.startsWith("https://")));
 });
+
+
+test("2023 CAPEX extension enables first comparable 2024 YoY growth observations", () => {
+  const dataset = JSON.parse(readFileSync(new URL("../data/ai-investment-cycle/hyperscaler-capex-quarterly-2023-2026.json", import.meta.url), "utf8"));
+  for (const company of ["Microsoft", "Alphabet", "Amazon", "Meta"]) {
+    const rows = dataset.quarters.flatMap(q => q.values
+      .filter(row => row.company === company)
+      .map(row => ({ ...row, quarter: q.quarter, aiRevenueUsdM: null })));
+    const series = calculateCompanySeries(rows);
+    const q1_2024 = series.find(row => row.quarter === "2024-Q1");
+    assert.notEqual(q1_2024.capexYoYPercent, null, company);
+    assert.ok(Number.isFinite(q1_2024.capexYoYPercent), company);
+  }
+});
