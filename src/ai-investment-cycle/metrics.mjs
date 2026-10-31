@@ -171,7 +171,8 @@ export function deriveQuarterlyMarketPerformance(companyPrices, benchmarkPrices,
     const map = new Map();
     for (const point of points) {
       const date = String(point?.date ?? "");
-      if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(date) || !Number.isFinite(Date.parse(`${date}T00:00:00Z`))) {
+      const parsedDate = new Date(`${date}T00:00:00Z`);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(parsedDate.getTime()) || parsedDate.toISOString().slice(0, 10) !== date) {
         throw new TypeError(`${label} price date must use YYYY-MM-DD`);
       }
       const value = Number(point.adjustedClose);
