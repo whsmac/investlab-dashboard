@@ -22,7 +22,7 @@ test("preview loads source-backed CAPEX and business history through local repos
 
 test("CAPEX chart aligns all companies to the same quarter axis and preserves missing quarters", () => {
   assert.match(html, /const quarters=\[\.\.\.new Set\(capexRows\.map\(r=>r\.quarter\)\)\]\.sort\(\)/);
-  assert.match(html, /return \{quarter,value:row\?r\.capexUsdM\/1000:null\}/);
+  assert.match(html, /return \{quarter,value:row\?row\.capexUsdM\/1000:null\}/);
 });
 
 test("preview explicitly distinguishes company-wide CAPEX, mixed business metrics, and unavailable shareholder returns", () => {
