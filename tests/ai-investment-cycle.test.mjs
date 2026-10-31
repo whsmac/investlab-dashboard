@@ -394,8 +394,8 @@ test("derives quarterly adjusted total returns against the benchmark on common q
   assert.equal(result[0].benchmarkReturnPercent, 5);
   assert.equal(result[0].excessReturnPp, 5);
   assert.equal(result[0].status, "ok");
-  assert.equal(result[1].companyReturnPercent, 120 / 110 * 100 - 100);
-  assert.equal(result[1].benchmarkReturnPercent, 110 / 105 * 100 - 100);
+  assert.ok(Math.abs(result[1].companyReturnPercent - ((120 / 110 - 1) * 100)) < 1e-10);
+  assert.ok(Math.abs(result[1].benchmarkReturnPercent - ((110 / 105 - 1) * 100)) < 1e-10);
 });
 
 test("quarterly market returns reject stale quarter-end observations instead of silently carrying prices forward", () => {
@@ -425,4 +425,12 @@ test("quarterly market returns require common dates and reject duplicate daily o
   );
   assert.equal(result[0].status, "insufficient-data");
   assert.equal(result[0].companyReturnPercent, null);
+});
+
+test("quarterly market returns reject impossible calendar dates", () => {
+  assert.throws(() => deriveQuarterlyMarketPerformance(
+    [{ date: "2025-02-30", adjustedClose: 100 }],
+    [{ date: "2025-02-28", adjustedClose: 100 }],
+    ["2025-Q1"],
+  ), /YYYY-MM-DD/);
 });
