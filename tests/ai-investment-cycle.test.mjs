@@ -3,11 +3,11 @@ import assert from "node:assert/strict";
 import { calculateCompanySeries, aggregateQuarterlyCapex, calculateMarketPerformance } from "../src/ai-investment-cycle/metrics.mjs";
 
 const sample = [
-  { company: "A", quarter: "2024-Q1", capexUsdM: 100, aiRevenueUsdM: 20 },
-  { company: "A", quarter: "2024-Q2", capexUsdM: 110, aiRevenueUsdM: 22 },
-  { company: "A", quarter: "2024-Q3", capexUsdM: 120, aiRevenueUsdM: 25 },
-  { company: "A", quarter: "2024-Q4", capexUsdM: 130, aiRevenueUsdM: 28 },
-  { company: "A", quarter: "2025-Q1", capexUsdM: 150, aiRevenueUsdM: 35 },
+  { company: "A", capexBasis: "cash_capex_net", quarter: "2024-Q1", capexUsdM: 100, aiRevenueUsdM: 20 },
+  { company: "A", capexBasis: "cash_capex_net", quarter: "2024-Q2", capexUsdM: 110, aiRevenueUsdM: 22 },
+  { company: "A", capexBasis: "cash_capex_net", quarter: "2024-Q3", capexUsdM: 120, aiRevenueUsdM: 25 },
+  { company: "A", capexBasis: "cash_capex_net", quarter: "2024-Q4", capexUsdM: 130, aiRevenueUsdM: 28 },
+  { company: "A", capexBasis: "cash_capex_net", quarter: "2025-Q1", capexUsdM: 150, aiRevenueUsdM: 35 },
 ];
 
 test("calculates year-over-year and quarter-over-quarter CAPEX growth", () => {
@@ -38,12 +38,13 @@ test("rejects duplicate quarters and malformed period labels", () => {
 
 test("quarterly aggregate marks incomplete universe coverage instead of overstating total", () => {
   const rows = calculateCompanySeries(sample).concat([
-    { company: "B", quarter: "2025-Q1", capexUsdM: 50, aiRevenueUsdM: null },
+    { company: "B", capexBasis: "cash_capex_net", quarter: "2025-Q1", capexUsdM: 50, aiRevenueUsdM: null },
   ]);
   const result = aggregateQuarterlyCapex(rows, ["A", "B"]);
   const q1 = result.find(row => row.quarter === "2025-Q1");
   const q2 = result.find(row => row.quarter === "2024-Q1");
   assert.equal(q1.totalUsdM, 200);
+  assert.equal(q1.aggregationStatus, "comparable");
   assert.equal(q1.coveragePercent, 100);
   assert.equal(q2.totalUsdM, null);
   assert.equal(q2.partialTotalUsdM, 100);
@@ -77,4 +78,15 @@ test("returns null market performance when there are not two aligned observation
   );
   assert.equal(result.companyReturnPercent, null);
   assert.equal(result.excessReturnPp, null);
+});
+
+test("does not aggregate company CAPEX when reported definitions differ", () => {
+  const mixed = [
+    { company: "A", quarter: "2026-Q3", capexUsdM: 51400, capexBasis: "cash_capex_net", aiRevenueUsdM: null },
+    { company: "B", quarter: "2026-Q3", capexUsdM: 45200, capexBasis: "management_capex_including_finance_leases", aiRevenueUsdM: null },
+  ];
+  const result = aggregateQuarterlyCapex(mixed, ["A", "B"])[0];
+  assert.equal(result.totalUsdM, null);
+  assert.equal(result.partialTotalUsdM, 96600);
+  assert.equal(result.aggregationStatus, "mixed-or-unspecified-basis");
 });
