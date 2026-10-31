@@ -98,3 +98,14 @@ A prior review considered Alpha Vantage, Tiingo, Alpaca, and Massive/Polygon. Th
 - No API keys, live price series, vendor connections, Supabase schema, Edge Function, production dashboard, or existing holdings are changed.
 - No automated data collection is performed.
 - CSV values are not bundled as real market observations; tests use synthetic fixtures.
+
+
+## Compounded returns and CAPEX-cycle linkage (added 2026-10-31)
+
+`src/ai-investment-cycle/market-cycle-analysis.mjs` adds three calculation-only diagnostics:
+
+- `deriveCompoundedMarketReturns()` compounds quarterly adjusted total returns using multiplication, not addition. It reports cumulative return from the first supplied quarter and trailing-four-quarter company, SPY-proxy, and excess returns. A missing, stale, invalid, or non-contiguous quarter blocks cumulative-from-first output; a trailing-four-quarter result is available only when all four consecutive quarters are valid.
+- `deriveCapexMarketLinkage()` aligns company-wide CAPEX YoY growth with same-calendar-quarter shareholder total return and SPY-proxy excess return. It reports exact aligned quarters, sample count, and Pearson correlation only when the configurable minimum observation count is met (default 6). It does not shift quarters, fill gaps, or infer causality.
+- `deriveCapexDeceleration()` counts consecutive quarters in which the CAPEX YoY growth rate's acceleration is negative. This means growth is slowing, not necessarily that CAPEX itself is falling. A missing or non-contiguous quarter resets the streak.
+
+All outputs are descriptive diagnostics only. They are not AI-only spending measures, AI CAPEX ROI, predictive indicators, investment-cycle alerts, or buy/sell recommendations. The current history remains short and market prices have not been imported; tests use synthetic observations only. No production UI or live data source is connected.
