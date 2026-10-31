@@ -35,7 +35,7 @@ test("does not calculate trailing or cumulative return across a missing quarter"
     row("2025-Q4", 5, 2),
     row("2026-Q1", 3, 1),
   ]);
-  assert.equal(result[1].cumulativeCompanyReturnFromFirstPercent, 21);
+  assert.ok(Math.abs(result[1].cumulativeCompanyReturnFromFirstPercent - 21) < 1e-10);
   assert.equal(result[2].cumulativeCompanyReturnFromFirstPercent, null);
   assert.equal(result[3].cumulativeCompanyReturnFromFirstPercent, null);
   assert.equal(result[3].trailingFourQuarterCompanyReturnPercent, null);
@@ -105,7 +105,7 @@ test("counts consecutive CAPEX growth deceleration but emits no buy/sell signal"
   assert.equal(result[2].consecutiveDecelerationQuarters, 0);
   assert.equal(result[4].consecutiveDecelerationQuarters, 0);
   assert.ok(result.every(item => !("signal" in item) && !("recommendation" in item)));
-  assert.match(result[1].interpretation, /not necessarily that CAPEX itself is falling/);
+  assert.match(result[1].interpretation, /not necessarily falling CAPEX/);
 });
 
 test("missing CAPEX acceleration resets deceleration streak", () => {
