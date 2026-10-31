@@ -57,7 +57,7 @@ The output labels every result as descriptive-only. A positive correlation at a 
 
 ### Current data sufficiency
 
-The current operating-performance snapshot provides Q3 2026 and selected Q3 2025 comparatives, but it is not a continuous multi-year quarterly series. It is therefore not sufficient to calculate a credible lead/lag relationship yet. The new helper is implemented and tested with controlled fixtures; production analysis must wait until a source-validated historical operating series has at least six aligned quarters (preferably 12 or more).
+The Q3 2026 snapshot remains a point-in-time comparison. A new source-backed AWS quarterly series now covers 12 consecutive quarters from 2023-Q4 through 2026-Q3, with quarterly segment revenue and operating income. It is a broad AWS segment indicator, not AI-only revenue or profit. This gives one company a historical operating series, but the current CAPEX dataset begins in 2024-Q1 and does not yet provide the full prior-year CAPEX history needed for 12 aligned CAPEX-growth/business-growth observations. The lag helper remains descriptive-only; a production company-level linkage should wait for expanded, source-validated CAPEX and business history. Alphabet, Microsoft, and Meta historical business series are still pending.
 
 ## Cycle signal
 Initial transparent rules:
@@ -113,7 +113,7 @@ Sources for the Q3 2026 disclosures:
 - [Microsoft FY2027 Q1 earnings release](https://www.microsoft.com/en-us/Investor/earnings/FY-2027-Q1/press-release-webcast)
 - [Meta Q3 2026 earnings release](https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-Third-Quarter-2026-Results/default.aspx)
 
-## Q3 2026 business performance snapshot
+## Historical AWS operating-performance series\n\nThe file `data/ai-investment-cycle/business-performance-aws-quarterly-2023-2026.json` adds 12 consecutive calendar quarters of AWS segment revenue and operating income, from 2023-Q4 through 2026-Q3. Values are in USD millions and were transcribed from Amazon's quarterly earnings-release supplemental financial information. The metric is stable AWS segment revenue; operating income is retained as a profitability companion. This is a combined AI-and-core-cloud measure and must not be labelled AI revenue or AI profit.\n\nThe source releases used for the historical series are [Amazon Q3 2024](https://ir.aboutamazon.com/news-release/news-release-details/2024/Amazon-com-Announces-Third-Quarter-Results/), [Amazon Q1 2025](https://ir.aboutamazon.com/news-release/news-release-details/2025/Amazon-com-Announces-First-Quarter-Results/default.aspx), [Amazon Q3 2025](https://ir.aboutamazon.com/news-release/news-release-details/2025/Amazon-com-Announces-Third-Quarter-Results/), and [Amazon Q3 2026](https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Third-Quarter-Results/default.aspx).\n\n`deriveQuarterlyBusinessSeries()` in `src/ai-investment-cycle/business-performance.mjs` calculates YoY growth only when the exact prior-year quarter exists, plus same-period segment operating margin. It rejects duplicate quarters and records without HTTPS provenance. Missing quarters are not interpolated.\n\n## Q3 2026 business performance snapshot
 
 The separately stored `data/ai-investment-cycle/business-performance-q3-2026.json` adds reported cloud and AI-adjacent business indicators. It deliberately keeps directly disclosed AI revenue separate from broad cloud-segment revenue and operational proxies.
 
