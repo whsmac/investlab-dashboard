@@ -76,7 +76,7 @@ Sources:
 - Microsoft FY27 Q1 earnings release and call: https://www.microsoft.com/en-us/Investor/earnings/FY-2027-Q1/press-release-webcast and https://www.microsoft.com/en-us/Investor/events/fy-2027/earnings-fy-2027-q1
 - Meta Q3 2026 earnings release: https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-Third-Quarter-2026-Results/default.aspx
 
-The Q3 2026 snapshot is intentionally not yet inserted as normalized calculation input: each source's CAPEX definition must first be mapped to a stable `capexBasis`. The aggregation function now returns a comparable total only when every requested company is present and all records share the same explicit basis. Otherwise it returns a partial sum with a non-comparable status.
+The Q3 2026 source observations are stored in `data/ai-investment-cycle/source-snapshot-2026-q3.json` as a raw, source-attributed snapshot, not yet fed into the normalized calculation input: each source's CAPEX definition must first be mapped to a stable `capexBasis`. The aggregation function now returns a comparable total only when every requested company is present and all records share the same explicit basis. Otherwise it returns a partial sum with a non-comparable status.
 
 ## Next implementation stages
 1. Build source-backed quarterly dataset and company fiscal-calendar mapping.
