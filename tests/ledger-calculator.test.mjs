@@ -247,3 +247,70 @@ test("invalid calendar dates and duplicate date-sequence pairs are rejected", ()
   ]);
   assert.equal(valid.cash.USD, 15);
 });
+
+test("replaying after editing a trade recalculates cash, average cost, and realized P&L", () => {
+  const original = [
+    tx("BUY", { sequence_no: 1, symbol: "XYZ", quantity: 10, unit_price: 100 }),
+    tx("BUY", { sequence_no: 2, symbol: "XYZ", quantity: 10, unit_price: 120 }),
+    tx("SELL", { sequence_no: 3, symbol: "XYZ", quantity: 5, unit_price: 140 })
+  ];
+  const before = calculateLedger(original);
+  assert.equal(before.positions.XYZ.quantity, 15);
+  assert.equal(before.positions.XYZ.averageCost, 110);
+  assert.equal(before.realizedBySymbol.XYZ, 150);
+  assert.equal(before.cash.USD, -850);
+
+  // Correct the sale price from 140 to 130 and replay the full transaction set.
+  const corrected = original.map((item, index) =>
+    index === 2 ? { ...item, unit_price: 130 } : item
+  );
+  const afterCorrection = calculateLedger(corrected);
+  assert.equal(afterCorrection.positions.XYZ.quantity, 15);
+  assert.equal(afterCorrection.positions.XYZ.averageCost, 110);
+  assert.equal(afterCorrection.realizedBySymbol.XYZ, 100);
+  assert.equal(afterCorrection.cash.USD, -900);
+
+  // Delete the sale and replay; both realized P&L and cash must return to pre-sale values.
+  const afterDeletion = calculateLedger(corrected.slice(0, 2));
+  assert.equal(afterDeletion.positions.XYZ.quantity, 20);
+  assert.equal(afterDeletion.positions.XYZ.averageCost, 110);
+  assert.equal(afterDeletion.realizedBySymbol.XYZ, undefined);
+  assert.equal(afterDeletion.cash.USD, -2200);
+});
+
+test("replaying preserves per-currency balances and dividend totals after deletion", () => {
+  const ledger = [
+    tx("CASH_DEPOSIT", { sequence_no: 1, gross_amount: 500, currency: "USD" }),
+    tx("DIVIDEND", {
+      sequence_no: 2, symbol: "XYZ", gross_amount: 20,
+      withholding_tax: 3, fees: 1, currency: "USD"
+    }),
+    tx("CASH_DEPOSIT", { sequence_no: 3, gross_amount: 100000, currency: "KRW" })
+  ];
+  const full = calculateLedger(ledger);
+  assert.equal(full.cash.USD, 516);
+  assert.equal(full.cash.KRW, 100000);
+  assert.equal(full.dividends.gross.USD, 20);
+  assert.equal(full.dividends.withholdingTax.USD, 3);
+  assert.equal(full.dividends.net.USD, 16);
+
+  const withoutDividend = calculateLedger([ledger[0], ledger[2]]);
+  assert.equal(withoutDividend.cash.USD, 500);
+  assert.equal(withoutDividend.cash.KRW, 100000);
+  assert.equal(withoutDividend.dividends.gross.USD, 0);
+  assert.equal(withoutDividend.dividends.net.USD, 0);
+});
+
+test("same sequence number is valid on different dates and replay ordering is deterministic", () => {
+  const result = calculateLedger([
+    tx("CASH_DEPOSIT", {
+      transaction_date: "2026-01-02", sequence_no: 1, gross_amount: 20
+    }),
+    tx("CASH_DEPOSIT", {
+      transaction_date: "2026-01-01", sequence_no: 1, gross_amount: 10
+    })
+  ]);
+  assert.equal(result.cash.USD, 30);
+  assert.equal(result.appliedTransactionCount, 2);
+});
+
