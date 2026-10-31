@@ -109,3 +109,27 @@ A prior review considered Alpha Vantage, Tiingo, Alpaca, and Massive/Polygon. Th
 - `deriveCapexDeceleration()` counts consecutive quarters in which the CAPEX YoY growth rate's acceleration is negative. This means growth is slowing, not necessarily that CAPEX itself is falling. A missing or non-contiguous quarter resets the streak.
 
 All outputs are descriptive diagnostics only. They are not AI-only spending measures, AI CAPEX ROI, predictive indicators, investment-cycle alerts, or buy/sell recommendations. The current history remains short and market prices have not been imported; tests use synthetic observations only. No production UI or live data source is connected.
+
+
+## Local adjusted-price import and shareholder-return preview (2026-10-31)
+
+The isolated preview now contains a manual five-file CSV import interface for MSFT, GOOGL, AMZN, META, and SPY.
+
+- One normalized CSV per ticker, with exact header `ticker,date,adjustedClose`.
+- Shared source name, HTTPS source URL, retrieval timestamp, USD currency, split-and-cash-dividend adjustment declaration, and usage-rights note are required.
+- The user must explicitly confirm that the source terms permit the intended download, personal analysis, and local retention, and that adjusted close includes both cash dividends and splits.
+- The parser and bundle validator reject missing tickers, mixed sources or adjustment methods, duplicate dates, malformed observations, and missing common pre-2023 baseline coverage.
+- On a ready bundle, the preview renders quarterly total return, trailing-four-quarter compounded returns, SPY-proxy excess return, and descriptive same-quarter CAPEX/market-return correlations.
+- The five imported files are processed in browser memory only. They are not uploaded, persisted to Supabase, or retained after page refresh.
+- The UI does not fetch prices or connect to any provider. The parser's metadata checks do not independently verify vendor data methodology or grant data rights.
+- SPY is an ETF proxy, not the official S&P 500 index. Shareholder returns are not AI CAPEX ROI. Correlations are descriptive only and are not predictive or trading signals.
+
+### Source acquisition note
+
+Yahoo's official help page currently says historical CSV downloads require Yahoo Finance Gold and may be unavailable for some instruments because of data licensing restrictions: https://help.yahoo.com/kb/account/account-security-sln2311.html . Do not assume free automated Yahoo downloads or scraping are permitted. Use only a source whose terms explicitly permit the user's intended workflow. If a valid source is unavailable, leave the market-return panel unpopulated rather than weakening the adjustment or rights checks.
+
+### UI limitations
+
+- The current import expects the normalized three-column CSV contract; provider exports must be converted to that format before import.
+- One shared source URL is recorded for the five-file comparison bundle.
+- The browser-memory import is a preview workflow, not a persistent portfolio database feature.
