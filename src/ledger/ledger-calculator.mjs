@@ -23,7 +23,14 @@ export function calculateLedger(inputTransactions) {
     if (!Number.isFinite(n) || n < 0) throw new Error(`Invalid ${label}`);
     return n;
   };
-  const getPosition = symbol => positions.get(symbol) ?? { quantity: 0, averageCost: 0, costBasis: 0 };
+  const getPosition = symbol => positions.get(symbol) ?? {
+    quantity: 0, averageCost: 0, costBasis: 0, currency: null
+  };
+  const assertPositionCurrency = (position, currency, symbol) => {
+    if (position.quantity > 0 && position.currency !== currency) {
+      throw new Error(`Currency mismatch for ${symbol}: position is ${position.currency}, transaction is ${currency}`);
+    }
+  };
 
   for (const tx of txs) {
     const type = tx.transaction_type;
@@ -37,9 +44,15 @@ export function calculateLedger(inputTransactions) {
       const qty = Number(tx.quantity), price = Number(tx.unit_price);
       if (!(qty > 0) || !Number.isFinite(qty) || !(price >= 0) || !Number.isFinite(price)) throw new Error("Invalid buy quantity or unit price");
       const p = getPosition(tx.symbol);
+      assertPositionCurrency(p, currency, tx.symbol);
       const cost = type === "OPENING_POSITION" ? (gross ?? qty * price) : qty * price + fees;
       const newQty = p.quantity + qty;
-      positions.set(tx.symbol, { quantity: newQty, costBasis: p.costBasis + cost, averageCost: (p.costBasis + cost) / newQty });
+      positions.set(tx.symbol, {
+        quantity: newQty,
+        costBasis: p.costBasis + cost,
+        averageCost: (p.costBasis + cost) / newQty,
+        currency
+      });
       if (type === "BUY") cash[currency] -= qty * price + fees;
       applied.push(tx);
     } else if (type === "SELL") {
@@ -47,13 +60,19 @@ export function calculateLedger(inputTransactions) {
       const qty = Number(tx.quantity), price = Number(tx.unit_price);
       if (!(qty > 0) || !Number.isFinite(qty) || !(price >= 0) || !Number.isFinite(price)) throw new Error("Invalid sell quantity or unit price");
       const p = getPosition(tx.symbol);
+      assertPositionCurrency(p, currency, tx.symbol);
       if (qty > p.quantity + 1e-8) throw new Error(`Oversell blocked for ${tx.symbol}: have ${p.quantity}, requested ${qty}`);
       const soldCost = p.averageCost * qty;
       const proceeds = qty * price - fees;
       const realized = proceeds - soldCost;
       const leftQty = Math.max(0, p.quantity - qty);
       const leftCost = leftQty === 0 ? 0 : Math.max(0, p.costBasis - soldCost);
-      positions.set(tx.symbol, { quantity: leftQty, costBasis: leftCost, averageCost: leftQty === 0 ? 0 : leftCost / leftQty });
+      positions.set(tx.symbol, {
+        quantity: leftQty,
+        costBasis: leftCost,
+        averageCost: leftQty === 0 ? 0 : leftCost / leftQty,
+        currency: leftQty === 0 ? null : p.currency
+      });
       cash[currency] += qty * price - fees;
       realizedByCurrency[currency] += realized;
       realizedBySymbol[tx.symbol] = (realizedBySymbol[tx.symbol] ?? 0) + realized;
@@ -81,6 +100,7 @@ export function calculateLedger(inputTransactions) {
       const fromAmount = amount(tx.from_amount, "from_amount");
       const toAmount = amount(tx.to_amount, "to_amount");
       if (!Object.hasOwn(cash, fromCurrency) || !Object.hasOwn(cash, toCurrency) || fromCurrency === toCurrency || fromAmount <= 0 || toAmount <= 0) throw new Error("Invalid FX conversion");
+      if (currency !== toCurrency) throw new Error("FX transaction currency must match to_currency");
       cash[fromCurrency] -= fromAmount;
       cash[toCurrency] += toAmount;
       applied.push(tx);
