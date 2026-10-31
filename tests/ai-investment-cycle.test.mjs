@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { calculateCompanySeries, aggregateQuarterlyCapex } from "../src/ai-investment-cycle/metrics.mjs";
+import { calculateCompanySeries, aggregateQuarterlyCapex, calculateMarketPerformance } from "../src/ai-investment-cycle/metrics.mjs";
 
 const sample = [
   { company: "A", quarter: "2024-Q1", capexUsdM: 100, aiRevenueUsdM: 20 },
@@ -48,4 +48,33 @@ test("quarterly aggregate marks incomplete universe coverage instead of overstat
   assert.equal(q2.totalUsdM, null);
   assert.equal(q2.partialTotalUsdM, 100);
   assert.equal(q2.coveragePercent, 50);
+});
+
+test("calculates adjusted-price total return and benchmark-relative return", () => {
+  const company = [
+    { date: "2025-01-02", adjustedClose: 100 },
+    { date: "2025-06-02", adjustedClose: 120 },
+    { date: "2026-01-02", adjustedClose: 150 },
+  ];
+  const benchmark = [
+    { date: "2025-01-02", adjustedClose: 100 },
+    { date: "2025-06-02", adjustedClose: 110 },
+    { date: "2026-01-02", adjustedClose: 125 },
+  ];
+  const result = calculateMarketPerformance(company, benchmark, "2025-01-01", "2026-01-31");
+  assert.equal(result.companyReturnPercent, 50);
+  assert.equal(result.benchmarkReturnPercent, 25);
+  assert.equal(result.excessReturnPp, 25);
+  assert.equal(result.observations, 3);
+});
+
+test("returns null market performance when there are not two aligned observations", () => {
+  const result = calculateMarketPerformance(
+    [{ date: "2025-01-02", adjustedClose: 100 }],
+    [{ date: "2025-01-02", adjustedClose: 100 }],
+    "2025-01-01",
+    "2025-12-31",
+  );
+  assert.equal(result.companyReturnPercent, null);
+  assert.equal(result.excessReturnPp, null);
 });
