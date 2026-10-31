@@ -97,7 +97,32 @@ test("Q3 2026 source snapshot preserves CAPEX definitions and does not mislabel 
   assert.equal(snapshot.records.length, 4);
   assert.deepEqual(snapshot.records.map(row => row.company).sort(), ["Alphabet", "Amazon", "Meta", "Microsoft"]);
   assert.ok(snapshot.records.every(row => row.aiRevenueUsdM === null));
-  assert.equal(new Set(snapshot.records.map(row => row.capexBasis)).size, 4);
+  assert.equal(new Set(snapshot.records.map(row => row.capexBasis)).size, 1);
+  assert.ok(snapshot.records.every(row => row.capexBasis === "cash_purchases_ppe_gross"));
   assert.ok(snapshot.records.every(row => row.businessSignal === null || row.businessSignal.comparability === "not_ai_specific"));
   assert.ok(snapshot.limitations.some(note => note.includes("must not be summed")));
+});
+
+test("historical hyperscaler series contains source-backed calendar quarters and preserves missing Amazon Q4", () => {
+  const dataset = JSON.parse(readFileSync(new URL("../data/ai-investment-cycle/hyperscaler-capex-quarterly-2024-2026.json", import.meta.url), "utf8"));
+  assert.equal(dataset.quarters.length, 11);
+  const latest = dataset.quarters.find(row => row.quarter === "2026-Q3");
+  assert.equal(latest.values.reduce((sum, row) => sum + row.capexUsdM, 0), 201959);
+  assert.equal(latest.values.length, 4);
+  const amazonQ4 = dataset.quarters.find(row => row.quarter === "2025-Q4");
+  assert.equal(amazonQ4.values.some(row => row.company === "Amazon"), false);
+  assert.ok(dataset.limitations.some(note => note.includes("Q4 Amazon")));
+  assert.ok(dataset.quarters.every(q => q.values.every(row => row.capexBasis === "cash_purchases_ppe_gross")));
+});
+
+test("historical series calculates YoY CAPEX growth when four-quarter history is available", () => {
+  const dataset = JSON.parse(readFileSync(new URL("../data/ai-investment-cycle/hyperscaler-capex-quarterly-2024-2026.json", import.meta.url), "utf8"));
+  const rows = dataset.quarters.flatMap(q => q.values).filter(row => row.company === "Microsoft").map(row => ({
+    ...row,
+    quarter: dataset.quarters.find(q => q.values.includes(row)).quarter,
+    aiRevenueUsdM: null,
+  }));
+  const result = calculateCompanySeries(rows);
+  const latest = result.find(row => row.quarter === "2026-Q3");
+  assert.equal(latest.capexYoYPercent, 102.57731958762886);
 });
