@@ -358,12 +358,15 @@ test("historical linkage runs company-specific comparisons with metric identity 
   const amazonSameQuarter = result.find(row => row.company === "Amazon" && row.lagQuarters === 0);
   assert.equal(amazonSameQuarter.observations, 6);
   const googleTwoQuarterLead = result.find(row => row.company === "Alphabet" && row.lagQuarters === 2);
-  assert.equal(googleTwoQuarterLead.observations, 6);
+  assert.equal(googleTwoQuarterLead.observations, 8);
   assert.equal(googleTwoQuarterLead.status, "descriptive-only");
   assert.match(googleTwoQuarterLead.caveat, /not causal/);
   const googleThreeQuarterLead = result.find(row => row.company === "Alphabet" && row.lagQuarters === 3);
-  assert.equal(googleThreeQuarterLead.observations, 5);
-  assert.equal(googleThreeQuarterLead.correlation, null);
+  assert.equal(googleThreeQuarterLead.observations, 8);
+  assert.equal(googleThreeQuarterLead.status, "descriptive-only");
+  const googleFourQuarterLead = result.find(row => row.company === "Alphabet" && row.lagQuarters === 4);
+  assert.equal(googleFourQuarterLead.observations, 7);
+  assert.equal(googleFourQuarterLead.status, "descriptive-only");
 });
 
 test("historical linkage refuses multiple business metrics for the same company", () => {
