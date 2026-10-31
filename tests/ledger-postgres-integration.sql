@@ -96,7 +96,7 @@ insert into public.ledger_transactions (
 );
 
 -- A conversion with a mismatched applied rate must be rejected.
-do $
+do $ledger_fx$
 begin
   begin
     insert into public.ledger_transactions (
@@ -113,10 +113,10 @@ begin
     null;
   end;
 end;
-$;
+$ledger_fx$;
 
 -- FX fees are in target currency and cannot exceed the gross target amount.
-do $
+do $ledger_fx$
 begin
   begin
     insert into public.ledger_transactions (
@@ -133,10 +133,10 @@ begin
     null;
   end;
 end;
-$;
+$ledger_fx$;
 
 -- Cash deposit fees cannot exceed the gross deposit; opening balances are net snapshots.
-do $
+do $ledger_fx$
 begin
   begin
     insert into public.ledger_transactions (
@@ -164,7 +164,7 @@ begin
     null;
   end;
 end;
-$;
+$ledger_fx$;
 
 -- Dividend amount, withholding, and fee validation.
 insert into public.ledger_transactions (
