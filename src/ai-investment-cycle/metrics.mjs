@@ -65,7 +65,8 @@ export function calculateCompanySeries(records) {
   for (const companyRows of byCompany.values()) {
     for (let i = 0; i < companyRows.length; i += 1) {
       const row = companyRows[i];
-      const previous = companyRows[i - 1];
+      const candidatePrevious = companyRows[i - 1];
+      const previous = candidatePrevious?._qIndex === row._qIndex - 1 ? candidatePrevious : null;
       const yearAgo = companyRows.find(item => item._qIndex === row._qIndex - 4);
       const yoyCapex = pctChange(row.capexUsdM, yearAgo?.capexUsdM);
       const yoyAiRevenue = pctChange(row.aiRevenueUsdM, yearAgo?.aiRevenueUsdM);
