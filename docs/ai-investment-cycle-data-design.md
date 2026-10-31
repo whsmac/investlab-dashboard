@@ -73,9 +73,9 @@ Exploratory Pearson correlations from the current snapshot:
 | Microsoft | Intelligent Cloud revenue | +0.40 (n=8) | -0.12 (n=8) | -0.77 (n=7) | -0.48 (n=6) | insufficient (n=5) |
 | Meta | Consolidated revenue | -0.45 (n=8) | -0.24 (n=8) | +0.65 (n=8) | +0.71 (n=8) | +0.73 (n=7) |
 
-These are **exploratory descriptive correlations only**, not statistically reliable estimates or forecasts. The sample sizes are only 6–8 observations; 2023 CAPEX values are rounded and awaiting primary-filing cross-check; 2024–2026 CAPEX values are also rounded in the source compilation; Amazon has missing Q4 CAPEX observations in 2024 and 2025; and the business metrics are not AI-only. Microsoft Intelligent Cloud includes server/enterprise activity, while Meta consolidated revenue is largely driven by its core apps and advertising business. The changing sign and magnitude across companies and lags do not support a single universal CAPEX-to-revenue timing rule.
+These are **exploratory descriptive correlations only**, not statistically reliable estimates or forecasts. The sample sizes are only 6–8 observations; 2023 CAPEX values are rounded and all 16 company-quarter observations have passed primary-filing cross-check; 2024–2026 CAPEX values are also rounded in the source compilation; Amazon has missing Q4 CAPEX observations in 2024 and 2025; and the business metrics are not AI-only. Microsoft Intelligent Cloud includes server/enterprise activity, while Meta consolidated revenue is largely driven by its core apps and advertising business. The changing sign and magnitude across companies and lags do not support a single universal CAPEX-to-revenue timing rule.
 
-Do not use these correlations as dashboard buy/sell signals. The next analytical work is to validate every 2023 CAPEX filing input, improve business metric consistency, and expand the historical sample before considering any cycle-warning calibration.
+Do not use these correlations as dashboard buy/sell signals. The next analytical work is to improve business metric consistency and expand the historical sample before considering any cycle-warning calibration.
 
 ## Cycle signal
 Initial transparent rules:
@@ -110,7 +110,7 @@ The 15-quarter dataset is stored in `data/ai-investment-cycle/hyperscaler-capex-
 
 This uses one consistent cash-flow line item: **cash purchases of PP&E (gross)**. It is intentionally narrower than some management CAPEX definitions that include finance-lease principal. It is also company-wide investment, not AI-only CAPEX.
 
-Source compilation for 2024-Q1 onward: [tradmap — Big Tech Capital Expenditures](https://tradmap.com/stats/big-tech-capex), updated 2026-10-30, which attributes its quarterly figures to SEC EDGAR/XBRL cash-flow statements. Most observations are rounded to USD 0.1B. The 2023-Q1 through 2023-Q4 extension uses [AhaSignals' dated cash-capex history](https://ahasignals.com/capital-spending-cash-coverage/history/2023-12-31/), a SEC Companyfacts/filing compilation published as a 2026-09-08 v1.0.0 snapshot; the accession IDs and direct-vs-cumulative-difference method are retained on each observation. This extension is provisional until independently checked against each underlying SEC filing. Amazon Q3 2026 is taken from its earnings-release cash-flow statement: gross PP&E purchases USD 77.259B; proceeds and incentives USD 1.381B. Alphabet Q3 2026 cash PP&E purchases are USD 51.355B. Microsoft Q3 2026 cash PP&E purchases are USD 39.4B, distinct from management CAPEX including leases of USD 45.2B. Meta Q3 2026 is approximately USD 33.9B on the cash PP&E series, distinct from lease-inclusive management CAPEX.
+Source compilation for 2024-Q1 onward: [tradmap — Big Tech Capital Expenditures](https://tradmap.com/stats/big-tech-capex), updated 2026-10-30, which attributes its quarterly figures to SEC EDGAR/XBRL cash-flow statements. Most observations are rounded to USD 0.1B. The 2023-Q1 through 2023-Q4 extension uses [AhaSignals' dated cash-capex history](https://ahasignals.com/capital-spending-cash-coverage/history/2023-12-31/), a SEC Companyfacts/filing compilation published as a 2026-09-08 v1.0.0 snapshot; the accession IDs and direct-vs-cumulative-difference method are retained on each observation. This extension has passed primary-source cross-check for all 16 company-quarter observations; see `docs/ai-investment-cycle-capex-source-audit-2023.md`. Amazon Q3 2026 is taken from its earnings-release cash-flow statement: gross PP&E purchases USD 77.259B; proceeds and incentives USD 1.381B. Alphabet Q3 2026 cash PP&E purchases are USD 51.355B. Microsoft Q3 2026 cash PP&E purchases are USD 39.4B, distinct from management CAPEX including leases of USD 45.2B. Meta Q3 2026 is approximately USD 33.9B on the cash PP&E series, distinct from lease-inclusive management CAPEX.
 
 The four-company Q3 2026 gross cash PP&E total is approximately USD 201.96B. This is a common cash-flow metric, not a claim that every company's broader management CAPEX definition is identical. The dataset preserves missing Amazon Q4 observations as missing; it does not interpolate or treat them as zero.
 
@@ -118,7 +118,7 @@ The four-company Q3 2026 gross cash PP&E total is approximately USD 201.96B. Thi
 
 - The four-company cash PP&E series rose from approximately USD 44.3B in 2024-Q1 to USD 201.96B in 2026-Q3.
 - This is a steep increase in reported infrastructure and other PP&E cash spending, but not proof that all spending is AI-related.
-- The historical dataset now has 15 calendar quarters. It supports YoY CAPEX growth calculations from 2024-Q1 where the exact prior-year observation exists, but the older 2023 source vintage has a different precision and still needs primary-filing validation. This history is not enough to treat cycle-warning thresholds as statistically calibrated.
+- The historical dataset now has 15 calendar quarters. It supports YoY CAPEX growth calculations from 2024-Q1 where the exact prior-year observation exists, and the older 2023 source vintage has a different precision but has passed primary-filing validation. This history is not enough to treat cycle-warning thresholds as statistically calibrated.
 - Company-specific lines and a combined series should both be displayed. Aggregate quarters with missing company data must show coverage and must not be presented as a full-universe total.
 
 ### Business performance data remains separate
@@ -171,3 +171,10 @@ The new `src/ai-investment-cycle/business-performance.mjs` helpers calculate YoY
 
 ## Safety boundary
 No production Supabase schema, Edge Function, or dashboard UI is changed in this first implementation step. No production data is read or modified.
+
+
+## Market-performance data integration
+
+The provider-neutral calculation foundation is implemented in `deriveQuarterlyMarketPerformance()` in `src/ai-investment-cycle/metrics.mjs`. It calculates quarterly total returns from split- and dividend-adjusted daily closes, aligns each company and benchmark to identical common trading dates, rejects duplicate observations, avoids interpolation, and flags quarter-end observations more than seven calendar days stale. Benchmark excess return is reported in percentage points. The initial benchmark is SPY, explicitly labelled as an S&P 500 ETF proxy rather than the S&P 500 index itself.
+
+No market-data vendor has been selected. The licensing review in `docs/ai-investment-cycle-market-performance.md` found material restrictions in the reviewed providers' current terms on investment research use, persistent cloud storage, derived performance series, redistribution, or user residency. The actual private Supabase storage and dashboard-processing arrangement must be expressly permitted before API keys, live price history, or a provider adapter are connected. Unit tests use synthetic prices only; no live market data or credentials have been added.
