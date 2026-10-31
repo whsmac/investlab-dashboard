@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { calculateCompanySeries, aggregateQuarterlyCapex, calculateMarketPerformance } from "../src/ai-investment-cycle/metrics.mjs";
 
 const sample = [
@@ -89,4 +90,14 @@ test("does not aggregate company CAPEX when reported definitions differ", () => 
   assert.equal(result.totalUsdM, null);
   assert.equal(result.partialTotalUsdM, 96600);
   assert.equal(result.aggregationStatus, "mixed-or-unspecified-basis");
+});
+
+test("Q3 2026 source snapshot preserves CAPEX definitions and does not mislabel segment revenue as AI revenue", () => {
+  const snapshot = JSON.parse(readFileSync(new URL("../data/ai-investment-cycle/source-snapshot-2026-q3.json", import.meta.url), "utf8"));
+  assert.equal(snapshot.records.length, 4);
+  assert.deepEqual(snapshot.records.map(row => row.company).sort(), ["Amazon", "Alphabet", "Meta", "Microsoft"]);
+  assert.ok(snapshot.records.every(row => row.aiRevenueUsdM === null));
+  assert.equal(new Set(snapshot.records.map(row => row.capexBasis)).size, 4);
+  assert.ok(snapshot.records.every(row => row.businessSignal === null || row.businessSignal.comparability === "not_ai_specific"));
+  assert.ok(snapshot.limitations.some(note => note.includes("must not be summed")));
 });
