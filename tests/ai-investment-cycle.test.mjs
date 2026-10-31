@@ -106,7 +106,7 @@ test("Q3 2026 source snapshot preserves CAPEX definitions and does not mislabel 
 });
 
 test("historical hyperscaler series contains source-backed calendar quarters and preserves missing Amazon Q4", () => {
-  const dataset = JSON.parse(readFileSync(new URL("../data/ai-investment-cycle/hyperscaler-capex-quarterly-2024-2026.json", import.meta.url), "utf8"));
+  const dataset = JSON.parse(readFileSync(new URL("../data/ai-investment-cycle/hyperscaler-capex-quarterly-2023-2026.json", import.meta.url), "utf8"));
   assert.equal(dataset.quarters.length, 15);
   const latest = dataset.quarters.find(row => row.quarter === "2026-Q3");
   assert.equal(latest.values.reduce((sum, row) => sum + row.capexUsdM, 0), 201959);
@@ -125,7 +125,7 @@ test("historical hyperscaler series contains source-backed calendar quarters and
 });
 
 test("historical series calculates YoY CAPEX growth when four-quarter history is available", () => {
-  const dataset = JSON.parse(readFileSync(new URL("../data/ai-investment-cycle/hyperscaler-capex-quarterly-2024-2026.json", import.meta.url), "utf8"));
+  const dataset = JSON.parse(readFileSync(new URL("../data/ai-investment-cycle/hyperscaler-capex-quarterly-2023-2026.json", import.meta.url), "utf8"));
   const rows = dataset.quarters.flatMap(q => q.values).filter(row => row.company === "Microsoft").map(row => ({
     ...row,
     quarter: dataset.quarters.find(q => q.values.includes(row)).quarter,
