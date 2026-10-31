@@ -56,6 +56,74 @@ jobs:
             echo "Checking $file"
             node --check "$file"
           done
+      - name: Run ledger calculator tests
+        run: node --test tests/ledger-calculator.test.mjs
+      - name: Check ledger migration includes dividend type and tax field
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          base = Path("supabase/migrations/20261029_unified_ledger_schema.sql").read_text(encoding="utf-8")
+          dividend = Path("supabase/migrations/20261030_ledger_dividend_support.sql").read_text(encoding="utf-8")
+          required = [
+              "'DIVIDEND'",
+              "withholding_tax",
+              "ledger_transactions_transaction_type_check",
+              "withholding_tax + fees <= gross_amount",
+          ]
+          missing = [item for item in required if item not in dividend]
+          if missing:
+              raise SystemExit("Missing dividend schema rules: " + ", ".join(missing))
+          if "'DIVIDEND'" in base:
+              raise SystemExit("Base migration should remain additive; dividend belongs in follow-up migration")
+          print("Dividend migration allowlist and tax constraints are present")
+          PY
+
+      - name: Check ledger RLS, idempotency, and additive migration safety
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          base = Path("supabase/migrations/20261029_unified_ledger_schema.sql").read_text(encoding="utf-8")
+          dividend = Path("supabase/migrations/20261030_ledger_dividend_support.sql").read_text(encoding="utf-8")
+          fx_validation = Path("supabase/migrations/20261031_ledger_fx_validation.sql").read_text(encoding="utf-8")
+          required_base = [
+              "alter table public.ledger_transactions enable row level security",
+              "auth.uid() = user_id",
+              "with check (auth.uid() = user_id)",
+              "unique (user_id, idempotency_key)",
+              "unique (user_id, transaction_date, sequence_no)",
+              "create table if not exists public.ledger_transactions",
+          ]
+          missing = [item for item in required_base if item not in base]
+          if missing:
+              raise SystemExit("Missing ledger safety rules: " + ", ".join(missing))
+          # Ignore SQL comments before checking that migrations do not mutate legacy tables.
+          sql = re.sub(r"--[^\\n]*|/\\*[\\s\\S]*?\\*/", "", base + "\\n" + dividend + "\\n" + fx_validation)
+          protected = r"public\\.(?:holdings|transactions|instruments)\\b"
+          mutating = r"\\b(?:alter\\s+table|insert\\s+into|update|delete\\s+from|drop\\s+table|truncate)\\b"
+          for statement in re.split(r";", sql, flags=re.S):
+              if re.search(mutating, statement, flags=re.I) and re.search(protected, statement, flags=re.I):
+                  raise SystemExit("Migration contains a mutation of a protected legacy table: " + statement.strip())
+          print("Ledger RLS, idempotency, ordering uniqueness, and legacy-table isolation checks passed")
+          PY
+      - name: Check FX rate and cash fee validation migration
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          fx = Path("supabase/migrations/20261031_ledger_fx_validation.sql").read_text(encoding="utf-8")
+          required = [
+              "applied_fx_rate is not null",
+              "to_amount / from_amount",
+              "fees <= to_amount",
+              "fees <= gross_amount",
+              "fees = 0",
+          ]
+          missing = [item for item in required if item not in fx]
+          if missing:
+              raise SystemExit("Missing FX/cash fee rules: " + ", ".join(missing))
+          print("FX rate direction and cash fee constraints are present")
+          PY
+
       - name: Check required symbol-management elements
         run: |
           python3 - <<'PY'
@@ -71,3 +139,38 @@ jobs:
               raise SystemExit("Missing required elements: " + ", ".join(missing))
           print("Required symbol-management elements are present")
           PY
+  ledger-postgres-integration:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: investlab_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d investlab_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      PGPASSWORD: postgres
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGDATABASE: investlab_test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Prepare isolated Supabase-like auth schema and legacy-table sentinels
+        run: psql -v ON_ERROR_STOP=1 -f tests/ledger-postgres-setup.sql
+      - name: Apply base ledger migration
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261029_unified_ledger_schema.sql
+      - name: Apply dividend migration
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261030_ledger_dividend_support.sql
+      - name: Apply FX validation migration
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261031_ledger_fx_validation.sql
+      - name: Verify RLS, idempotency, sequence uniqueness, dividends, FX, and legacy isolation
+        run: psql -v ON_ERROR_STOP=1 -f tests/ledger-postgres-integration.sql
