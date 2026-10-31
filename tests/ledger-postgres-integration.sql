@@ -182,7 +182,7 @@ begin
       user_id, transaction_date, sequence_no, transaction_type,
       symbol, gross_amount, fees, withholding_tax, currency, idempotency_key
     ) values (
-      auth.uid(), '2026-10-30', 3, 'DIVIDEND',
+      auth.uid(), '2026-10-30', 4, 'DIVIDEND',
       'TSLA', 10, 2, 9, 'USD', 'user-a-invalid-dividend'
     );
     raise exception 'Dividend constraint test failed: invalid withholding/fees unexpectedly succeeded';
