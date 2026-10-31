@@ -172,7 +172,9 @@ test("Meta operational indicators and one-off charge remain distinct from AI rev
 test("business performance helpers return null for missing or invalid comparison bases", () => {
   assert.equal(calculateYoYPercent(10, 0), null);
   assert.equal(calculateYoYPercent(null, null), null);
+  assert.equal(calculateYoYPercent(null, 10), null);
   assert.equal(calculateOperatingMarginPercent(10, 0), null);
+  assert.equal(calculateOperatingMarginPercent(null, 10), null);
 });
 
 test("lagged linkage detects a two-quarter lead without claiming causation", () => {
@@ -251,4 +253,7 @@ test("quarterly business history rejects duplicate quarters and invalid source r
   const missingSource = structuredClone(dataset);
   delete missingSource.series[0].observations[0].sourceUrl;
   assert.throws(() => deriveQuarterlyBusinessSeries(missingSource), /HTTPS sourceUrl/);
+  const missingMetric = structuredClone(dataset);
+  delete missingMetric.series[0].observations[0].revenueUsdM;
+  assert.throws(() => deriveQuarterlyBusinessSeries(missingMetric), /revenueUsdM must be present/);
 });
