@@ -27,7 +27,7 @@ test("sell realizes profit at average cost and full sale resets position", () =>
     tx("BUY", { sequence_no: 2, symbol: "XYZ", quantity: 10, unit_price: 120 }),
     tx("SELL", { sequence_no: 3, symbol: "XYZ", quantity: 20, unit_price: 130 })
   ]);
-  assert.deepEqual(result.positions.XYZ, { quantity: 0, costBasis: 0, averageCost: 0 });
+  assert.deepEqual(result.positions.XYZ, { quantity: 0, costBasis: 0, averageCost: 0, currency: null });
   assert.equal(result.realizedBySymbol.XYZ, 400);
   assert.equal(result.cash.USD, 400);
 });
@@ -110,7 +110,7 @@ test("dividend does not change stock quantity or average cost", () => {
     tx("BUY", { sequence_no: 1, symbol: "ABC", quantity: 4, unit_price: 25 }),
     tx("DIVIDEND", { sequence_no: 2, symbol: "ABC", gross_amount: 8, withholding_tax: 1 })
   ]);
-  assert.deepEqual(result.positions.ABC, { quantity: 4, costBasis: 100, averageCost: 25 });
+  assert.deepEqual(result.positions.ABC, { quantity: 4, costBasis: 100, averageCost: 25, currency: "USD" });
   assert.equal(result.cash.USD, -93);
 });
 
