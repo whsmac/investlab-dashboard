@@ -27,7 +27,7 @@ function makeLegend(element, series) {
   ).join("");
 }
 
-function renderResults({ $, svgLineChart, fmtPct, capexRows, companySeries, datasets, bundle }) {
+function renderResults({ $, svgLineChart, fmtPct, companySeries, bundle }) {
   const quarterly = bundle.quarterlyPerformance;
   const compounded = quarterly.map(item => ({
     ticker: item.ticker,
@@ -92,7 +92,7 @@ function renderResults({ $, svgLineChart, fmtPct, capexRows, companySeries, data
       '<td>' + fmtPct(row?.trailingFourQuarterExcessReturnPp) + '</td></tr>';
   }).join("");
 
-  const linkage = deriveCapexMarketLinkage(capexRows, compounded);
+  const linkage = deriveCapexMarketLinkage(companySeries, compounded);
   $("marketLinkageTable").innerHTML = linkage.map(row =>
     '<tr><td>' + row.company + '</td><td>' +
     (row.metric === "shareholder_total_return" ? "주주 총수익률" : "SPY 대비 초과수익률") +
@@ -174,9 +174,7 @@ export function initMarketPerformanceImport({ $, svgLineChart, fmtPct, getCapexR
       }
       renderResults({
         $, svgLineChart, fmtPct,
-        capexRows: getCapexRows(),
         companySeries: getCompanySeries(),
-        datasets,
         bundle,
       });
     } catch (error) {
