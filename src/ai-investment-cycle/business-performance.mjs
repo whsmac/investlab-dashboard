@@ -3,12 +3,14 @@
  * These metrics remain separate from directly disclosed AI revenue.
  */
 export function calculateYoYPercent(current, prior) {
+  if (current === null || current === undefined || prior === null || prior === undefined) return null;
   const now = Number(current), before = Number(prior);
   if (!Number.isFinite(now) || !Number.isFinite(before) || before <= 0) return null;
   return ((now / before) - 1) * 100;
 }
 
 export function calculateOperatingMarginPercent(operatingIncome, revenue) {
+  if (operatingIncome === null || operatingIncome === undefined || revenue === null || revenue === undefined) return null;
   const income = Number(operatingIncome), sales = Number(revenue);
   if (!Number.isFinite(income) || !Number.isFinite(sales) || sales <= 0) return null;
   return (income / sales) * 100;
@@ -44,6 +46,7 @@ export function deriveQuarterlyBusinessSeries(dataset) {
       const index = toQuarterIndex(observation.quarter);
       if (indexed.has(index)) throw new TypeError(`Duplicate business quarter: ${series.company} ${observation.quarter}`);
       for (const field of ["revenueUsdM", "operatingIncomeUsdM"]) {
+        if (!Object.hasOwn(observation, field)) throw new TypeError(`${field} must be present (use null when undisclosed)`);
         const value = observation[field];
         if (value !== null && value !== undefined && (!Number.isFinite(value) || value < 0)) {
           throw new TypeError(`${field} must be a non-negative finite number or null`);
