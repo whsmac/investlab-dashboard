@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>INVESTLAB · AI 투자 사이클 분석 Preview</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--panel:#141d30;--panel2:#1b2941;--line:#2b3a56;--text:#edf3ff;--muted:#9baac5;--blue:#83aaff;--cyan:#58c7d8;--green:#49d4a7;--amber:#f1c66d;--red:#ff8291}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#1a2946 0,#0b1020 55%);color:var(--text);font:14px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+main{max-width:1400px;margin:auto;padding:28px 22px 60px}.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}.brand{font-size:21px;font-weight:850;letter-spacing:.06em}.brand span{color:var(--blue)}.eyebrow,.muted,.sub{color:var(--muted)}.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase}.sub{font-size:13px}.pill{display:inline-block;padding:3px 9px;border-radius:30px;background:#263653;color:#c9d8ff;font-size:11px;margin-left:6px}
+h1{font-size:clamp(26px,4vw,36px);margin:22px 0 4px}h2{font-size:17px;margin:0}.section{margin-top:18px}.panel,.metric-card{background:linear-gradient(145deg,#17243a,#121b2d);border:1px solid var(--line);border-radius:16px;padding:18px;min-width:0}.head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:18px}.metric-label{font-size:12px;color:var(--muted)}.metric{font-size:clamp(21px,2.5vw,29px);font-weight:760;margin-top:6px}.metric-note{font-size:11px;color:var(--muted);margin-top:4px}.layout{display:grid;grid-template-columns:1.25fr 1fr;gap:14px}.controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}select,button{font:inherit;color:var(--text);background:#1d2b43;border:1px solid var(--line);border-radius:9px;padding:8px 11px}button{cursor:pointer}button.active{background:#dbe7ff;color:#101a2b;border-color:#dbe7ff;font-weight:700}button:focus-visible,select:focus-visible{outline:2px solid var(--blue);outline-offset:2px}.chart{width:100%;overflow:hidden}.chart svg{display:block;width:100%;height:auto;min-height:220px}.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-top:8px}.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}.notice{border:1px solid #6a572c;background:#2b2618;color:#f4d990;border-radius:12px;padding:12px 14px;font-size:12px}.info{border:1px solid #314665;background:#14243a;color:#c9d8f1;border-radius:12px;padding:12px 14px;font-size:12px}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;white-space:nowrap}th,td{text-align:right;padding:10px 9px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}th:first-child,td:first-child{text-align:left}th{font-size:11px;color:var(--muted);font-weight:600}td{font-size:12px}.tag{font-size:10px;padding:3px 7px;border-radius:20px;background:#24344f;color:#c9d8f1}.up{color:var(--green)}.down{color:var(--red)}.empty{color:var(--muted);padding:26px 12px;text-align:center;border:1px dashed var(--line);border-radius:12px}.foot{margin-top:20px;color:var(--muted);font-size:11px}.small{font-size:11px;color:var(--muted)}.company-select{min-width:170px}
+@media(max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.layout{grid-template-columns:1fr}}
+@media(max-width:520px){main{padding:18px 12px 40px}.grid{gap:8px}.panel,.metric-card{padding:13px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+</head>
+<body>
+<main>
+<header class="top">
+  <div><div class="brand">INVEST<span>LAB</span><span class="pill">ANALYSIS PREVIEW</span></div><div class="sub">하이퍼스케일러 CAPEX · AI 관련 사업성과 · 주주 시장수익률</div></div>
+  <div class="small">독립 미리보기 · 기존 운영 대시보드와 미연결</div>
+</header>
+<h1>AI 투자 사이클 분석</h1>
+<div class="sub">투자 확대 → 사업성과 → 주주 시장수익률을 구분해 관찰합니다.</div>
+
+<section class="section notice" id="dataNotice">데이터를 불러오는 중입니다.</section>
+<section class="grid" id="summaryCards" aria-label="최신 지표">
+  <div class="metric-card"><div class="metric-label">최근 분기 CAPEX 합계</div><div class="metric">—</div><div class="metric-note">4개 기업 · USD</div></div>
+  <div class="metric-card"><div class="metric-label">최근 분기 기준</div><div class="metric">—</div><div class="metric-note">데이터 기준 분기</div></div>
+  <div class="metric-card"><div class="metric-label">직접 공개된 AI 매출</div><div class="metric">—</div><div class="metric-note">비교 가능한 수치 미공개</div></div>
+  <div class="metric-card"><div class="metric-label">주가 총수익률</div><div class="metric">미확보</div><div class="metric-note">조정주가 데이터 미수집</div></div>
+</section>
+
+<section class="section panel">
+  <div class="head"><div><h2>하이퍼스케일러 CAPEX 추세</h2><div class="small">분기별 PP&amp;E 현금 지출 · USD billions</div></div><span class="tag">기업 전체 CAPEX</span></div>
+  <div id="capexChart" class="chart"><div class="empty">CAPEX 자료를 불러오는 중입니다.</div></div>
+  <div id="capexLegend" class="legend"></div>
+  <div class="small" style="margin-top:10px">Microsoft·Alphabet·Amazon·Meta의 유형자산(PP&amp;E) 현금 구매/취득액입니다. AI 전용 CAPEX가 아니며, 기업별 공시 정의 차이가 있을 수 있습니다.</div>
+</section>
+
+<section class="section layout">
+  <div class="panel">
+    <div class="head"><div><h2>CAPEX 증가율 및 둔화 흐름</h2><div class="small">전년 동기 대비 성장률 · 증가율 가속도</div></div><select id="capexCompany" class="company-select" aria-label="CAPEX 기업 선택"></select></div>
+    <div id="capexGrowthChart" class="chart"><div class="empty">분석 자료를 준비하고 있습니다.</div></div>
+    <div id="decelerationStatus" class="info" style="margin-top:10px">둔화 지표를 계산하고 있습니다.</div>
+  </div>
+  <div class="panel">
+    <div class="head"><div><h2>AI 관련 사업성과</h2><div class="small">기업별 공시 사업부문 매출 · USD billions</div></div><select id="businessCompany" class="company-select" aria-label="사업성과 기업 선택"></select></div>
+    <div id="businessChart" class="chart"><div class="empty">사업성과 자료를 불러오는 중입니다.</div></div>
+    <div id="businessNote" class="small" style="margin-top:10px"></div>
+  </div>
+</section>
+
+<section class="section panel">
+  <div class="head"><div><h2>최근 분기 기업별 핵심 지표</h2><div class="small">CAPEX와 사업성과는 서로 다른 공시 범위입니다.</div></div></div>
+  <div class="table-wrap"><table><thead><tr><th>기업</th><th>최근 CAPEX</th><th>CAPEX YoY</th><th>사업부문 매출</th><th>사업부문 매출 YoY</th><th>영업이익률</th><th>둔화 관찰</th></tr></thead><tbody id="companyTable"><tr><td colspan="7" class="muted">데이터를 불러오는 중입니다.</td></tr></tbody></table></div>
+</section>
+
+<section class="section panel">
+  <div class="head"><div><h2>주주 시장수익률 및 투자성과</h2><div class="small">배당·분할 조정 총수익률 · SPY 초과수익률</div></div><span class="tag">데이터 미연결</span></div>
+  <div class="empty">
+    <strong>실제 주가 데이터가 아직 등록되지 않았습니다.</strong><br>
+    MSFT · GOOGL · AMZN · META · SPY의 동일 제공처·동일 조정방식 일별 자료가 확보되면<br>
+    분기 수익률, 최근 4분기 복리수익률, SPY 대비 초과수익률을 표시합니다.
+  </div>
+  <div class="small" style="margin-top:10px">주주 시장수익률은 AI CAPEX의 투자수익률(ROI)이 아닙니다. AI 매출·영업이익을 직접 식별할 수 없는 경우 별도 AI ROI를 산출하지 않습니다.</div>
+</section>
+
+<footer class="foot">
+  자료 기준일: <span id="asOf">—</span>. CAPEX는 기업 전체 PP&amp;E 현금 지출이며 AI 전용 지출이 아닙니다. AWS·Google Cloud·Microsoft Intelligent Cloud는 AI와 비AI 사업이 혼합된 사업부문 지표이고, Meta는 연결 실적입니다. 기업 간 사업성과 수치를 직접 순위 비교하지 마세요. 이 화면은 분석 미리보기이며 매수·매도 신호를 제공하지 않습니다.
+</footer>
+</main>
+<script type="module">
+import { calculateCompanySeries } from "./src/ai-investment-cycle/metrics.mjs";
+import { deriveQuarterlyBusinessSeries } from "./src/ai-investment-cycle/business-performance.mjs";
+import { deriveCapexDeceleration } from "./src/ai-investment-cycle/market-cycle-analysis.mjs";
+
+const COMPANY_META = {
+  Microsoft:{ticker:"MSFT",color:"#83aaff",businessFile:"business-performance-microsoft-quarterly-2023-2026.json",businessLabel:"Intelligent Cloud"},
+  Alphabet:{ticker:"GOOGL",color:"#58c7d8",businessFile:"business-performance-alphabet-quarterly-2023-2026.json",businessLabel:"Google Cloud"},
+  Amazon:{ticker:"AMZN",color:"#f1c66d",businessFile:"business-performance-aws-quarterly-2023-2026.json",businessLabel:"AWS"},
+  Meta:{ticker:"META",color:"#bd9aff",businessFile:"business-performance-meta-quarterly-2023-2026.json",businessLabel:"연결 매출"}
+};
+const $ = id => document.getElementById(id);
+const fmtB = value => Number.isFinite(value) ? "$"+(value/1000).toLocaleString("en-US",{maximumFractionDigits:1})+"B" : "—";
+const fmtPct = value => Number.isFinite(value) ? (value>0?"+":"")+value.toFixed(1)+"%" : "—";
+const safeText = value => String(value ?? "");
+let capexRows = [], companySeries = [], businessByCompany = {}, deceleration = [];
+
+function svgLineChart(series, options={}) {
+  const width=900,height=300,left=58,right=18,top=18,bottom=42;
+  const all=series.flatMap(s=>s.values.filter(p=>Number.isFinite(p.value)).map(p=>p.value));
+  if(!all.length) return '<div class="empty">표시할 수 있는 데이터가 없습니다.</div>';
+  let min=Math.min(0,...all),max=Math.max(...all); if(min===max){max=min+1;}
+  const pad=(max-min)*.12;min-=pad;max+=pad;
+  const plotW=width-left-right,plotH=height-top-bottom;
+  const labels=series[0].values.map(p=>p.quarter);
+  const x=i=>left+(labels.length<2?plotW/2:i*plotW/(labels.length-1));
+  const y=v=>top+(max-v)*plotH/(max-min);
+  const ticks=5;
+  let svg='<svg viewBox="0 0 '+width+' '+height+'" role="img" aria-label="'+(options.aria||"분기별 추세 그래프")+'">';
+  for(let i=0;i<=ticks;i++){const value=min+(max-min)*i/ticks, yy=y(value);svg+='<line x1="'+left+'" y1="'+yy+'" x2="'+(width-right)+'" y2="'+yy+'" stroke="#2b3a56"/><text x="'+(left-9)+'" y="'+(yy+4)+'" fill="#9baac5" font-size="11" text-anchor="end">'+(options.percent?value.toFixed(0)+"%":value.toFixed(0))+'</text>';}
+  for(let i=0;i<labels.length;i++){if(i%Math.max(1,Math.ceil(labels.length/7))===0||i===labels.length-1)svg+='<text x="'+x(i)+'" y="'+(height-13)+'" fill="#9baac5" font-size="11" text-anchor="middle">'+labels[i]+'</text>';}
+  series.forEach(s=>{
+    const pts=s.values.map((p,i)=>({x:x(i),y:Number.isFinite(p.value)?y(p.value):null}));
+    let segment=[];
+    const flush=()=>{if(segment.length>1)svg+='<polyline points="'+segment.map(p=>p.x+","+p.y).join(" ")+'" fill="none" stroke="'+s.color+'" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>';segment=[];};
+    pts.forEach(p=>{if(p.y===null){flush();}else{segment.push(p);}});flush();
+    pts.forEach(p=>{if(p.y!==null)svg+='<circle cx="'+p.x+'" cy="'+p.y+'" r="3.2" fill="'+s.color+'"/>';});
+  });
+  return svg+'</svg>';
+}
+function legend(series){$("capexLegend").innerHTML=series.map(s=>'<span><i style="background:'+s.color+'"></i>'+s.label+'</span>').join("");}
+function latest(rows){return rows.length?rows[rows.length-1]:null;}
+
+function renderCapexChart(){
+  const companies=Object.keys(COMPANY_META);
+  const series=companies.map(company=>({label:company,color:COMPANY_META[company].color,values:capexRows.filter(r=>r.company===company).map(r=>({quarter:r.quarter,value:r.capexUsdM/1000}))}));
+  $("capexChart").innerHTML=svgLineChart(series,{aria:"4개 하이퍼스케일러 기업 전체 PP&E 현금 지출"});
+  legend(series);
+}
+function renderCapexCompany(){
+  const company=$("capexCompany").value;
+  const rows=companySeries.filter(r=>r.company===company);
+  const dec=deceleration.filter(r=>r.company===company);
+  const values=rows.map(r=>({quarter:r.quarter,value:r.capexYoYPercent}));
+  const series=[{label:"CAPEX YoY",color:COMPANY_META[company].color,values}];
+  $("capexGrowthChart").innerHTML=svgLineChart(series,{percent:true,aria:company+" CAPEX 전년 동기 대비 증가율"});
+  const current=latest(dec);
+  $("decelerationStatus").textContent=current
+    ? current.status==="multi-quarter-deceleration-observed"
+      ? company+" · "+current.quarter+": CAPEX 증가율 둔화가 "+current.consecutiveDecelerationQuarters+"개 분기 연속 관찰됩니다. 이는 CAPEX 감소 또는 투자 사이클 전환을 의미하지 않습니다."
+      : current.status==="insufficient-data"
+        ? company+" · 둔화 판단에 필요한 비교 자료가 부족합니다."
+        : company+" · "+current.quarter+": 연속 둔화 조건은 확인되지 않았습니다. 지표는 기술적 관찰값이며 투자 신호가 아닙니다."
+    : "둔화 지표 자료가 없습니다.";
+}
+function renderBusiness(){
+  const company=$("businessCompany").value;
+  const dataset=businessByCompany[company];
+  const series=dataset?.observations??[];
+  const meta=COMPANY_META[company];
+  const points=series.map(r=>({quarter:r.quarter,value:Number.isFinite(r.revenueUsdM)?r.revenueUsdM/1000:null}));
+  $("businessChart").innerHTML=svgLineChart([{label:meta.businessLabel,color:meta.color,values:points}],{aria:company+" "+meta.businessLabel+" 분기 매출"});
+  const last=latest(series);
+  $("businessNote").textContent=dataset
+    ? meta.businessLabel+" 매출 · "+(last?.quarter??"—")+" · YoY "+fmtPct(last?.businessGrowthPercent)+
+      (Number.isFinite(last?.operatingMarginPercent)?" · 영업이익률 "+last.operatingMarginPercent.toFixed(1)+"%":" · 영업이익률 미공개")
+      +" · AI와 비AI 사업이 혼합된 지표"
+    : "사업성과 자료가 없습니다.";
+}
+function renderTable(){
+  const companies=Object.keys(COMPANY_META);
+  $("companyTable").innerHTML=companies.map(company=>{
+    const c=latest(companySeries.filter(r=>r.company===company));
+    const b=latest(businessByCompany[company]?.observations??[]);
+    const d=latest(deceleration.filter(r=>r.company===company));
+    const status=d?.status==="multi-quarter-deceleration-observed"?"연속 둔화 관찰":d?.status==="insufficient-data"?"자료 부족":"조건 미충족";
+    return '<tr><td><strong>'+company+'</strong> <span class="muted">'+COMPANY_META[company].ticker+'</span></td><td>'+fmtB(c?.capexUsdM)+'</td><td>'+fmtPct(c?.capexYoYPercent)+'</td><td>'+fmtB(b?.revenueUsdM)+'</td><td>'+fmtPct(b?.businessGrowthPercent)+'</td><td>'+(Number.isFinite(b?.operatingMarginPercent)?b.operatingMarginPercent.toFixed(1)+"%":"—")+'</td><td>'+status+'</td></tr>';
+  }).join("");
+}
+function setupSelects(){
+  for(const id of ["capexCompany","businessCompany"]){
+    $(id).innerHTML=Object.keys(COMPANY_META).map(name=>'<option value="'+name+'">'+name+'</option>').join("");
+  }
+  $("capexCompany").addEventListener("change",renderCapexCompany);
+  $("businessCompany").addEventListener("change",renderBusiness);
+}
+async function load(){
+  try{
+    const capexPath="./data/ai-investment-cycle/hyperscaler-capex-quarterly-2023-2026.json";
+    const capex=await fetch(capexPath).then(r=>{if(!r.ok)throw new Error("CAPEX 데이터 "+r.status);return r.json();});
+    const raw=capex.quarters.flatMap(q=>q.values.map(v=>({...v,quarter:q.quarter})));
+    capexRows=raw;
+    companySeries=calculateCompanySeries(raw.map(r=>({company:r.company,quarter:r.quarter,capexUsdM:r.capexUsdM,capexBasis:r.capexBasis,source:r.source,aiRevenueUsdM:null})));
+    deceleration=deriveCapexDeceleration(companySeries.map(r=>({company:r.company,quarter:r.quarter,capexYoYPercent:r.capexYoYPercent,capexYoYAccelerationPp:r.capexYoYAccelerationPp})));
+    for(const [company,meta] of Object.entries(COMPANY_META)){
+      const file=await fetch("./data/ai-investment-cycle/"+meta.businessFile).then(r=>{if(!r.ok)throw new Error(meta.businessFile+" "+r.status);return r.json();});
+      const derived=deriveQuarterlyBusinessSeries(file);
+      businessByCompany[company]=derived.find(s=>s.company===company)||null;
+    }
+    setupSelects();
+    renderCapexChart();renderCapexCompany();renderBusiness();renderTable();
+    const q=latest(capex.quarters);
+    const total=q.values.reduce((sum,r)=>sum+r.capexUsdM,0);
+    $("summaryCards").innerHTML=
+      '<div class="metric-card"><div class="metric-label">최근 분기 CAPEX 합계</div><div class="metric">'+fmtB(total)+'</div><div class="metric-note">4개 기업 · gross PP&amp;E cash purchases</div></div>'+
+      '<div class="metric-card"><div class="metric-label">최근 분기 기준</div><div class="metric">'+q.quarter+'</div><div class="metric-note">자료 기준 '+capex.dataAsOf+'</div></div>'+
+      '<div class="metric-card"><div class="metric-label">직접 공개된 AI 매출</div><div class="metric">비교 수치 없음</div><div class="metric-note">직접 공개된 AI 매출 자료 미확인</div></div>'+
+      '<div class="metric-card"><div class="metric-label">주가 총수익률</div><div class="metric">미확보</div><div class="metric-note">배당·분할 조정 가격 미등록</div></div>';
+    $("asOf").textContent=capex.dataAsOf;
+    $("dataNotice").textContent="CAPEX·사업성과 자료 로드 완료. 주가 데이터는 아직 미등록 상태입니다. CAPEX는 기업 전체 PP&E 지출이며 AI 전용 CAPEX가 아닙니다.";
+  }catch(error){
+    $("dataNotice").textContent="자료를 불러오지 못했습니다: "+error.message+" · 저장소 루트에서 페이지를 열거나 정적 서버로 실행해 주세요.";
+  }
+}
+load();
+</script>
+</body>
+</html>
