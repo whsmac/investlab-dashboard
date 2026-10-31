@@ -202,3 +202,32 @@ test("different positions may use different currencies and full sale clears posi
   assert.equal(result.realizedByCurrency.USD, 2);
   assert.equal(result.cash.KRW, -13000);
 });
+
+
+test("invalid transaction dates and sequence numbers are rejected", () => {
+  assert.throws(() => calculateLedger([
+    tx("CASH_DEPOSIT", { transaction_date: "2026-13-40", gross_amount: 10 })
+  ]), /Invalid transaction_date/);
+  assert.throws(() => calculateLedger([
+    tx("CASH_DEPOSIT", { sequence_no: 0, gross_amount: 10 })
+  ]), /Invalid sequence_no/);
+  assert.throws(() => calculateLedger([
+    tx("CASH_DEPOSIT", { sequence_no: 1.5, gross_amount: 10 })
+  ]), /Invalid sequence_no/);
+});
+
+test("invalid applied FX rates are rejected while positive rates are accepted", () => {
+  assert.throws(() => calculateLedger([
+    tx("FX_CONVERSION", {
+      currency: "KRW", from_currency: "USD", from_amount: 1,
+      to_currency: "KRW", to_amount: 1300, applied_fx_rate: 0
+    })
+  ]), /Invalid applied_fx_rate/);
+  const result = calculateLedger([
+    tx("FX_CONVERSION", {
+      currency: "KRW", from_currency: "USD", from_amount: 1,
+      to_currency: "KRW", to_amount: 1300, applied_fx_rate: 1300
+    })
+  ]);
+  assert.equal(result.cash.KRW, 1300);
+});
