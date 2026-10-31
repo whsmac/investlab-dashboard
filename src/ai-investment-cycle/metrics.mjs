@@ -90,6 +90,7 @@ export function calculateCompanySeries(records) {
         company: row.company,
         quarter: row.quarter,
         capexUsdM: row.capexUsdM,
+        capexBasis: row.capexBasis ?? null,
         aiRevenueUsdM: row.aiRevenueUsdM,
         capexQoQPercent: pctChange(row.capexUsdM, previous?.capexUsdM),
         capexYoYPercent: yoyCapex,
@@ -159,10 +160,20 @@ export function aggregateQuarterlyCapex(series, companies) {
     const rows = series.filter(row => row.quarter === quarter && universe.includes(row.company));
     const present = new Set(rows.map(row => row.company));
     const totalUsdM = rows.reduce((sum, row) => sum + row.capexUsdM, 0);
+    const bases = new Set(rows.map(row => row.capexBasis).filter(Boolean));
+    const completeCoverage = present.size === universe.length;
+    const comparableBasis = bases.size === 1 && rows.every(row => Boolean(row.capexBasis));
+    const aggregationStatus = !completeCoverage
+      ? "incomplete-coverage"
+      : !comparableBasis
+        ? "mixed-or-unspecified-basis"
+        : "comparable";
     return {
       quarter,
-      totalUsdM: present.size === universe.length ? totalUsdM : null,
+      totalUsdM: aggregationStatus === "comparable" ? totalUsdM : null,
       partialTotalUsdM: totalUsdM,
+      capexBasis: comparableBasis ? [...bases][0] : null,
+      aggregationStatus,
       companiesReported: present.size,
       companiesExpected: universe.length,
       coveragePercent: (present.size / universe.length) * 100,
