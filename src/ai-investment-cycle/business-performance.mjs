@@ -39,9 +39,13 @@ export function deriveBusinessPerformance(snapshot) {
     );
     const enriched = metrics.map(metric => {
       if (metric.category !== "segment_operating_income") return metric;
+      const segmentKey = metric.metric.toLowerCase()
+        .replace(/operating income|revenue|segment/g, "")
+        .replace(/\\s+/g, " ")
+        .trim();
       const revenue = revenueByCategory.find(candidate =>
         candidate.comparability === metric.comparability &&
-        candidate.metric.toLowerCase().includes(metric.metric.replace(/operating income/i, "revenue").toLowerCase().replace("segment ", ""))
+        candidate.metric.toLowerCase().replace(/operating income|revenue|segment/g, "").replace(/\\s+/g, " ").trim() === segmentKey
       );
       return {
         ...metric,
