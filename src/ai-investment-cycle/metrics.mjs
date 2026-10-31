@@ -149,6 +149,100 @@ export function calculateMarketPerformance(companyPrices, benchmarkPrices, start
 }
 
 /**
+ * Derives calendar-quarter total returns from dividend- and split-adjusted
+ * daily closes. Both securities must share the same trading dates so that
+ * benchmark-relative returns use identical start/end observations.
+ *
+ * quarters: ["2023-Q1", ...]
+ * maxStalenessDays: maximum calendar days between quarter-end and the last
+ * common trading date (default 7). Missing dates are never interpolated.
+ */
+export function deriveQuarterlyMarketPerformance(companyPrices, benchmarkPrices, quarters, options = {}) {
+  if (!Array.isArray(quarters) || quarters.length === 0) {
+    throw new TypeError("quarters must be a non-empty array");
+  }
+  const maxStalenessDays = options.maxStalenessDays ?? 7;
+  if (!Number.isInteger(maxStalenessDays) || maxStalenessDays < 0) {
+    throw new TypeError("maxStalenessDays must be a non-negative integer");
+  }
+
+  const normalize = (points, label) => {
+    if (!Array.isArray(points)) throw new TypeError(`${label} prices must be an array`);
+    const map = new Map();
+    for (const point of points) {
+      const date = String(point?.date ?? "");
+      if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(date) || !Number.isFinite(Date.parse(`${date}T00:00:00Z`))) {
+        throw new TypeError(`${label} price date must use YYYY-MM-DD`);
+      }
+      const value = Number(point.adjustedClose);
+      if (!Number.isFinite(value) || value <= 0) {
+        throw new TypeError(`${label} adjustedClose must be a positive finite number`);
+      }
+      if (map.has(date)) throw new TypeError(`Duplicate ${label} price date: ${date}`);
+      map.set(date, value);
+    }
+    return map;
+  };
+
+  const company = normalize(companyPrices, "company");
+  const benchmark = normalize(benchmarkPrices, "benchmark");
+  const commonDates = [...company.keys()].filter(date => benchmark.has(date)).sort();
+  const dayMs = 24 * 60 * 60 * 1000;
+  const lastCommonOnOrBefore = cutoff => {
+    for (let i = commonDates.length - 1; i >= 0; i -= 1) {
+      if (commonDates[i] <= cutoff) return commonDates[i];
+    }
+    return null;
+  };
+  const endOfQuarter = quarter => {
+    const match = QUARTER_RE.exec(String(quarter ?? ""));
+    if (!match) throw new TypeError(`Invalid quarter: ${quarter}`);
+    const year = Number(match[1]);
+    const q = Number(match[2]);
+    return new Date(Date.UTC(year, q * 3, 0)).toISOString().slice(0, 10);
+  };
+
+  return [...new Set(quarters)].sort((a, b) => quarterIndex(a) - quarterIndex(b)).map(quarter => {
+    const endCutoff = endOfQuarter(quarter);
+    const previousIndex = quarterIndex(quarter) - 1;
+    const previousYear = Math.floor(previousIndex / 4);
+    const previousQuarter = (previousIndex % 4) + 1;
+    const startCutoff = endOfQuarter(`${previousYear}-Q${previousQuarter}`);
+    const startDate = lastCommonOnOrBefore(startCutoff);
+    const endDate = lastCommonOnOrBefore(endCutoff);
+    const base = {
+      quarter,
+      startDate,
+      endDate,
+      companyReturnPercent: null,
+      benchmarkReturnPercent: null,
+      excessReturnPp: null,
+      observations: 0,
+      status: "insufficient-data",
+    };
+    if (!startDate || !endDate || startDate >= endDate) return base;
+
+    const startStaleness = (Date.parse(`${startCutoff}T00:00:00Z`) - Date.parse(`${startDate}T00:00:00Z`)) / dayMs;
+    const endStaleness = (Date.parse(`${endCutoff}T00:00:00Z`) - Date.parse(`${endDate}T00:00:00Z`)) / dayMs;
+    if (startStaleness > maxStalenessDays || endStaleness > maxStalenessDays) {
+      return { ...base, status: "stale-observation" };
+    }
+
+    const companyReturnPercent = pctChange(company.get(endDate), company.get(startDate));
+    const benchmarkReturnPercent = pctChange(benchmark.get(endDate), benchmark.get(startDate));
+    const observations = commonDates.filter(date => date >= startDate && date <= endDate).length;
+    return {
+      ...base,
+      companyReturnPercent,
+      benchmarkReturnPercent,
+      excessReturnPp: companyReturnPercent - benchmarkReturnPercent,
+      observations,
+      status: "ok",
+    };
+  });
+}
+
+/**
  * Sums reported company CAPEX for a quarter and reports coverage explicitly.
  * A partial sum is never labelled as the universe total.
  */
