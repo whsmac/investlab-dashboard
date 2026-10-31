@@ -70,4 +70,15 @@ jobs:
           if missing:
               raise SystemExit("Missing required elements: " + ", ".join(missing))
           print("Required symbol-management elements are present")
+          checks = [
+              "async function saveSymbolLists(x)",
+              "await supabaseClient.from(\"instruments\").upsert(rows",
+              "await saveSymbolLists(x)",
+              "클라우드 동기화는 로그인 후 가능합니다.",
+              "watchlistDeleteError"
+          ]
+          missing = [item for item in checks if item not in html]
+          if missing:
+              raise SystemExit("Missing symbol-management sync safeguards: " + ", ".join(missing))
+          print("Symbol-management cloud-save safeguards are present")
           PY
