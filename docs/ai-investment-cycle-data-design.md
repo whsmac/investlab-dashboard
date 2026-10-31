@@ -59,6 +59,24 @@ The output labels every result as descriptive-only. A positive correlation at a 
 
 The Q3 2026 snapshot remains a point-in-time comparison. A new source-backed AWS quarterly series now covers 12 consecutive quarters from 2023-Q4 through 2026-Q3, with quarterly segment revenue and operating income. It is a broad AWS segment indicator, not AI-only revenue or profit. This gives one company a historical operating series, but the current CAPEX dataset begins in 2024-Q1 and does not yet provide the full prior-year CAPEX history needed for 12 aligned CAPEX-growth/business-growth observations. The lag helper remains descriptive-only; a production company-level linkage should wait for expanded, source-validated CAPEX and business history. Alphabet now also has 12 consecutive quarters of source-backed Google Cloud segment revenue and operating income (2023-Q4 through 2026-Q3), stored in `data/ai-investment-cycle/business-performance-alphabet-quarterly-2023-2026.json`. Google Cloud includes core cloud services and AI infrastructure/solutions, so it is not AI-only revenue or profit. Microsoft now has 12 calendar quarters (2023-Q2 through 2026-Q1) of Intelligent Cloud segment revenue and operating income, mapped from its June fiscal year and stored in `data/ai-investment-cycle/business-performance-microsoft-quarterly-2023-2026.json`. Its fiscal Q4 quarterly values are derived from annual totals less nine-month cumulative values, with both source links retained. Intelligent Cloud includes Azure and other cloud services plus server and enterprise services; it is not Azure-only or AI-only. Meta now has 12 calendar quarters (2023-Q4 through 2026-Q3) of consolidated revenue and operating income in `data/ai-investment-cycle/business-performance-meta-quarterly-2023-2026.json`. Meta's consolidated metrics are not AI-only and are not directly comparable to cloud segments. Meta Q3 2026 operating income includes a USD 9.89B litigation-related charge.
 
+
+## First source-backed historical lead/lag run — 2026-10-31
+
+`deriveHistoricalCycleLinkage()` in `src/ai-investment-cycle/historical-linkage.mjs` now connects the CAPEX and business datasets company by company. It calculates CAPEX YoY growth and business-revenue YoY growth, then pairs them at lags 0–4 quarters. It refuses multiple business metric series for the same company rather than silently choosing or pooling them.
+
+Exploratory Pearson correlations from the current snapshot:
+
+| Company | Business metric | Lag 0 | Lag 1 | Lag 2 | Lag 3 | Lag 4 |
+|---|---|---:|---:|---:|---:|---:|
+| Alphabet | Google Cloud revenue | +0.79 (n=8) | +0.84 (n=8) | +0.73 (n=8) | +0.36 (n=8) | -0.05 (n=7) |
+| Amazon | AWS revenue | +0.57 (n=6) | -0.10 (n=6) | +0.09 (n=6) | +0.20 (n=6) | +0.46 (n=6) |
+| Microsoft | Intelligent Cloud revenue | +0.40 (n=8) | -0.12 (n=8) | -0.77 (n=7) | -0.48 (n=6) | insufficient (n=5) |
+| Meta | Consolidated revenue | -0.45 (n=8) | -0.24 (n=8) | +0.65 (n=8) | +0.71 (n=8) | +0.73 (n=7) |
+
+These are **exploratory descriptive correlations only**, not statistically reliable estimates or forecasts. The sample sizes are only 6–8 observations; 2023 CAPEX values are rounded and awaiting primary-filing cross-check; 2024–2026 CAPEX values are also rounded in the source compilation; Amazon has missing Q4 CAPEX observations in 2024 and 2025; and the business metrics are not AI-only. Microsoft Intelligent Cloud includes server/enterprise activity, while Meta consolidated revenue is largely driven by its core apps and advertising business. The changing sign and magnitude across companies and lags do not support a single universal CAPEX-to-revenue timing rule.
+
+Do not use these correlations as dashboard buy/sell signals. The next analytical work is to validate every 2023 CAPEX filing input, improve business metric consistency, and expand the historical sample before considering any cycle-warning calibration.
+
 ## Cycle signal
 Initial transparent rules:
 - Accelerating: CAPEX YoY >= 25% and YoY growth acceleration >= +10 percentage points.
