@@ -7,9 +7,13 @@
 export function calculateLedger(inputTransactions) {
   if (!Array.isArray(inputTransactions)) throw new Error("Transactions must be an array");
   for (const tx of inputTransactions) {
-    if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(String(tx.transaction_date ?? "")) ||
-        Number.isNaN(Date.parse(`${tx.transaction_date}T00:00:00Z`))) {
-      throw new Error("Invalid transaction_date; expected YYYY-MM-DD");
+    const dateText = String(tx.transaction_date ?? "");
+    const dateMatch = /^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(dateText);
+    if (!dateMatch) throw new Error("Invalid transaction_date; expected YYYY-MM-DD");
+    const [, year, month, day] = dateMatch.map((part, index) => index === 0 ? part : Number(part));
+    const date = new Date(Date.UTC(year, month - 1, day));
+    if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) {
+      throw new Error("Invalid transaction_date; expected a real calendar date");
     }
     if (!Number.isInteger(Number(tx.sequence_no)) || Number(tx.sequence_no) <= 0) {
       throw new Error("Invalid sequence_no; expected a positive integer");
