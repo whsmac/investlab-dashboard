@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import { calculateCompanySeries, aggregateQuarterlyCapex, calculateMarketPerformance } from "../src/ai-investment-cycle/metrics.mjs";
 import { calculateYoYPercent, calculateOperatingMarginPercent, deriveBusinessPerformance, deriveQuarterlyBusinessSeries } from "../src/ai-investment-cycle/business-performance.mjs";
 import { calculateLaggedBusinessLinkage } from "../src/ai-investment-cycle/cycle-linkage.mjs";
+import { deriveHistoricalCycleLinkage } from "../src/ai-investment-cycle/historical-linkage.mjs";
 
 const sample = [
   { company: "A", capexBasis: "cash_capex_net", quarter: "2024-Q1", capexUsdM: 100, aiRevenueUsdM: 20 },
@@ -330,4 +331,43 @@ test("2023 CAPEX extension enables first comparable 2024 YoY growth observations
     assert.notEqual(q1_2024.capexYoYPercent, null, company);
     assert.ok(Number.isFinite(q1_2024.capexYoYPercent), company);
   }
+});
+
+
+test("historical linkage runs company-specific comparisons with metric identity and no cross-company pooling", () => {
+  const readJson = name => JSON.parse(readFileSync(new URL(`../data/ai-investment-cycle/${name}`, import.meta.url), "utf8"));
+  const capex = readJson("hyperscaler-capex-quarterly-2023-2026.json");
+  const business = [
+    readJson("business-performance-aws-quarterly-2023-2026.json"),
+    readJson("business-performance-alphabet-quarterly-2023-2026.json"),
+    readJson("business-performance-microsoft-quarterly-2023-2026.json"),
+    readJson("business-performance-meta-quarterly-2023-2026.json"),
+  ];
+  const result = deriveHistoricalCycleLinkage(capex, business, { maxLag: 4, minObservations: 6 });
+  assert.equal(result.length, 20);
+  const googleSameQuarter = result.find(row => row.company === "Alphabet" && row.lagQuarters === 0);
+  assert.equal(googleSameQuarter.observations, 8);
+  assert.equal(googleSameQuarter.businessMetric.metricId, "google_cloud_segment_revenue");
+  assert.equal(googleSameQuarter.businessMetric.comparability, "google_cloud_segment");
+  const microsoftSameQuarter = result.find(row => row.company === "Microsoft" && row.lagQuarters === 0);
+  assert.equal(microsoftSameQuarter.observations, 8);
+  assert.equal(microsoftSameQuarter.businessMetric.fiscalCalendar, "fiscal_year_ends_june_30");
+  const metaSameQuarter = result.find(row => row.company === "Meta" && row.lagQuarters === 0);
+  assert.equal(metaSameQuarter.observations, 8);
+  assert.equal(metaSameQuarter.businessMetric.aiLinkage, "ai_and_core_business_mixed");
+  const amazonSameQuarter = result.find(row => row.company === "Amazon" && row.lagQuarters === 0);
+  assert.equal(amazonSameQuarter.observations, 6);
+  const googleTwoQuarterLead = result.find(row => row.company === "Alphabet" && row.lagQuarters === 2);
+  assert.equal(googleTwoQuarterLead.observations, 6);
+  assert.equal(googleTwoQuarterLead.status, "descriptive-only");
+  assert.match(googleTwoQuarterLead.caveat, /not causal/);
+  const googleThreeQuarterLead = result.find(row => row.company === "Alphabet" && row.lagQuarters === 3);
+  assert.equal(googleThreeQuarterLead.observations, 5);
+  assert.equal(googleThreeQuarterLead.correlation, null);
+});
+
+test("historical linkage refuses multiple business metrics for the same company", () => {
+  const capex = JSON.parse(readFileSync(new URL("../data/ai-investment-cycle/hyperscaler-capex-quarterly-2023-2026.json", import.meta.url), "utf8"));
+  const aws = JSON.parse(readFileSync(new URL("../data/ai-investment-cycle/business-performance-aws-quarterly-2023-2026.json", import.meta.url), "utf8"));
+  assert.throws(() => deriveHistoricalCycleLinkage(capex, [aws, aws]), /Multiple business metric series/);
 });
