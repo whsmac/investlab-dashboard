@@ -273,3 +273,20 @@ test("Alphabet quarterly Google Cloud history derives a continuous 12-quarter se
   assert.equal(series.aiLinkage, "ai_and_core_cloud_mixed");
   assert.ok(series.observations.every(row => row.reported && row.sourceUrl.startsWith("https://")));
 });
+
+
+test("Meta quarterly consolidated operating history derives a continuous 12-quarter series", () => {
+  const dataset = JSON.parse(readFileSync(new URL("../data/ai-investment-cycle/business-performance-meta-quarterly-2023-2026.json", import.meta.url), "utf8"));
+  const [series] = deriveQuarterlyBusinessSeries(dataset);
+  assert.equal(series.company, "Meta");
+  assert.equal(series.observations.length, 12);
+  const q4_2024 = series.observations.find(row => row.quarter === "2024-Q4");
+  assert.ok(Math.abs(q4_2024.businessGrowthPercent - ((48385 / 40111 - 1) * 100)) < 1e-8);
+  assert.ok(Math.abs(q4_2024.operatingMarginPercent - (23365 / 48385 * 100)) < 1e-8);
+  const q3_2026 = series.observations.find(row => row.quarter === "2026-Q3");
+  assert.ok(Math.abs(q3_2026.businessGrowthPercent - ((64601 / 51242 - 1) * 100)) < 1e-8);
+  assert.ok(Math.abs(q3_2026.operatingMarginPercent - (12988 / 64601 * 100)) < 1e-8);
+  assert.equal(series.aiLinkage, "ai_and_core_business_mixed");
+  assert.ok(series.observations.every(row => row.reported && row.sourceUrl.startsWith("https://")));
+  assert.match(q3_2026.notes, /litigation-related/);
+});
