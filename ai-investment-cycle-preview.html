@@ -9,6 +9,16 @@
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#1a2946 0,#0b1020 55%);color:var(--text);font:14px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 main{max-width:1400px;margin:auto;padding:28px 22px 60px}.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}.brand{font-size:21px;font-weight:850;letter-spacing:.06em}.brand span{color:var(--blue)}.eyebrow,.muted,.sub{color:var(--muted)}.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase}.sub{font-size:13px}.pill{display:inline-block;padding:3px 9px;border-radius:30px;background:#263653;color:#c9d8ff;font-size:11px;margin-left:6px}
 h1{font-size:clamp(26px,4vw,36px);margin:22px 0 4px}h2{font-size:17px;margin:0}.section{margin-top:18px}.panel,.metric-card{background:linear-gradient(145deg,#17243a,#121b2d);border:1px solid var(--line);border-radius:16px;padding:18px;min-width:0}.head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:18px}.metric-label{font-size:12px;color:var(--muted)}.metric{font-size:clamp(21px,2.5vw,29px);font-weight:760;margin-top:6px}.metric-note{font-size:11px;color:var(--muted);margin-top:4px}.layout{display:grid;grid-template-columns:1.25fr 1fr;gap:14px}.controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}select,button{font:inherit;color:var(--text);background:#1d2b43;border:1px solid var(--line);border-radius:9px;padding:8px 11px}button{cursor:pointer}button.active{background:#dbe7ff;color:#101a2b;border-color:#dbe7ff;font-weight:700}button:focus-visible,select:focus-visible{outline:2px solid var(--blue);outline-offset:2px}.chart{width:100%;overflow:hidden}.chart svg{display:block;width:100%;height:auto;min-height:220px}.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-top:8px}.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}.notice{border:1px solid #6a572c;background:#2b2618;color:#f4d990;border-radius:12px;padding:12px 14px;font-size:12px}.info{border:1px solid #314665;background:#14243a;color:#c9d8f1;border-radius:12px;padding:12px 14px;font-size:12px}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;white-space:nowrap}th,td{text-align:right;padding:10px 9px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}th:first-child,td:first-child{text-align:left}th{font-size:11px;color:var(--muted);font-weight:600}td{font-size:12px}.tag{font-size:10px;padding:3px 7px;border-radius:20px;background:#24344f;color:#c9d8f1}.up{color:var(--green)}.down{color:var(--red)}.empty{color:var(--muted);padding:26px 12px;text-align:center;border:1px dashed var(--line);border-radius:12px}.foot{margin-top:20px;color:var(--muted);font-size:11px}.small{font-size:11px;color:var(--muted)}.company-select{min-width:170px}
+.market-import-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.market-field{display:flex;flex-direction:column;gap:5px;color:var(--muted);font-size:12px}
+.market-field input{width:100%;min-width:0;background:#0f192b;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:9px}
+.market-files{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin-top:12px}
+.market-files label{display:flex;flex-direction:column;gap:6px;color:var(--muted);font-size:12px;min-width:0}
+.market-files input{width:100%;min-width:0;color:var(--text);font-size:11px}
+.market-consent{display:flex;align-items:flex-start;gap:8px;margin-top:12px;color:var(--muted);font-size:12px}
+.market-consent input{margin-top:3px}
+@media(max-width:900px){.market-files{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.market-import-grid{grid-template-columns:1fr}.market-files{grid-template-columns:1fr}}
 @media(max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.layout{grid-template-columns:1fr}}
 @media(max-width:520px){main{padding:18px 12px 40px}.grid{gap:8px}.panel,.metric-card{padding:13px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
@@ -55,14 +65,52 @@ h1{font-size:clamp(26px,4vw,36px);margin:22px 0 4px}h2{font-size:17px;margin:0}.
   <div class="table-wrap"><table><thead><tr><th>기업</th><th>최근 CAPEX</th><th>CAPEX YoY</th><th>사업부문 매출</th><th>사업부문 매출 YoY</th><th>영업이익률</th><th>둔화 관찰</th></tr></thead><tbody id="companyTable"><tr><td colspan="7" class="muted">데이터를 불러오는 중입니다.</td></tr></tbody></table></div>
 </section>
 
-<section class="section panel">
-  <div class="head"><div><h2>주주 시장수익률 및 투자성과</h2><div class="small">배당·분할 조정 총수익률 · SPY 초과수익률</div></div><span class="tag">데이터 미연결</span></div>
-  <div class="empty">
-    <strong>실제 주가 데이터가 아직 등록되지 않았습니다.</strong><br>
-    MSFT · GOOGL · AMZN · META · SPY의 동일 제공처·동일 조정방식 일별 자료가 확보되면<br>
-    분기 수익률, 최근 4분기 복리수익률, SPY 대비 초과수익률을 표시합니다.
+<section class="section panel" id="marketPerformancePanel">
+  <div class="head"><div><h2>주주 시장수익률 및 투자성과</h2><div class="small">배당·분할 조정 총수익률 · S&P 500 proxy(SPY) 초과수익률</div></div><span class="tag">수동 CSV 가져오기 · 로컬 메모리 분석</span></div>
+  <div class="info">MSFT · GOOGL · AMZN · META · SPY 5개 파일이 필요합니다. 동일 제공처·동일 USD 통화·동일 배당 및 분할 조정방식을 사용하고, 2022-12-31 이전 기준 관측값부터 분석 구간까지 포함해 주세요. 파일은 이 브라우저 탭의 메모리에서만 처리하며 서버나 Supabase로 전송·저장하지 않습니다.</div>
+  <div class="market-import-grid" style="margin-top:12px">
+    <label class="market-field">데이터 제공처<input id="marketSource" type="text" placeholder="예: 제공처 이름"></label>
+    <label class="market-field">제공처 자료 URL<input id="marketSourceUrl" type="url" placeholder="https://..."></label>
+    <label class="market-field">자료 취득 시각 (ISO 8601)<input id="marketRetrievedAt" type="text"></label>
+    <label class="market-field">이용 조건 확인 메모<input id="marketLicenseNote" type="text" placeholder="예: 개인 분석용 다운로드 및 보관 허용 범위"></label>
   </div>
-  <div class="small" style="margin-top:10px">주주 시장수익률은 AI CAPEX의 투자수익률(ROI)이 아닙니다. AI 매출·영업이익을 직접 식별할 수 없는 경우 별도 AI ROI를 산출하지 않습니다.</div>
+  <div class="market-files">
+    <label>MSFT CSV<input id="priceFileMSFT" type="file" accept=".csv,text/csv"></label>
+    <label>GOOGL CSV<input id="priceFileGOOGL" type="file" accept=".csv,text/csv"></label>
+    <label>AMZN CSV<input id="priceFileAMZN" type="file" accept=".csv,text/csv"></label>
+    <label>META CSV<input id="priceFileMETA" type="file" accept=".csv,text/csv"></label>
+    <label>SPY CSV<input id="priceFileSPY" type="file" accept=".csv,text/csv"></label>
+  </div>
+  <div class="small" style="margin-top:8px">CSV 열 순서는 정확히 <code>ticker,date,adjustedClose</code>여야 합니다. 예: <code>MSFT,2025-01-02,410.50</code>. 날짜는 YYYY-MM-DD, 가격은 USD 숫자만 입력합니다. 템플릿은 저장소의 <code>data/ai-investment-cycle/market-price-import-template.csv</code>를 참고하세요.</div>
+  <label class="market-consent"><input id="marketRightsConfirmed" type="checkbox"> 해당 자료의 다운로드·개인 분석·로컬 보관이 제공처 이용 조건상 허용되고, adjustedClose가 현금배당과 주식분할을 모두 반영함을 직접 확인했습니다.</label>
+  <div class="controls" style="margin-top:12px">
+    <button id="importMarketPrices" type="button">5개 CSV 검증 및 분석</button>
+    <button id="clearMarketPrices" type="button">가져온 자료 초기화</button>
+  </div>
+  <div id="marketImportStatus" class="empty" style="margin-top:12px">실제 조정주가 자료는 아직 등록되지 않았습니다.</div>
+  <div id="marketCoverage" class="small" style="margin-top:8px"></div>
+  <div class="section">
+    <h2>분기별 주가 총수익률</h2>
+    <div class="small">기업별 배당·분할 조정 수익률과 S&P 500 proxy(SPY) 분기 수익률 · %</div>
+    <div id="marketQuarterlyChart" class="chart"><div class="empty">조정주가 자료를 가져오면 표시합니다.</div></div>
+    <div id="marketQuarterlyLegend" class="legend"></div>
+  </div>
+  <div class="section">
+    <h2>최근 4개 분기 복리수익률</h2>
+    <div class="small">분기 수익률을 단순 합산하지 않고 복리로 계산 · %</div>
+    <div id="marketTrailingChart" class="chart"><div class="empty">연속된 4개 분기 자료가 확보되면 표시합니다.</div></div>
+    <div id="marketTrailingLegend" class="legend"></div>
+  </div>
+  <div class="section">
+    <h2>기업별 분기 및 최근 4분기 성과</h2>
+    <div class="table-wrap"><table><thead><tr><th>기업</th><th>최근 분기</th><th>기업 수익률</th><th>SPY 수익률</th><th>초과수익률</th><th>최근 4분기 복리</th><th>SPY 4분기</th><th>4분기 초과</th></tr></thead><tbody id="marketReturnsTable"><tr><td colspan="8" class="muted">자료 미등록</td></tr></tbody></table></div>
+  </div>
+  <div class="section">
+    <h2>CAPEX 증가율과 주주 수익률의 관계</h2>
+    <div class="small">동일 분기 기준 탐색적 상관관계 · 최소 6개 관측값 · 인과관계 또는 예측 신호가 아닙니다.</div>
+    <div class="table-wrap"><table><thead><tr><th>기업</th><th>비교 지표</th><th>관측 분기 수</th><th>상관계수</th><th>상태</th></tr></thead><tbody id="marketLinkageTable"><tr><td colspan="5" class="muted">자료 미등록</td></tr></tbody></table></div>
+  </div>
+  <div class="small" style="margin-top:12px">주주 시장수익률은 AI CAPEX의 투자수익률(ROI)이 아닙니다. SPY는 공식 S&P 500 지수가 아닌 ETF proxy입니다. 데이터는 현재 탭 메모리에만 유지되며 새로고침하면 초기화됩니다. 이 화면은 매수·매도 신호를 제공하지 않습니다.</div>
 </section>
 
 <footer class="foot">
@@ -73,6 +121,7 @@ h1{font-size:clamp(26px,4vw,36px);margin:22px 0 4px}h2{font-size:17px;margin:0}.
 import { calculateCompanySeries } from "./src/ai-investment-cycle/metrics.mjs";
 import { deriveQuarterlyBusinessSeries } from "./src/ai-investment-cycle/business-performance.mjs";
 import { deriveCapexDeceleration } from "./src/ai-investment-cycle/market-cycle-analysis.mjs";
+import { initMarketPerformanceImport } from "./src/ai-investment-cycle/market-performance-ui.mjs";
 
 const COMPANY_META = {
   Microsoft:{ticker:"MSFT",color:"#83aaff",businessFile:"business-performance-microsoft-quarterly-2023-2026.json",businessLabel:"Intelligent Cloud"},
@@ -180,6 +229,7 @@ async function load(){
       businessByCompany[company]=derived.find(s=>s.company===company)||null;
     }
     setupSelects();
+    initMarketPerformanceImport({ $, svgLineChart, fmtPct, getCapexRows:()=>capexRows, getCompanySeries:()=>companySeries });
     renderCapexChart();renderCapexCompany();renderBusiness();renderTable();
     const q=latest(capex.quarters);
     const total=q.values.reduce((sum,r)=>sum+r.capexUsdM,0);
