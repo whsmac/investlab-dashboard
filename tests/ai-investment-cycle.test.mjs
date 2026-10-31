@@ -290,3 +290,23 @@ test("Meta quarterly consolidated operating history derives a continuous 12-quar
   assert.ok(series.observations.every(row => row.reported && row.sourceUrl.startsWith("https://")));
   assert.match(q3_2026.notes, /litigation-related/);
 });
+
+
+test("Microsoft Intelligent Cloud history maps fiscal quarters to calendar quarters and retains derived Q4 provenance", () => {
+  const dataset = JSON.parse(readFileSync(new URL("../data/ai-investment-cycle/business-performance-microsoft-quarterly-2023-2026.json", import.meta.url), "utf8"));
+  const [series] = deriveQuarterlyBusinessSeries(dataset);
+  assert.equal(series.company, "Microsoft");
+  assert.equal(series.observations.length, 12);
+  assert.equal(series.observations[0].quarter, "2023-Q2");
+  const q2_2024 = series.observations.find(row => row.quarter === "2024-Q2");
+  assert.equal(q2_2024.revenueUsdM, 28515);
+  assert.equal(q2_2024.operatingIncomeUsdM, 12859);
+  assert.ok(q2_2024.additionalSourceUrls.length === 1);
+  assert.match(q2_2024.sourceNote, /annual.*less.*nine-month/i);
+  const q1_2026 = series.observations.find(row => row.quarter === "2026-Q1");
+  assert.equal(q1_2026.revenueUsdM, 34681);
+  assert.equal(q1_2026.operatingIncomeUsdM, 13753);
+  assert.equal(series.fiscalCalendar, "fiscal_year_ends_june_30");
+  assert.equal(series.aiLinkage, "ai_and_core_cloud_mixed");
+  assert.ok(series.observations.every(row => row.reported && row.sourceUrl.startsWith("https://")));
+});
