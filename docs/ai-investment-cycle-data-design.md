@@ -88,11 +88,11 @@ CAPEX definition differences must be documented. Where the filing reports “pur
 
 ## Historical CAPEX dataset — calendar 2024-Q1 to 2026-Q3
 
-The initial 11-quarter dataset is stored in `data/ai-investment-cycle/hyperscaler-capex-quarterly-2024-2026.json`. It contains Microsoft, Alphabet, Amazon and Meta quarterly cash purchases of property, plant and equipment (PP&E), aligned to calendar quarters.
+The 15-quarter dataset is stored in `data/ai-investment-cycle/hyperscaler-capex-quarterly-2024-2026.json`. It now covers 2023-Q1 through 2026-Q3 for Microsoft, Alphabet, Amazon and Meta, aligned to calendar quarters. The 2023 observations are sourced from a dated SEC Companyfacts/filing compilation and retain SEC accession IDs; they are rounded to USD 0.01B and remain provisional pending direct primary-filing cross-check. 2024-Q1 onward retains the earlier source compilation and its USD 0.1B precision in most observations.
 
 This uses one consistent cash-flow line item: **cash purchases of PP&E (gross)**. It is intentionally narrower than some management CAPEX definitions that include finance-lease principal. It is also company-wide investment, not AI-only CAPEX.
 
-Source compilation: [tradmap — Big Tech Capital Expenditures](https://tradmap.com/stats/big-tech-capex), updated 2026-10-30, which attributes its quarterly figures to SEC EDGAR/XBRL cash-flow statements. Most historical observations are rounded to USD 0.1B. Amazon Q3 2026 is taken from its earnings-release cash-flow statement: gross PP&E purchases USD 77.259B; proceeds and incentives USD 1.381B. Alphabet Q3 2026 cash PP&E purchases are USD 51.355B. Microsoft Q3 2026 cash PP&E purchases are USD 39.4B, distinct from management CAPEX including leases of USD 45.2B. Meta Q3 2026 is approximately USD 33.9B on the cash PP&E series, distinct from lease-inclusive management CAPEX.
+Source compilation for 2024-Q1 onward: [tradmap — Big Tech Capital Expenditures](https://tradmap.com/stats/big-tech-capex), updated 2026-10-30, which attributes its quarterly figures to SEC EDGAR/XBRL cash-flow statements. Most observations are rounded to USD 0.1B. The 2023-Q1 through 2023-Q4 extension uses [AhaSignals' dated cash-capex history](https://ahasignals.com/capital-spending-cash-coverage/history/2023-12-31/), a SEC Companyfacts/filing compilation published as a 2026-09-08 v1.0.0 snapshot; the accession IDs and direct-vs-cumulative-difference method are retained on each observation. This extension is provisional until independently checked against each underlying SEC filing. Amazon Q3 2026 is taken from its earnings-release cash-flow statement: gross PP&E purchases USD 77.259B; proceeds and incentives USD 1.381B. Alphabet Q3 2026 cash PP&E purchases are USD 51.355B. Microsoft Q3 2026 cash PP&E purchases are USD 39.4B, distinct from management CAPEX including leases of USD 45.2B. Meta Q3 2026 is approximately USD 33.9B on the cash PP&E series, distinct from lease-inclusive management CAPEX.
 
 The four-company Q3 2026 gross cash PP&E total is approximately USD 201.96B. This is a common cash-flow metric, not a claim that every company's broader management CAPEX definition is identical. The dataset preserves missing Amazon Q4 observations as missing; it does not interpolate or treat them as zero.
 
@@ -100,7 +100,7 @@ The four-company Q3 2026 gross cash PP&E total is approximately USD 201.96B. Thi
 
 - The four-company cash PP&E series rose from approximately USD 44.3B in 2024-Q1 to USD 201.96B in 2026-Q3.
 - This is a steep increase in reported infrastructure and other PP&E cash spending, but not proof that all spending is AI-related.
-- The historical dataset currently has 11 calendar quarters. It is enough to begin quarterly trend charts and YoY growth calculations where complete prior-year observations exist, but not enough to treat cycle-warning thresholds as statistically calibrated.
+- The historical dataset now has 15 calendar quarters. It supports YoY CAPEX growth calculations from 2024-Q1 where the exact prior-year observation exists, but the older 2023 source vintage has a different precision and still needs primary-filing validation. This history is not enough to treat cycle-warning thresholds as statistically calibrated.
 - Company-specific lines and a combined series should both be displayed. Aggregate quarters with missing company data must show coverage and must not be presented as a full-universe total.
 
 ### Business performance data remains separate
