@@ -71,6 +71,19 @@ Import metadata is supplied separately and must include:
 
 `src/ai-investment-cycle/market-data-csv.mjs` parses and validates the CSV, sorts observations, rejects duplicate dates and ticker mismatches, and retains provenance. It does not fetch data, infer adjustment methodology, or determine legal permissions.
 
+## Five-symbol import bundle validation
+
+`src/ai-investment-cycle/market-data-bundle.mjs` validates the complete MSFT/GOOGL/AMZN/META/SPY import set before calculating relative returns.
+
+- Requires all five tickers exactly once.
+- Requires one common source URL, currency, and split-plus-dividend adjustment declaration across the comparison set.
+- Reports per-ticker date coverage, common observation count, and first/last common dates.
+- Requires at least one common trading observation on or before 2022-12-31 to establish the baseline for 2023-Q1 returns.
+- Only when the bundle passes validation does it derive each company’s quarterly total return and SPY-relative excess return.
+- Missing quarters remain unavailable; quarterly return logic retains its stale-observation and common-date checks.
+
+The bundle validator does not download data, validate a provider's legal terms, or independently verify that a vendor's adjusted-close values truly include dividends and splits. It only validates the declared metadata and the imported observations.
+
 ## Historical coverage
 
 To calculate 2023 quarterly returns, the import set needs at least one common trading observation on or before 2022-12-31, then sufficient daily observations through the desired end quarter. For all five symbols, use a common source and overlapping date range. Missing periods remain missing; do not interpolate.
