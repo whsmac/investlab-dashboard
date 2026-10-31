@@ -1,0 +1,432 @@
+{
+  "dataAsOf": "2026-10-31",
+  "currency": "USD",
+  "amountUnit": "USD millions",
+  "methodology": "Quarterly cash purchases of property, plant and equipment (PP&E) as reported in cash-flow statements, in calendar-quarter alignment. This is a common cash-flow line item, not management-defined total CAPEX and not AI-only CAPEX. Values sourced from SEC EDGAR/XBRL compilation; displayed to USD 0.1B except Q3 2026 Amazon calculated from the published cash-flow statement.",
+  "companies": [
+    "Microsoft",
+    "Alphabet",
+    "Amazon",
+    "Meta"
+  ],
+  "quarters": [
+    {
+      "quarter": "2024-Q1",
+      "values": [
+        {
+          "company": "Microsoft",
+          "ticker": "MSFT",
+          "capexUsdM": 11000,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        },
+        {
+          "company": "Alphabet",
+          "ticker": "GOOGL",
+          "capexUsdM": 12000,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        },
+        {
+          "company": "Amazon",
+          "ticker": "AMZN",
+          "capexUsdM": 14900,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        },
+        {
+          "company": "Meta",
+          "ticker": "META",
+          "capexUsdM": 6400,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        }
+      ]
+    },
+    {
+      "quarter": "2024-Q2",
+      "values": [
+        {
+          "company": "Microsoft",
+          "ticker": "MSFT",
+          "capexUsdM": 13900,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        },
+        {
+          "company": "Alphabet",
+          "ticker": "GOOGL",
+          "capexUsdM": 13200,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        },
+        {
+          "company": "Amazon",
+          "ticker": "AMZN",
+          "capexUsdM": 17600,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        },
+        {
+          "company": "Meta",
+          "ticker": "META",
+          "capexUsdM": 8200,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        }
+      ]
+    },
+    {
+      "quarter": "2024-Q3",
+      "values": [
+        {
+          "company": "Microsoft",
+          "ticker": "MSFT",
+          "capexUsdM": 14900,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        },
+        {
+          "company": "Alphabet",
+          "ticker": "GOOGL",
+          "capexUsdM": 13100,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        },
+        {
+          "company": "Amazon",
+          "ticker": "AMZN",
+          "capexUsdM": 22600,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        },
+        {
+          "company": "Meta",
+          "ticker": "META",
+          "capexUsdM": 8300,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        }
+      ]
+    },
+    {
+      "quarter": "2024-Q4",
+      "values": [
+        {
+          "company": "Microsoft",
+          "ticker": "MSFT",
+          "capexUsdM": 15800,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        },
+        {
+          "company": "Alphabet",
+          "ticker": "GOOGL",
+          "capexUsdM": 14300,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        },
+        {
+          "company": "Meta",
+          "ticker": "META",
+          "capexUsdM": 14400,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        }
+      ]
+    },
+    {
+      "quarter": "2025-Q1",
+      "values": [
+        {
+          "company": "Microsoft",
+          "ticker": "MSFT",
+          "capexUsdM": 16700,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        },
+        {
+          "company": "Alphabet",
+          "ticker": "GOOGL",
+          "capexUsdM": 17200,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        },
+        {
+          "company": "Amazon",
+          "ticker": "AMZN",
+          "capexUsdM": 25000,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        },
+        {
+          "company": "Meta",
+          "ticker": "META",
+          "capexUsdM": 12900,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        }
+      ]
+    },
+    {
+      "quarter": "2025-Q2",
+      "values": [
+        {
+          "company": "Microsoft",
+          "ticker": "MSFT",
+          "capexUsdM": 17100,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        },
+        {
+          "company": "Alphabet",
+          "ticker": "GOOGL",
+          "capexUsdM": 22400,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        },
+        {
+          "company": "Amazon",
+          "ticker": "AMZN",
+          "capexUsdM": 32200,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        },
+        {
+          "company": "Meta",
+          "ticker": "META",
+          "capexUsdM": 16500,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        }
+      ]
+    },
+    {
+      "quarter": "2025-Q3",
+      "values": [
+        {
+          "company": "Microsoft",
+          "ticker": "MSFT",
+          "capexUsdM": 19400,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        },
+        {
+          "company": "Alphabet",
+          "ticker": "GOOGL",
+          "capexUsdM": 24000,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        },
+        {
+          "company": "Amazon",
+          "ticker": "AMZN",
+          "capexUsdM": 35100,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        },
+        {
+          "company": "Meta",
+          "ticker": "META",
+          "capexUsdM": 18800,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        }
+      ]
+    },
+    {
+      "quarter": "2025-Q4",
+      "values": [
+        {
+          "company": "Microsoft",
+          "ticker": "MSFT",
+          "capexUsdM": 29900,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        },
+        {
+          "company": "Alphabet",
+          "ticker": "GOOGL",
+          "capexUsdM": 27900,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        },
+        {
+          "company": "Meta",
+          "ticker": "META",
+          "capexUsdM": 21400,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        }
+      ]
+    },
+    {
+      "quarter": "2026-Q1",
+      "values": [
+        {
+          "company": "Microsoft",
+          "ticker": "MSFT",
+          "capexUsdM": 30900,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        },
+        {
+          "company": "Alphabet",
+          "ticker": "GOOGL",
+          "capexUsdM": 35700,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        },
+        {
+          "company": "Amazon",
+          "ticker": "AMZN",
+          "capexUsdM": 44200,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        },
+        {
+          "company": "Meta",
+          "ticker": "META",
+          "capexUsdM": 19000,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        }
+      ]
+    },
+    {
+      "quarter": "2026-Q2",
+      "values": [
+        {
+          "company": "Microsoft",
+          "ticker": "MSFT",
+          "capexUsdM": 35800,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        },
+        {
+          "company": "Alphabet",
+          "ticker": "GOOGL",
+          "capexUsdM": 44900,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        },
+        {
+          "company": "Amazon",
+          "ticker": "AMZN",
+          "capexUsdM": 54200,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        },
+        {
+          "company": "Meta",
+          "ticker": "META",
+          "capexUsdM": 30100,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        }
+      ]
+    },
+    {
+      "quarter": "2026-Q3",
+      "values": [
+        {
+          "company": "Microsoft",
+          "ticker": "MSFT",
+          "capexUsdM": 39400,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        },
+        {
+          "company": "Alphabet",
+          "ticker": "GOOGL",
+          "capexUsdM": 51400,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        },
+        {
+          "company": "Amazon",
+          "ticker": "AMZN",
+          "capexUsdM": 77259,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 1M",
+          "source": "Amazon Q3 2026 earnings release cash-flow statement"
+        },
+        {
+          "company": "Meta",
+          "ticker": "META",
+          "capexUsdM": 33900,
+          "capexBasis": "cash_purchases_ppe_gross",
+          "reportedPrecision": "USD 0.1B",
+          "source": "SEC filing cash-flow statement compilation"
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "This common cash-flow line is intentionally narrower than some companies' management CAPEX definitions, which may include finance lease principal payments.",
+    "Q4 Amazon values are not present in the source table and are left missing rather than inferred.",
+    "Quarterly values other than Amazon 2026-Q3 are rounded to the nearest USD 0.1 billion in the source table.",
+    "This is company-wide PP&E cash spending, not AI-only infrastructure spending.",
+    "The source compilation attributes values to SEC EDGAR/XBRL; each record should be checked against the underlying company filing before production use."
+  ],
+  "source": {
+    "name": "tradmap — Big Tech Capital Expenditures",
+    "url": "https://tradmap.com/stats/big-tech-capex",
+    "asOf": "2026-10-30",
+    "attribution": "Quarterly values compiled from SEC EDGAR/XBRL cash-flow statements."
+  },
+  "directSources": [
+    {
+      "company": "Amazon",
+      "quarter": "2026-Q3",
+      "url": "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Third-Quarter-Results/default.aspx",
+      "note": "Purchases of PP&E USD 77,259M; proceeds from sales and incentives USD 1,381M. Gross purchases used for this dataset."
+    },
+    {
+      "company": "Alphabet",
+      "quarter": "2026-Q3",
+      "url": "https://www.sec.gov/Archives/edgar/data/1652044/000165204426000080/googexhibit991q32026.htm",
+      "note": "Purchases of property and equipment USD 51,355M."
+    }
+  ]
+}
