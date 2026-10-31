@@ -2,7 +2,7 @@
   "dataAsOf": "2026-10-31",
   "currency": "USD",
   "amountUnit": "USD millions",
-  "methodology": "Quarterly cash purchases of property, plant and equipment (PP&E) as reported in cash-flow statements, in calendar-quarter alignment. This is a common cash-flow line item, not management-defined total CAPEX and not AI-only CAPEX. Values sourced from SEC EDGAR/XBRL compilation; displayed to USD 0.1B except Q3 2026 Amazon calculated from the published cash-flow statement. Historical 2023-Q1 through 2023-Q4 observations are added from AhaSignals' dated SEC Companyfacts/filing compilation (2023-12-31 snapshot); values are rounded to USD 0.01B and each row retains the controlling SEC accession number(s) and whether the quarter was directly reported or derived from cumulative cash-flow values. These older observations are provisional until each filing is checked against the underlying SEC filing.",
+  "methodology": "Quarterly gross cash purchases/additions of property, plant and equipment (PP&E) as reported in cash-flow statements, in calendar-quarter alignment. This is a common gross cash-flow line item, not management-defined total CAPEX and not AI-only CAPEX. Values sourced from SEC EDGAR/XBRL compilation; displayed to USD 0.1B except historical 2023 observations, which were originally collected from AhaSignals' dated SEC Companyfacts/filing compilation (2023-12-31 snapshot), rounded to USD 0.01B, and independently cross-checked against all 16 underlying issuer primary quarterly/annual filings or official investor-relations cash-flow statements on 2026-10-31. Each 2023 observation retains the original source provenance, SEC accession IDs, direct/cumulative-difference method, and primary-source audit links.",
   "companies": [
     "Microsoft",
     "Alphabet",
@@ -25,7 +25,11 @@
           "sourceAccession": [
             "0000950170-23-014423"
           ],
-          "sourceMethod": "direct"
+          "sourceMethod": "direct",
+          "primarySourceAudit": "verified_2026-10-31",
+          "primarySourceUrls": [
+            "https://www.microsoft.com/en-us/Investor/earnings/FY-2023-Q3/cash-flows"
+          ]
         },
         {
           "company": "Alphabet",
@@ -39,7 +43,11 @@
           "sourceAccession": [
             "0001652044-23-000045"
           ],
-          "sourceMethod": "direct"
+          "sourceMethod": "direct",
+          "primarySourceAudit": "verified_2026-10-31",
+          "primarySourceUrls": [
+            "https://www.sec.gov/Archives/edgar/data/1652044/000165204423000045/goog-20230331.htm"
+          ]
         },
         {
           "company": "Amazon",
@@ -53,7 +61,11 @@
           "sourceAccession": [
             "0001018724-23-000008"
           ],
-          "sourceMethod": "direct"
+          "sourceMethod": "direct",
+          "primarySourceAudit": "verified_2026-10-31",
+          "primarySourceUrls": [
+            "https://www.sec.gov/Archives/edgar/data/1018724/000101872423000008/amzn-20230331.htm"
+          ]
         },
         {
           "company": "Meta",
@@ -67,7 +79,11 @@
           "sourceAccession": [
             "0001326801-23-000067"
           ],
-          "sourceMethod": "direct"
+          "sourceMethod": "direct",
+          "primarySourceAudit": "verified_2026-10-31",
+          "primarySourceUrls": [
+            "https://www.sec.gov/Archives/edgar/data/1326801/000132680123000067/meta-20230331.htm"
+          ]
         }
       ]
     },
@@ -87,7 +103,12 @@
             "0000950170-23-035122",
             "0000950170-23-014423"
           ],
-          "sourceMethod": "cumulative-difference"
+          "sourceMethod": "cumulative-difference",
+          "primarySourceAudit": "verified_2026-10-31",
+          "primarySourceUrls": [
+            "https://www.microsoft.com/en-us/Investor/earnings/FY-2023-Q3/cash-flows",
+            "https://www.microsoft.com/en-us/investor/earnings/fy-2023-q4/cash-flows"
+          ]
         },
         {
           "company": "Alphabet",
@@ -102,7 +123,11 @@
             "0001652044-23-000070",
             "0001652044-23-000045"
           ],
-          "sourceMethod": "cumulative-difference"
+          "sourceMethod": "cumulative-difference",
+          "primarySourceAudit": "verified_2026-10-31",
+          "primarySourceUrls": [
+            "https://www.sec.gov/Archives/edgar/data/1652044/000165204423000070/goog-20230630.htm"
+          ]
         },
         {
           "company": "Amazon",
@@ -116,7 +141,11 @@
           "sourceAccession": [
             "0001018724-23-000012"
           ],
-          "sourceMethod": "direct"
+          "sourceMethod": "direct",
+          "primarySourceAudit": "verified_2026-10-31",
+          "primarySourceUrls": [
+            "https://www.sec.gov/Archives/edgar/data/1018724/000101872423000012/amzn-20230630.htm"
+          ]
         },
         {
           "company": "Meta",
@@ -131,7 +160,11 @@
             "0001326801-23-000093",
             "0001326801-23-000067"
           ],
-          "sourceMethod": "cumulative-difference"
+          "sourceMethod": "cumulative-difference",
+          "primarySourceAudit": "verified_2026-10-31",
+          "primarySourceUrls": [
+            "https://www.sec.gov/Archives/edgar/data/1326801/000132680123000093/meta-20230630.htm"
+          ]
         }
       ]
     },
@@ -150,7 +183,11 @@
           "sourceAccession": [
             "0000950170-23-054855"
           ],
-          "sourceMethod": "direct"
+          "sourceMethod": "direct",
+          "primarySourceAudit": "verified_2026-10-31",
+          "primarySourceUrls": [
+            "https://www.microsoft.com/en-us/investor/earnings/fy-2024-q1/cash-flows"
+          ]
         },
         {
           "company": "Alphabet",
@@ -165,7 +202,11 @@
             "0001652044-23-000094",
             "0001652044-23-000070"
           ],
-          "sourceMethod": "cumulative-difference"
+          "sourceMethod": "cumulative-difference",
+          "primarySourceAudit": "verified_2026-10-31",
+          "primarySourceUrls": [
+            "https://www.sec.gov/Archives/edgar/data/1652044/000165204423000094/goog-20230930.htm"
+          ]
         },
         {
           "company": "Amazon",
@@ -179,7 +220,11 @@
           "sourceAccession": [
             "0001018724-23-000018"
           ],
-          "sourceMethod": "direct"
+          "sourceMethod": "direct",
+          "primarySourceAudit": "verified_2026-10-31",
+          "primarySourceUrls": [
+            "https://www.sec.gov/Archives/edgar/data/1018724/000101872423000018/amzn-20230930.htm"
+          ]
         },
         {
           "company": "Meta",
@@ -194,7 +239,11 @@
             "0001326801-23-000103",
             "0001326801-23-000093"
           ],
-          "sourceMethod": "cumulative-difference"
+          "sourceMethod": "cumulative-difference",
+          "primarySourceAudit": "verified_2026-10-31",
+          "primarySourceUrls": [
+            "https://www.sec.gov/Archives/edgar/data/1326801/000132680123000103/meta-20230930.htm"
+          ]
         }
       ]
     },
@@ -213,7 +262,11 @@
           "sourceAccession": [
             "0000950170-24-008814"
           ],
-          "sourceMethod": "direct"
+          "sourceMethod": "direct",
+          "primarySourceAudit": "verified_2026-10-31",
+          "primarySourceUrls": [
+            "https://www.microsoft.com/en-us/investor/earnings/fy-2024-q2/cash-flows"
+          ]
         },
         {
           "company": "Alphabet",
@@ -228,7 +281,11 @@
             "0001652044-24-000022",
             "0001652044-23-000094"
           ],
-          "sourceMethod": "cumulative-difference"
+          "sourceMethod": "cumulative-difference",
+          "primarySourceAudit": "verified_2026-10-31",
+          "primarySourceUrls": [
+            "https://www.sec.gov/Archives/edgar/data/1652044/000165204424000022/goog-20231231.htm"
+          ]
         },
         {
           "company": "Amazon",
@@ -243,7 +300,11 @@
             "0001018724-24-000008",
             "0001018724-23-000018"
           ],
-          "sourceMethod": "cumulative-difference"
+          "sourceMethod": "cumulative-difference",
+          "primarySourceAudit": "verified_2026-10-31",
+          "primarySourceUrls": [
+            "https://www.sec.gov/Archives/edgar/data/1018724/000101872424000008/amzn-20231231.htm"
+          ]
         },
         {
           "company": "Meta",
@@ -258,7 +319,11 @@
             "0001326801-24-000012",
             "0001326801-23-000103"
           ],
-          "sourceMethod": "cumulative-difference"
+          "sourceMethod": "cumulative-difference",
+          "primarySourceAudit": "verified_2026-10-31",
+          "primarySourceUrls": [
+            "https://www.sec.gov/Archives/edgar/data/1326801/000132680124000012/meta-20231231.htm"
+          ]
         }
       ]
     },
