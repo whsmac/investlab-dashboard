@@ -107,12 +107,19 @@ test("Q3 2026 source snapshot preserves CAPEX definitions and does not mislabel 
 
 test("historical hyperscaler series contains source-backed calendar quarters and preserves missing Amazon Q4", () => {
   const dataset = JSON.parse(readFileSync(new URL("../data/ai-investment-cycle/hyperscaler-capex-quarterly-2024-2026.json", import.meta.url), "utf8"));
-  assert.equal(dataset.quarters.length, 11);
+  assert.equal(dataset.quarters.length, 15);
   const latest = dataset.quarters.find(row => row.quarter === "2026-Q3");
   assert.equal(latest.values.reduce((sum, row) => sum + row.capexUsdM, 0), 201959);
   assert.equal(latest.values.length, 4);
   const amazonQ4 = dataset.quarters.find(row => row.quarter === "2025-Q4");
   assert.equal(amazonQ4.values.some(row => row.company === "Amazon"), false);
+  const early = dataset.quarters.find(row => row.quarter === "2023-Q1");
+  assert.equal(early.values.length, 4);
+  assert.deepEqual(early.values.map(row => row.capexUsdM), [6610, 6290, 14210, 6840]);
+  const microsoft2023Q2 = dataset.quarters.find(row => row.quarter === "2023-Q2").values.find(row => row.company === "Microsoft");
+  assert.equal(microsoft2023Q2.sourceMethod, "cumulative-difference");
+  assert.equal(microsoft2023Q2.sourceAccession.length, 2);
+  assert.ok(microsoft2023Q2.sourceUrl.includes("ahasignals.com"));
   assert.ok(dataset.limitations.some(note => note.includes("Q4 Amazon")));
   assert.ok(dataset.quarters.every(q => q.values.every(row => row.capexBasis === "cash_purchases_ppe_gross")));
 });
