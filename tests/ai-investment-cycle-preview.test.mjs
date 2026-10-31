@@ -36,5 +36,5 @@ test("preview explicitly distinguishes company-wide CAPEX, mixed business metric
 test("preview does not introduce live market-price fetching or provider credentials", () => {
   assert.doesNotMatch(html, /fetch\(["']https?:\/\//i);
   assert.doesNotMatch(html, /apiKey|apikey|SUPABASE_URL|supabase-js/i);
-  assert.match(html, /조정주가 데이터 미등록/);\n  assert.match(html, /서버나 Supabase로 전송·저장하지 않습니다/);
+  assert.match(html, /조정주가 자료는 아직 등록되지 않았습니다/);\n  assert.match(html, /서버나 Supabase로 전송·저장하지 않습니다/);
 });
