@@ -1,4 +1,4 @@
-const QUARTER_RE = /^(\\d{4})-Q([1-4])$/;
+const QUARTER_RE = /^(\d{4})-Q([1-4])$/;
 
 function quarterIndex(quarter) {
   const match = QUARTER_RE.exec(String(quarter ?? ""));
