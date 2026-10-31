@@ -146,7 +146,7 @@ test("business performance keeps Microsoft recast segment and Azure revenue as s
   const agents = microsoft.metrics.find(row => row.metric === "Agents and Infra segment revenue");
   assert.equal(azure.comparability, "cloud_product_revenue");
   assert.equal(agents.comparability, "newly_recast_segment");
-  assert.equal(microsoft.metrics.find(row => row.metric === "Agents and Infra segment operating income").operatingMarginPercent, null);
+  assert.ok(Math.abs(microsoft.metrics.find(row => row.metric === "Agents and Infra segment operating income").operatingMarginPercent - (40558 / 76795 * 100)) < 1e-8);
 });
 
 test("Meta operational indicators and one-off charge remain distinct from AI revenue", () => {
