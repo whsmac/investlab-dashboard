@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { calculateCompanySeries, aggregateQuarterlyCapex, calculateMarketPerformance } from "../src/ai-investment-cycle/metrics.mjs";
+import { calculateYoYPercent, calculateOperatingMarginPercent, deriveBusinessPerformance } from "../src/ai-investment-cycle/business-performance.mjs";
 
 const sample = [
   { company: "A", capexBasis: "cash_capex_net", quarter: "2024-Q1", capexUsdM: 100, aiRevenueUsdM: 20 },
@@ -125,4 +126,40 @@ test("historical series calculates YoY CAPEX growth when four-quarter history is
   const result = calculateCompanySeries(rows);
   const latest = result.find(row => row.quarter === "2026-Q3");
   assert.equal(latest.capexYoYPercent, 103.09278350515463);
+});
+
+test("business performance derives cloud segment growth and operating margins without treating it as AI revenue", () => {
+  const snapshot = JSON.parse(readFileSync(new URL("../data/ai-investment-cycle/business-performance-q3-2026.json", import.meta.url), "utf8"));
+  const result = deriveBusinessPerformance(snapshot);
+  const alphabet = result.find(row => row.company === "Alphabet");
+  const cloudRevenue = alphabet.metrics.find(row => row.metric === "Google Cloud revenue");
+  const cloudIncome = alphabet.metrics.find(row => row.metric === "Google Cloud operating income");
+  assert.ok(Math.abs(cloudRevenue.calculatedGrowthPercent - 102.586) < 0.01);
+  assert.ok(Math.abs(cloudIncome.operatingMarginPercent - (11121 / 30709 * 100)) < 1e-8);
+  assert.equal(alphabet.directAiRevenueUsdM, null);
+});
+
+test("business performance keeps Microsoft recast segment and Azure revenue as separate metrics", () => {
+  const snapshot = JSON.parse(readFileSync(new URL("../data/ai-investment-cycle/business-performance-q3-2026.json", import.meta.url), "utf8"));
+  const microsoft = deriveBusinessPerformance(snapshot).find(row => row.company === "Microsoft");
+  const azure = microsoft.metrics.find(row => row.metric === "Azure revenue");
+  const agents = microsoft.metrics.find(row => row.metric === "Agents and Infra segment revenue");
+  assert.equal(azure.comparability, "cloud_product_revenue");
+  assert.equal(agents.comparability, "newly_recast_segment");
+  assert.equal(microsoft.metrics.find(row => row.metric === "Agents and Infra segment operating income").operatingMarginPercent, null);
+});
+
+test("Meta operational indicators and one-off charge remain distinct from AI revenue", () => {
+  const snapshot = JSON.parse(readFileSync(new URL("../data/ai-investment-cycle/business-performance-q3-2026.json", import.meta.url), "utf8"));
+  const meta = deriveBusinessPerformance(snapshot).find(row => row.company === "Meta");
+  assert.equal(meta.directAiRevenueUsdM, null);
+  assert.equal(meta.specialItems[0].amountUsdM, 9890);
+  assert.equal(meta.metrics.find(row => row.metric === "Family of Apps ad impressions growth").calculatedGrowthPercent, 10);
+  assert.equal(meta.metrics.find(row => row.metric === "Operating income (GAAP)").reportedGrowthPercent, -37);
+});
+
+test("business performance helpers return null for missing or invalid comparison bases", () => {
+  assert.equal(calculateYoYPercent(10, 0), null);
+  assert.equal(calculateYoYPercent(null, null), null);
+  assert.equal(calculateOperatingMarginPercent(10, 0), null);
 });
