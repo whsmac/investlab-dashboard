@@ -69,7 +69,7 @@ test("cash deposits, withdrawals, and FX conversions update each currency balanc
     tx("FX_CONVERSION", {
       sequence_no: 3, currency: "KRW",
       from_currency: "USD", from_amount: 200,
-      to_currency: "KRW", to_amount: 270000
+      to_currency: "KRW", to_amount: 270000, applied_fx_rate: 1350
     })
   ]);
   assert.equal(result.cash.USD, 700);
@@ -312,5 +312,60 @@ test("same sequence number is valid on different dates and replay ordering is de
   ]);
   assert.equal(result.cash.USD, 30);
   assert.equal(result.appliedTransactionCount, 2);
+});
+
+test("cash movement fees are reflected in the correct currency balance", () => {
+  const result = calculateLedger([
+    tx("CASH_DEPOSIT", { sequence_no: 1, gross_amount: 100, fees: 2 }),
+    tx("CASH_WITHDRAWAL", { sequence_no: 2, gross_amount: 25, fees: 1 })
+  ]);
+  assert.equal(result.cash.USD, 72);
+});
+
+test("cash deposit rejects fees greater than gross amount and opening entries reject separate fees", () => {
+  assert.throws(() => calculateLedger([
+    tx("CASH_DEPOSIT", { gross_amount: 10, fees: 11 })
+  ]), /CASH_DEPOSIT fees cannot exceed gross_amount/);
+  assert.throws(() => calculateLedger([
+    tx("OPENING_CASH", { gross_amount: 100, fees: 1 })
+  ]), /OPENING_CASH fees must be zero/);
+  assert.throws(() => calculateLedger([
+    tx("OPENING_POSITION", { symbol: "XYZ", quantity: 1, unit_price: 10, fees: 1 })
+  ]), /OPENING_POSITION fees must be zero/);
+});
+
+test("FX conversion rate is target currency per source currency and FX fees reduce target cash", () => {
+  const result = calculateLedger([
+    tx("CASH_DEPOSIT", { sequence_no: 1, gross_amount: 100, currency: "USD" }),
+    tx("FX_CONVERSION", {
+      sequence_no: 2, currency: "KRW",
+      from_currency: "USD", from_amount: 10,
+      to_currency: "KRW", to_amount: 13000,
+      applied_fx_rate: 1300, fees: 100
+    })
+  ]);
+  assert.equal(result.cash.USD, 90);
+  assert.equal(result.cash.KRW, 12900);
+});
+
+test("FX conversion rejects a missing or inconsistent applied exchange rate", () => {
+  assert.throws(() => calculateLedger([
+    tx("FX_CONVERSION", {
+      currency: "KRW", from_currency: "USD", from_amount: 1,
+      to_currency: "KRW", to_amount: 1300
+    })
+  ]), /requires applied_fx_rate/);
+  assert.throws(() => calculateLedger([
+    tx("FX_CONVERSION", {
+      currency: "KRW", from_currency: "USD", from_amount: 1,
+      to_currency: "KRW", to_amount: 1300, applied_fx_rate: 1290
+    })
+  ]), /must equal to_amount \/ from_amount/);
+  assert.throws(() => calculateLedger([
+    tx("FX_CONVERSION", {
+      currency: "KRW", from_currency: "USD", from_amount: 1,
+      to_currency: "KRW", to_amount: 10, applied_fx_rate: 10, fees: 11
+    })
+  ]), /fees cannot exceed to_amount/);
 });
 
