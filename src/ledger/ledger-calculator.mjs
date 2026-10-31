@@ -64,9 +64,12 @@ export function calculateLedger(inputTransactions) {
       if (!tx.symbol) throw new Error("symbol is required");
       const qty = Number(tx.quantity), price = Number(tx.unit_price);
       if (!(qty > 0) || !Number.isFinite(qty) || !(price >= 0) || !Number.isFinite(price)) throw new Error("Invalid buy quantity or unit price");
+      if (type === "OPENING_POSITION" && fees !== 0) {
+        throw new Error("OPENING_POSITION fees must be zero; snapshot unit_price must include acquisition costs");
+      }
       const p = getPosition(tx.symbol);
       assertPositionCurrency(p, currency, tx.symbol);
-      const cost = type === "OPENING_POSITION" ? (gross ?? qty * price) : qty * price + fees;
+      const cost = type === "OPENING_POSITION" ? qty * price : qty * price + fees;
       const newQty = p.quantity + qty;
       positions.set(tx.symbol, {
         quantity: newQty,
@@ -98,13 +101,19 @@ export function calculateLedger(inputTransactions) {
       realizedByCurrency[currency] += realized;
       realizedBySymbol[tx.symbol] = (realizedBySymbol[tx.symbol] ?? 0) + realized;
       applied.push(tx);
-    } else if (["CASH_DEPOSIT", "OPENING_CASH"].includes(type)) {
+    } else if (type === "CASH_DEPOSIT") {
+      if (gross == null || gross <= 0) throw new Error("CASH_DEPOSIT requires positive gross_amount");
+      if (fees > gross) throw new Error("CASH_DEPOSIT fees cannot exceed gross_amount");
+      cash[currency] += gross - fees;
+      applied.push(tx);
+    } else if (type === "OPENING_CASH") {
       if (gross == null) throw new Error("gross_amount is required");
+      if (fees !== 0) throw new Error("OPENING_CASH fees must be zero; opening balance is already net");
       cash[currency] += gross;
       applied.push(tx);
     } else if (type === "CASH_WITHDRAWAL") {
-      if (gross == null) throw new Error("gross_amount is required");
-      cash[currency] -= gross;
+      if (gross == null || gross <= 0) throw new Error("CASH_WITHDRAWAL requires positive gross_amount");
+      cash[currency] -= gross + fees;
       applied.push(tx);
     } else if (type === "DIVIDEND") {
       if (!tx.symbol || gross == null || gross <= 0) throw new Error("Dividend requires symbol and positive gross_amount");
@@ -122,8 +131,16 @@ export function calculateLedger(inputTransactions) {
       const toAmount = amount(tx.to_amount, "to_amount");
       if (!Object.hasOwn(cash, fromCurrency) || !Object.hasOwn(cash, toCurrency) || fromCurrency === toCurrency || fromAmount <= 0 || toAmount <= 0) throw new Error("Invalid FX conversion");
       if (currency !== toCurrency) throw new Error("FX transaction currency must match to_currency");
+      if (tx.applied_fx_rate == null) throw new Error("FX_CONVERSION requires applied_fx_rate");
+      const appliedRate = Number(tx.applied_fx_rate);
+      const impliedRate = toAmount / fromAmount;
+      const rateTolerance = Math.max(1e-8, Math.abs(impliedRate) * 1e-8);
+      if (Math.abs(appliedRate - impliedRate) > rateTolerance) {
+        throw new Error("FX applied_fx_rate must equal to_amount / from_amount (to-currency units per one from-currency unit)");
+      }
+      if (fees > toAmount) throw new Error("FX conversion fees cannot exceed to_amount");
       cash[fromCurrency] -= fromAmount;
-      cash[toCurrency] += toAmount;
+      cash[toCurrency] += toAmount - fees;
       applied.push(tx);
     } else {
       throw new Error(`Unsupported transaction type: ${type}`);
