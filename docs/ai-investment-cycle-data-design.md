@@ -88,7 +88,7 @@ CAPEX definition differences must be documented. Where the filing reports “pur
 
 ## Historical CAPEX dataset — calendar 2024-Q1 to 2026-Q3
 
-The 15-quarter dataset is stored in `data/ai-investment-cycle/hyperscaler-capex-quarterly-2024-2026.json`. It now covers 2023-Q1 through 2026-Q3 for Microsoft, Alphabet, Amazon and Meta, aligned to calendar quarters. The 2023 observations are sourced from a dated SEC Companyfacts/filing compilation and retain SEC accession IDs; they are rounded to USD 0.01B and remain provisional pending direct primary-filing cross-check. 2024-Q1 onward retains the earlier source compilation and its USD 0.1B precision in most observations.
+The 15-quarter dataset is stored in `data/ai-investment-cycle/hyperscaler-capex-quarterly-2023-2026.json`. It now covers 2023-Q1 through 2026-Q3 for Microsoft, Alphabet, Amazon and Meta, aligned to calendar quarters. The 2023 observations are sourced from a dated SEC Companyfacts/filing compilation and retain SEC accession IDs; they are rounded to USD 0.01B and remain provisional pending direct primary-filing cross-check. 2024-Q1 onward retains the earlier source compilation and its USD 0.1B precision in most observations.
 
 This uses one consistent cash-flow line item: **cash purchases of PP&E (gross)**. It is intentionally narrower than some management CAPEX definitions that include finance-lease principal. It is also company-wide investment, not AI-only CAPEX.
 
