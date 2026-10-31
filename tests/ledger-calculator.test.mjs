@@ -258,7 +258,7 @@ test("replaying after editing a trade recalculates cash, average cost, and reali
   assert.equal(before.positions.XYZ.quantity, 15);
   assert.equal(before.positions.XYZ.averageCost, 110);
   assert.equal(before.realizedBySymbol.XYZ, 150);
-  assert.equal(before.cash.USD, -850);
+  assert.equal(before.cash.USD, -1500);
 
   // Correct the sale price from 140 to 130 and replay the full transaction set.
   const corrected = original.map((item, index) =>
@@ -268,7 +268,7 @@ test("replaying after editing a trade recalculates cash, average cost, and reali
   assert.equal(afterCorrection.positions.XYZ.quantity, 15);
   assert.equal(afterCorrection.positions.XYZ.averageCost, 110);
   assert.equal(afterCorrection.realizedBySymbol.XYZ, 100);
-  assert.equal(afterCorrection.cash.USD, -900);
+  assert.equal(afterCorrection.cash.USD, -1550);
 
   // Delete the sale and replay; both realized P&L and cash must return to pre-sale values.
   const afterDeletion = calculateLedger(corrected.slice(0, 2));
