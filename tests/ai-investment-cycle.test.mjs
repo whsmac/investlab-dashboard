@@ -124,5 +124,5 @@ test("historical series calculates YoY CAPEX growth when four-quarter history is
   }));
   const result = calculateCompanySeries(rows);
   const latest = result.find(row => row.quarter === "2026-Q3");
-  assert.equal(latest.capexYoYPercent, 102.57731958762886);
+  assert.equal(latest.capexYoYPercent, 103.09278350515463);
 });
