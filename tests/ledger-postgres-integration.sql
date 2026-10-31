@@ -1,4 +1,4 @@
--- Apply after both ledger migrations have been applied to the ephemeral CI database.
+-- Apply after all ledger migrations have been applied to the ephemeral CI database.
 \set ON_ERROR_STOP on
 
 -- Seed one row for another user as the database owner (RLS bypass).
@@ -82,6 +82,89 @@ begin
   end;
 end;
 $$;
+
+
+-- A valid FX conversion uses target-currency units per source-currency unit.
+insert into public.ledger_transactions (
+  user_id, transaction_date, sequence_no, transaction_type,
+  currency, from_currency, from_amount, to_currency, to_amount,
+  applied_fx_rate, fees, idempotency_key
+) values (
+  auth.uid(), '2026-10-30', 3, 'FX_CONVERSION',
+  'KRW', 'USD', 2, 'KRW', 2600,
+  1300, 100, 'user-a-fx-valid'
+);
+
+-- A conversion with a mismatched applied rate must be rejected.
+do $
+begin
+  begin
+    insert into public.ledger_transactions (
+      user_id, transaction_date, sequence_no, transaction_type,
+      currency, from_currency, from_amount, to_currency, to_amount,
+      applied_fx_rate, idempotency_key
+    ) values (
+      auth.uid(), '2026-10-30', 4, 'FX_CONVERSION',
+      'KRW', 'USD', 2, 'KRW', 2600,
+      1290, 'user-a-fx-invalid-rate'
+    );
+    raise exception 'FX rate test failed: inconsistent rate unexpectedly succeeded';
+  exception when check_violation then
+    null;
+  end;
+end;
+$;
+
+-- FX fees are in target currency and cannot exceed the gross target amount.
+do $
+begin
+  begin
+    insert into public.ledger_transactions (
+      user_id, transaction_date, sequence_no, transaction_type,
+      currency, from_currency, from_amount, to_currency, to_amount,
+      applied_fx_rate, fees, idempotency_key
+    ) values (
+      auth.uid(), '2026-10-30', 4, 'FX_CONVERSION',
+      'KRW', 'USD', 2, 'KRW', 2600,
+      1300, 2700, 'user-a-fx-fee-invalid'
+    );
+    raise exception 'FX fee test failed: fee greater than target amount unexpectedly succeeded';
+  exception when check_violation then
+    null;
+  end;
+end;
+$;
+
+-- Cash deposit fees cannot exceed the gross deposit; opening balances are net snapshots.
+do $
+begin
+  begin
+    insert into public.ledger_transactions (
+      user_id, transaction_date, sequence_no, transaction_type,
+      gross_amount, fees, currency, idempotency_key
+    ) values (
+      auth.uid(), '2026-10-30', 4, 'CASH_DEPOSIT',
+      10, 11, 'USD', 'user-a-deposit-fee-invalid'
+    );
+    raise exception 'Cash fee test failed: deposit fee greater than deposit unexpectedly succeeded';
+  exception when check_violation then
+    null;
+  end;
+
+  begin
+    insert into public.ledger_transactions (
+      user_id, transaction_date, sequence_no, transaction_type,
+      symbol, quantity, unit_price, fees, currency, idempotency_key
+    ) values (
+      auth.uid(), '2026-10-30', 4, 'OPENING_POSITION',
+      'NVDA', 1, 100, 1, 'USD', 'user-a-opening-fee-invalid'
+    );
+    raise exception 'Opening fee test failed: nonzero opening fee unexpectedly succeeded';
+  exception when check_violation then
+    null;
+  end;
+end;
+$;
 
 -- Dividend amount, withholding, and fee validation.
 insert into public.ledger_transactions (
