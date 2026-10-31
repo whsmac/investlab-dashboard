@@ -65,8 +65,9 @@ export function deriveQuarterlyBusinessSeries(dataset) {
       fiscalCalendar: series.fiscalCalendar,
       observations: [...indexed.values()].sort((a, b) => a._quarterIndex - b._quarterIndex).map(observation => {
         const prior = indexed.get(observation._quarterIndex - 4);
+        const { _quarterIndex, ...row } = observation;
         return {
-          ...observation,
+          ...row,
           businessGrowthPercent: prior
             ? calculateYoYPercent(observation.revenueUsdM, prior.revenueUsdM)
             : null,
@@ -74,7 +75,6 @@ export function deriveQuarterlyBusinessSeries(dataset) {
             observation.operatingIncomeUsdM,
             observation.revenueUsdM,
           ),
-          _quarterIndex: undefined,
         };
       }),
     };
