@@ -390,9 +390,9 @@ test("derives quarterly adjusted total returns against the benchmark on common q
   const result = deriveQuarterlyMarketPerformance(company, benchmark, ["2025-Q1", "2025-Q2"]);
   assert.equal(result[0].startDate, "2024-12-31");
   assert.equal(result[0].endDate, "2025-03-31");
-  assert.equal(result[0].companyReturnPercent, 10);
-  assert.equal(result[0].benchmarkReturnPercent, 5);
-  assert.equal(result[0].excessReturnPp, 5);
+  assert.ok(Math.abs(result[0].companyReturnPercent - 10) < 1e-10);
+  assert.ok(Math.abs(result[0].benchmarkReturnPercent - 5) < 1e-10);
+  assert.ok(Math.abs(result[0].excessReturnPp - 5) < 1e-10);
   assert.equal(result[0].status, "ok");
   assert.ok(Math.abs(result[1].companyReturnPercent - ((120 / 110 - 1) * 100)) < 1e-10);
   assert.ok(Math.abs(result[1].benchmarkReturnPercent - ((110 / 105 - 1) * 100)) < 1e-10);
