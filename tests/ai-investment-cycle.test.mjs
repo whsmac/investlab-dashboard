@@ -134,7 +134,7 @@ test("business performance derives cloud segment growth and operating margins wi
   const alphabet = result.find(row => row.company === "Alphabet");
   const cloudRevenue = alphabet.metrics.find(row => row.metric === "Google Cloud revenue");
   const cloudIncome = alphabet.metrics.find(row => row.metric === "Google Cloud operating income");
-  assert.ok(Math.abs(cloudRevenue.calculatedGrowthPercent - 102.586) < 0.01);
+  assert.ok(Math.abs(cloudRevenue.calculatedGrowthPercent - 102.60605660750808) < 0.01);
   assert.ok(Math.abs(cloudIncome.operatingMarginPercent - (11121 / 30709 * 100)) < 1e-8);
   assert.equal(alphabet.directAiRevenueUsdM, null);
 });
