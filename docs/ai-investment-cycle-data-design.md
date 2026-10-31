@@ -32,6 +32,33 @@ All stored financial amounts use USD millions and fiscal-quarter labels (YYYY-Qn
 5. Trailing-four-quarter disclosed AI revenue divided by trailing-four-quarter CAPEX, labelled **AI revenue-to-total-CAPEX proxy**, never “ROI” or “investment return”. It is not profit, cash flow, or attributable return on AI CAPEX.
 6. Market response: adjusted-close total return over selected horizons and excess return versus a benchmark (initially S&P 500), shown separately from operating results and CAPEX. This measures shareholder market performance, not the return earned directly on AI CAPEX.
 
+## CAPEX-to-business performance lead/lag analysis
+
+The isolated helper `src/ai-investment-cycle/cycle-linkage.mjs` compares company-level CAPEX YoY growth with a separately defined business-performance YoY growth series.
+
+For each lag from 0 to the configured maximum:
+- Lag 0 pairs CAPEX growth and business growth in the same calendar quarter.
+- Lag 1 pairs CAPEX growth in quarter t with business growth in t+1.
+- Lag 2 pairs CAPEX growth in quarter t with business growth in t+2, and so on.
+- Only exact company and quarter-index matches are included. Missing quarters are not interpolated.
+- Pearson correlation is returned only when the configured minimum number of aligned observations is met and both series have non-zero variance.
+
+The output labels every result as descriptive-only. A positive correlation at a positive lag does not prove CAPEX caused later business growth: cloud demand, pricing, product cycles, capacity availability, acquisitions, foreign exchange, and broader economic conditions may affect both variables. It is not a forecast or a trading signal.
+
+### Input and comparability requirements
+
+- Use one company at a time; do not correlate aggregate CAPEX with an unrelated business metric.
+- Keep business metric identity stable across the full sample (for example, AWS segment revenue growth only with AWS segment revenue growth).
+- Preserve fiscal-to-calendar quarter mapping, and do not mix Microsoft's fiscal quarter labels with calendar quarter labels without an explicit mapping.
+- Segment reorganizations, definition changes, and restated comparatives must be marked; break the series or create a separately identified metric version when definitions change.
+- Do not combine AI-specific disclosed revenue with broad cloud revenue or advertising proxies.
+- A minimum of six aligned observations is the default analytical floor, not a guarantee of statistical reliability. Longer history is preferred; results with fewer observations remain null.
+- Market returns remain a separate outcome series. Correlation between CAPEX and stock returns must account for market benchmark returns and must not be described as the return on AI investment.
+
+### Current data sufficiency
+
+The current operating-performance snapshot provides Q3 2026 and selected Q3 2025 comparatives, but it is not a continuous multi-year quarterly series. It is therefore not sufficient to calculate a credible lead/lag relationship yet. The new helper is implemented and tested with controlled fixtures; production analysis must wait until a source-validated historical operating series has at least six aligned quarters (preferably 12 or more).
+
 ## Cycle signal
 Initial transparent rules:
 - Accelerating: CAPEX YoY >= 25% and YoY growth acceleration >= +10 percentage points.
