@@ -50,6 +50,16 @@ test("extracts only supported SEC periodic filings and preserves raw YTD values/
   assert.equal(rows.some(row => row.form === "8-K"), false);
 });
 
+test("does not coerce null or empty SEC values to numeric zero", () => {
+  const payload = fixture();
+  payload.facts["us-gaap"].RevenueFromContractWithCustomerExcludingAssessedTax.units.USD.push(
+    { start: "2025-07-01", end: "2025-09-30", val: null, form: "10-Q", fy: 2025, fp: "Q3", filed: "2025-10-25", accn: "0000789019-25-000006" },
+    { start: "2025-07-01", end: "2025-09-30", val: "", form: "10-Q", fy: 2025, fp: "Q3", filed: "2025-10-25", accn: "0000789019-25-000007" },
+  );
+  const rows = extractCompanyFactObservations(payload);
+  assert.equal(rows.some(row => row.end === "2025-09-30"), false);
+});
+
 test("retains amendments as separate filing versions", () => {
   const rows = extractCompanyFactObservations(fixture());
   const revenue = rows.filter(row => row.metric === "revenue");
@@ -65,8 +75,17 @@ test("rejects missing SEC User-Agent", async () => {
   }), /User-Agent/);
 });
 
-test("validates CIK and verifies response identity", async () => {
+test("rejects malformed CIK before making a network request", async () => {
+  let called = false;
   await assert.rejects(() => fetchSecCompanyFacts("abc", {
+    userAgent: "INVESTLAB dev contact@example.com",
+    fetchImpl: async () => { called = true; throw new Error("should not be called"); },
+  }), /valid SEC CIK/);
+  assert.equal(called, false);
+});
+
+test("validates SEC response identity for a well-formed CIK", async () => {
+  await assert.rejects(() => fetchSecCompanyFacts("789019", {
     userAgent: "INVESTLAB dev contact@example.com",
     fetchImpl: async () => ({ ok: true, json: async () => ({ cik: 123, facts: {} }) }),
   }), /does not match/);
