@@ -59,7 +59,7 @@ test("returns no fabricated quarter when cumulative comparison is missing", () =
   const rows = [
     fact({ start: "2026-01-01", end: "2026-06-30", value: -28, period: "Q2", accession: "h1" }),
   ];
-  assert.deepEqual(normalizeStandaloneQuarters(rows, { metric: "capex" }), []);
+  assert.deepEqual(normalizeStandaloneQuarters(rows, { metric: "capex", tag: "PaymentsToAcquirePropertyPlantAndEquipment", unit: "USD" }), []);
 });
 
 test("revenue values retain their reported sign and do not use CAPEX absolute-value rule", () => {
