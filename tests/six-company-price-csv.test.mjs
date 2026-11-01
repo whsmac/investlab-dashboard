@@ -17,7 +17,7 @@ test("parses a combined six-company CSV, sorts observations, and reports partial
   const result = parseSixCompanyPriceCsv(csv);
   assert.equal(result.importMethod, "manual-csv");
   assert.equal(result.currency, "USD");
-  assert.equal(result.priceBasis, "unadjusted-close");
+  assert.equal(result.priceBasis, "adjusted-close");
   assert.deepEqual(result.observations.map(row => [row.date, row.ticker]), [
     ["2026-10-01", "GOOGL"],
     ["2026-10-01", "MSFT"],
