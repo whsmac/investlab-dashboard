@@ -37,7 +37,7 @@ function isValidDate(value) {
 }
 
 /**
- * Parse a combined manual daily-close CSV for the six-company monitor.
+ * Parse a combined manual daily adjusted-close CSV for the six-company monitor.
  * Partial ticker coverage is allowed so monthly uploads can append only new
  * observations; callers must merge by (ticker, date) and surface replacements.
  */
@@ -73,13 +73,13 @@ export function parseSixCompanyPriceCsv(csvText) {
     if (!Number.isFinite(close) || close <= 0) {
       throw new TypeError(`CSV row ${index + 2} close must be a positive decimal number in USD`);
     }
-    return { date, ticker, close, currency: "USD", priceBasis: "unadjusted-close" };
+    return { date, ticker, close, currency: "USD", priceBasis: "adjusted-close" };
   }).sort((a, b) => a.date.localeCompare(b.date) || a.ticker.localeCompare(b.ticker));
 
   return {
     schemaVersion: 1,
     importMethod: "manual-csv",
-    priceBasis: "unadjusted-close",
+    priceBasis: "adjusted-close",
     currency: "USD",
     observations,
     coverage: SIX_COMPANY_PRICE_TICKERS.map(ticker => ({
