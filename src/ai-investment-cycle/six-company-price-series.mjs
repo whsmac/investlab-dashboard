@@ -1,8 +1,8 @@
 const TICKERS = Object.freeze(["MSFT", "GOOGL", "AMZN", "META", "TSLA", "SPCX"]);
-const QUARTER_RE = /^(\\d{4})-Q([1-4])$/;
+const QUARTER_RE = /^(\d{4})-Q([1-4])$/;
 
 function validDate(value) {
-  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(String(value ?? ""))) return false;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(value ?? ""))) return false;
   const date = new Date(`${value}T00:00:00Z`);
   return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value;
 }
@@ -55,11 +55,17 @@ export function deriveIndexedAdjustedClose(observations, options = {}) {
   const startDate = options.startDate ?? "0000-01-01";
   const selected = observations.filter(row => (ticker === "ALL" || row.ticker === ticker) && row.date >= startDate);
   const firstByTicker = new Map();
-  for (const row of selected) if (!firstByTicker.has(row.ticker)) firstByTicker.set(row.ticker, row.close);
+  const firstDateByTicker = new Map();
+  for (const row of selected) {
+    if (!firstByTicker.has(row.ticker)) {
+      firstByTicker.set(row.ticker, row.close);
+      firstDateByTicker.set(row.ticker, row.date);
+    }
+  }
   return selected.map(row => ({
     ...row,
     indexedClose: (row.close / firstByTicker.get(row.ticker)) * 100,
-    baseDate: selected.find(point => point.ticker === row.ticker)?.date ?? null,
+    baseDate: firstDateByTicker.get(row.ticker) ?? null,
   }));
 }
 
