@@ -98,8 +98,8 @@ export function normalizeStandaloneQuarters(observations, options = {}) {
 
         const priorDays = daysBetween(prior.start, prior.end);
         const isCumulativeCurrent = days > QUARTER_MAX_DAYS;
-        const isCumulativePrior = priorDays !== null && priorDays > QUARTER_MAX_DAYS;
-        if (!isCumulativeCurrent || !isCumulativePrior) continue;
+        const priorIsExpected = priorDays !== null && priorDays >= QUARTER_MIN_DAYS;
+        if (!isCumulativeCurrent || !priorIsExpected) continue;
 
         rawQuarterValue = row.value - prior.value;
         derivation = fp === "Q4" ? "annual-less-nine-months" : "ytd-delta";
