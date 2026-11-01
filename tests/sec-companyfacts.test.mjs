@@ -71,3 +71,40 @@ test("validates CIK and verifies response identity", async () => {
     fetchImpl: async () => ({ ok: true, json: async () => ({ cik: 123, facts: {} }) }),
   }), /does not match/);
 });
+
+test("extracts issuer extension taxonomy facts only when explicitly configured", () => {
+  const payload = {
+    cik: 1181412,
+    facts: {
+      "us-gaap": {},
+      "spcx-2026": {
+        SpaceXRevenue: {
+          label: "Consolidated revenue",
+          units: { USD: [
+            { start: "2026-07-01", end: "2026-09-30", val: 14575, form: "10-Q", fy: 2026, fp: "Q3", filed: "2026-10-30", accn: "0001181412-26-000001" },
+          ] },
+        },
+        SpaceXCashPurchasesOfPropertyPlantAndEquipment: {
+          label: "Purchases of property, plant and equipment",
+          units: { USD: [
+            { start: "2026-01-01", end: "2026-09-30", val: -48069, form: "10-Q", fy: 2026, fp: "Q3", filed: "2026-10-30", accn: "0001181412-26-000001" },
+          ] },
+        },
+      },
+    },
+  };
+  const defaultRows = extractCompanyFactObservations(payload);
+  assert.equal(defaultRows.length, 0);
+
+  const rows = extractCompanyFactObservations(payload, {
+    taxonomies: ["spcx-2026"],
+    tags: {
+      revenue: ["SpaceXRevenue"],
+      capex: ["SpaceXCashPurchasesOfPropertyPlantAndEquipment"],
+    },
+  });
+  assert.equal(rows.length, 2);
+  assert.ok(rows.every(row => row.taxonomy === "spcx-2026"));
+  assert.ok(rows.every(row => row.accession === "0001181412-26-000001"));
+  assert.equal(rows.find(row => row.metric === "capex").value, -48069);
+});
