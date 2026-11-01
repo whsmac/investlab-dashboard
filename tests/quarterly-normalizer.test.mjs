@@ -2,10 +2,10 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { normalizeStandaloneQuarters } from "../src/ai-investment-cycle/quarterly-normalizer.mjs";
 
-function fact({ start, end, value, period, form = "10-Q", accession }) {
+function fact({ start, end, value, period, form = "10-Q", accession, tag = "PaymentsToAcquirePropertyPlantAndEquipment" }) {
   return {
     metric: "capex",
-    tag: "PaymentsToAcquirePropertyPlantAndEquipment",
+    tag,
     unit: "USD",
     value,
     start,
@@ -39,7 +39,7 @@ test("derives Q4 from annual less nine-month cumulative value", () => {
     fact({ start: "2026-01-01", end: "2026-09-30", value: -55, period: "Q3", accession: "q3" }),
     fact({ start: "2026-01-01", end: "2026-12-31", value: -80, period: "FY", form: "10-K", accession: "fy" }),
   ];
-  const result = normalizeStandaloneQuarters(rows, { metric: "capex" });
+  const result = normalizeStandaloneQuarters(rows, { metric: "capex", tag: "PaymentsToAcquirePropertyPlantAndEquipment" });
   assert.equal(result.at(-1).fiscalPeriod, "Q4");
   assert.equal(result.at(-1).value, 25);
   assert.equal(result.at(-1).derivation, "annual-less-nine-months");
@@ -63,8 +63,8 @@ test("returns no fabricated quarter when cumulative comparison is missing", () =
 });
 
 test("revenue values retain their reported sign and do not use CAPEX absolute-value rule", () => {
-  const revenue = fact({ start: "2026-01-01", end: "2026-03-31", value: 42, period: "Q1", accession: "rev" });
+  const revenue = fact({ start: "2026-01-01", end: "2026-03-31", value: 42, period: "Q1", accession: "rev", tag: "RevenueFromContractWithCustomerExcludingAssessedTax" });
   revenue.metric = "revenue";
-  const result = normalizeStandaloneQuarters([revenue], { metric: "revenue", tag: "PaymentsToAcquirePropertyPlantAndEquipment" });
+  const result = normalizeStandaloneQuarters([revenue], { metric: "revenue", tag: "RevenueFromContractWithCustomerExcludingAssessedTax" });
   assert.equal(result[0].value, 42);
 });
