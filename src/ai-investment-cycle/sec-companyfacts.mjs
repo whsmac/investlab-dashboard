@@ -15,6 +15,22 @@ export const SEC_COMPANIES = Object.freeze({
   SPCX: { company: "SpaceX", cik: "0001181412", listedFrom: "2026-06-12" },
 });
 
+
+/**
+ * Per-issuer discovery map. These tags remain candidates until validated
+ * against each issuer's latest SEC filing and cash-flow/income statement.
+ * In particular, Amazon's productive-assets cash-flow concept is broader
+ * than PP&E-only CAPEX and must carry a comparability warning.
+ */
+export const SEC_ISSUER_FACT_CANDIDATES = Object.freeze({
+  MSFT: { revenue: "RevenueFromContractWithCustomerExcludingAssessedTax", capex: "PaymentsToAcquirePropertyPlantAndEquipment", status: "pending_filing_validation" },
+  GOOGL: { revenue: "RevenueFromContractWithCustomerExcludingAssessedTax", capex: "PaymentsToAcquirePropertyPlantAndEquipment", status: "pending_filing_validation" },
+  AMZN: { revenue: "RevenueFromContractWithCustomerExcludingAssessedTax", capex: "PaymentsToAcquireProductiveAssets", status: "pending_filing_validation", capexDefinition: "productive_assets_broader_than_ppe" },
+  META: { revenue: "RevenueFromContractWithCustomerExcludingAssessedTax", capex: "PaymentsToAcquirePropertyPlantAndEquipment", status: "filing_checked_2026_q3" },
+  TSLA: { revenue: "RevenueFromContractWithCustomerExcludingAssessedTax", capex: "PaymentsToAcquirePropertyPlantAndEquipment", status: "pending_filing_validation" },
+  SPCX: { revenue: null, capex: null, status: "filing_mapping_required" },
+});
+
 export const SEC_FACT_CANDIDATES = Object.freeze({
   revenue: [
     "RevenueFromContractWithCustomerExcludingAssessedTax",
