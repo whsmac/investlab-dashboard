@@ -18,9 +18,9 @@ date,ticker,close
 2026-10-01,SPCX,185.40
 ```
 
-The values above are illustrative only. `date` is the US market trading date (`YYYY-MM-DD`); `ticker` is one of MSFT, GOOGL, AMZN, META, TSLA, SPCX; `close` is a positive USD daily closing price. The file may contain one or more tickers and partial date ranges. Rows for weekends and exchange holidays are omitted. The parser rejects duplicate `(ticker, date)` keys, invalid dates, unsupported tickers, non-positive prices, malformed rows, and SPCX dates before 2026-06-12.
+The values above are illustrative only. `date` is the US market trading date (`YYYY-MM-DD`); `ticker` is one of MSFT, GOOGL, AMZN, META, TSLA, SPCX; `close` is a positive USD daily adjusted closing price (Adjusted Close), reflecting dividends and stock splits. The file may contain one or more tickers and partial date ranges. Rows for weekends and exchange holidays are omitted. The parser rejects duplicate `(ticker, date)` keys, invalid dates, unsupported tickers, non-positive prices, malformed rows, and SPCX dates before 2026-06-12.
 
-`close` means the unadjusted official close, not adjusted close or total-return data. Therefore historical split-related price discontinuities may remain; do not combine this series with adjusted-close observations. Upload metadata should separately record source name, source URL, retrieval timestamp, and the source's permitted use. Those fields are not repeated in every CSV row.
+`close` means the provider-supplied adjusted close (Adjusted Close), reflecting dividends and stock splits. The parser and import metadata identify this series as `adjusted-close`; do not mix it with unadjusted official closes. Adjusted Close is the source provider’s adjusted-price field and should not be described as a separately reconstructed total-return index unless its methodology explicitly supports that interpretation. Upload metadata should separately record source name, source URL, retrieval timestamp, and the source's permitted use. Those fields are not repeated in every CSV row.
 
 Monthly uploads are the default operating cadence. A file may contain all six tickers or only the newly available rows for selected tickers. On import, merge by `(ticker, date)`, skip exact duplicates, and require explicit review before replacing an existing observation with a different close. Preserve the original uploaded file and import metadata as an audit record. No user-uploaded data is included in this code change.
 
@@ -68,7 +68,7 @@ Its self-service plans are personal-use licenses and prohibit embedding live or 
 ## Implementation requirements after provider approval
 
 1. Validate each of the six symbols individually, including SPCX, and record first available trading date.
-2. Use adjusted and unadjusted fields only with explicit semantics; record split adjustment and dividend adjustment separately.
+2. Use the user-confirmed Adjusted Close field; record its dividend and split adjustment basis explicitly.
 3. Persist source, retrieval timestamp, market date, OHLCV, currency, adjustment basis, and provider response metadata.
 4. Handle weekends, exchange holidays, missing sessions, duplicates, corrections, and rate-limit responses.
 5. Cache daily responses and avoid unnecessary repeated history downloads.
@@ -85,6 +85,6 @@ Its self-service plans are personal-use licenses and prohibit embedding live or 
 
 ## Current implementation status
 
-- Added a parser for the combined `date,ticker,close` format and unit tests for parsing, sorting, partial coverage, duplicate detection, numeric validation, and the SPCX listing boundary.
+- Added a parser for the combined `date,ticker,close` format with Adjusted Close values and unit tests for parsing, sorting, partial coverage, duplicate detection, numeric validation, and the SPCX listing boundary.
 - This parser is a validation layer only. Persistent storage, upload UI, import history, merge/replacement workflow, and chart integration remain future work.
 - No automatic price collection or provider API is enabled.
