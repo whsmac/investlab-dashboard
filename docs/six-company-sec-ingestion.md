@@ -84,3 +84,19 @@ References checked:
 - Meta 2026 Q3 Form 10-Q, SEC accession 0001628280-26-066773: https://www.sec.gov/Archives/edgar/data/1326801/000162828026066773/meta-20260930.htm
 - Tesla 2026 Q2 Form 10-Q: https://www.sec.gov/Archives/edgar/data/1318605/000162828026049270/tsla-20260630.htm
 - SEC EDGAR filing index for Alphabet 2026 Q3: https://www.sec.gov/Archives/edgar/data/1652044/000165204426000080/
+
+
+## Per-issuer tag discovery status
+
+The code now exposes `SEC_ISSUER_FACT_CANDIDATES` with an explicit status for each issuer. It is a review checklist, not a production-ready mapping:
+
+| Issuer | Revenue candidate | CAPEX candidate | Status |
+|---|---|---|---|
+| Microsoft | `RevenueFromContractWithCustomerExcludingAssessedTax` | `PaymentsToAcquirePropertyPlantAndEquipment` | Filing validation pending |
+| Alphabet | `RevenueFromContractWithCustomerExcludingAssessedTax` | `PaymentsToAcquirePropertyPlantAndEquipment` | Filing validation pending |
+| Amazon | `RevenueFromContractWithCustomerExcludingAssessedTax` | `PaymentsToAcquireProductiveAssets` | Filing validation pending; broader productive-assets definition |
+| Meta | `RevenueFromContractWithCustomerExcludingAssessedTax` | `PaymentsToAcquirePropertyPlantAndEquipment` | Checked against 2026 Q3 Form 10-Q |
+| Tesla | `RevenueFromContractWithCustomerExcludingAssessedTax` | `PaymentsToAcquirePropertyPlantAndEquipment` | Filing validation pending |
+| SpaceX | Not assigned | Not assigned | Filing mapping required |
+
+Only Meta's two tags are marked as checked against a recent official filing in this pass. Amazon's alternative CAPEX tag is a discovery candidate and is not marked approved; the broader definition must be distinguished from PP&E-only spending. SpaceX is deliberately left unmapped until its filed statements and XBRL concepts are inspected. No issuer's missing value should be inferred from another issuer's tag.
