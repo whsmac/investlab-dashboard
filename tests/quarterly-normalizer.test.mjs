@@ -50,7 +50,7 @@ test("does not combine different XBRL tags or units", () => {
     fact({ start: "2026-01-01", end: "2026-03-31", value: -10, period: "Q1", accession: "q1" }),
     { ...fact({ start: "2026-01-01", end: "2026-06-30", value: -28, period: "Q2", accession: "h1" }), tag: "PaymentsToAcquireProductiveAssets" },
   ];
-  const result = normalizeStandaloneQuarters(rows, { metric: "capex" });
+  const result = normalizeStandaloneQuarters(rows, { metric: "capex", tag: "PaymentsToAcquirePropertyPlantAndEquipment" });
   assert.equal(result.length, 1);
   assert.equal(result[0].fiscalPeriod, "Q1");
 });
