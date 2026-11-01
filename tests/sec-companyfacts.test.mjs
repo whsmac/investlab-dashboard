@@ -34,9 +34,9 @@ function fixture() {
 test("company universe contains six issuers and SpaceX listing boundary", () => {
   assert.deepEqual(Object.keys(SEC_COMPANIES), ["MSFT", "GOOGL", "AMZN", "META", "TSLA", "SPCX"]);
   assert.equal(SEC_COMPANIES.SPCX.listedFrom, "2026-06-12");
-  assert.equal(SEC_ISSUER_FACT_CANDIDATES.AMZN.capex, "PaymentsToAcquireProductiveAssets");
-  assert.equal(SEC_ISSUER_FACT_CANDIDATES.AMZN.status, "pending_filing_validation");
-  assert.equal(SEC_ISSUER_FACT_CANDIDATES.META.status, "filing_checked_2026_q3");
+  assert.equal(SEC_ISSUER_FACT_CANDIDATES.AMZN.capex, "PaymentsToAcquirePropertyPlantAndEquipment");
+  assert.equal(SEC_ISSUER_FACT_CANDIDATES.AMZN.status, "statement_reviewed_tag_unverified");
+  assert.equal(SEC_ISSUER_FACT_CANDIDATES.META.status, "statement_reviewed_tag_unverified");
   assert.equal(SEC_ISSUER_FACT_CANDIDATES.SPCX.revenue, null);
 });
 
