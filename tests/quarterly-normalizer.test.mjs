@@ -74,3 +74,19 @@ test("revenue values retain their reported sign and do not use CAPEX absolute-va
   const result = normalizeStandaloneQuarters([revenue], { metric: "revenue", tag: "RevenueFromContractWithCustomerExcludingAssessedTax", unit: "USD" });
   assert.equal(result[0].value, 42);
 });
+
+test("does not combine identical tag names across different taxonomies", () => {
+  const base = fact({ start: "2026-07-01", end: "2026-09-30", value: -30, period: "Q3", accession: "q3" });
+  const rows = [
+    { ...base, taxonomy: "us-gaap" },
+    { ...base, taxonomy: "spcx-2026", value: -45, accession: "custom-q3" },
+  ];
+  const result = normalizeStandaloneQuarters(rows, {
+    metric: "capex",
+    tag: "PaymentsToAcquirePropertyPlantAndEquipment",
+    unit: "USD",
+  });
+  assert.equal(result.length, 2);
+  assert.deepEqual(result.map(row => row.value).sort((a, b) => a - b), [30, 45]);
+  assert.deepEqual(result.map(row => row.taxonomy).sort(), ["spcx-2026", "us-gaap"]);
+});
