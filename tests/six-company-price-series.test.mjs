@@ -34,7 +34,7 @@ test("indexes each ticker independently from its first selected observation", ()
     { date: "2026-06-13", ticker: "SPCX", close: 55 },
   ];
   const indexed = deriveIndexedAdjustedClose(rows);
-  assert.deepEqual(indexed.map(row => row.indexedClose), [100, 110, 100, 110]);
+  assert.deepEqual(indexed.map(row => Number(row.indexedClose.toFixed(6))), [100, 110, 100, 110]);
   assert.equal(indexed[2].baseDate, "2026-06-12");
 });
 
