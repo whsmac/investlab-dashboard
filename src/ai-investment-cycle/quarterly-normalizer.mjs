@@ -82,11 +82,13 @@ export function normalizeStandaloneQuarters(observations, options = {}) {
       let rawQuarterValue;
       let derivation;
       let sourceRows;
+      let normalizedPeriodStart;
 
       if (days >= QUARTER_MIN_DAYS && days <= QUARTER_MAX_DAYS && row.fiscalPeriod !== "FY") {
         rawQuarterValue = row.value;
         derivation = "reported-quarter";
         sourceRows = [row];
+        normalizedPeriodStart = row.start;
       } else {
         const expectedPriorPeriod = fp === "Q2" ? "Q1" : fp === "Q3" ? "Q2" : fp === "Q4" ? "Q3" : null;
         if (!expectedPriorPeriod) continue;
@@ -107,9 +109,11 @@ export function normalizeStandaloneQuarters(observations, options = {}) {
         rawQuarterValue = row.value - prior.value;
         derivation = fp === "Q4" ? "annual-less-nine-months" : "ytd-delta";
         sourceRows = [row, prior];
+        normalizedPeriodStart = new Date(Date.parse(`${prior.end}T00:00:00Z`) + DAY_MS)
+          .toISOString().slice(0, 10);
       }
 
-      if (!Number.isFinite(rawQuarterValue)) continue;
+      if (!Number.isFinite(rawQuarterValue) || !normalizedPeriodStart) continue;
       const normalizedValue = metric === "capex" ? Math.abs(rawQuarterValue) : rawQuarterValue;
       if (normalizedValue < 0) continue;
 
@@ -120,7 +124,7 @@ export function normalizeStandaloneQuarters(observations, options = {}) {
         fiscalYear: Number(row.fiscalYear),
         fiscalPeriod: fp,
         quarterLabel: `FY${row.fiscalYear} ${fp}`,
-        periodStart: row.start,
+        periodStart: normalizedPeriodStart,
         periodEnd: row.end,
         rawValue: rawQuarterValue,
         value: normalizedValue,
