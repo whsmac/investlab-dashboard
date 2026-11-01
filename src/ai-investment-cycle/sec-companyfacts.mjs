@@ -25,8 +25,8 @@ export const SEC_COMPANIES = Object.freeze({
 export const SEC_ISSUER_FACT_CANDIDATES = Object.freeze({
   MSFT: { revenue: "RevenueFromContractWithCustomerExcludingAssessedTax", capex: "PaymentsToAcquirePropertyPlantAndEquipment", status: "pending_filing_validation" },
   GOOGL: { revenue: "RevenueFromContractWithCustomerExcludingAssessedTax", capex: "PaymentsToAcquirePropertyPlantAndEquipment", status: "pending_filing_validation" },
-  AMZN: { revenue: "RevenueFromContractWithCustomerExcludingAssessedTax", capex: "PaymentsToAcquireProductiveAssets", status: "pending_filing_validation", capexDefinition: "productive_assets_broader_than_ppe" },
-  META: { revenue: "RevenueFromContractWithCustomerExcludingAssessedTax", capex: "PaymentsToAcquirePropertyPlantAndEquipment", status: "filing_checked_2026_q3" },
+  AMZN: { revenue: "SalesRevenueNet", capex: "PaymentsToAcquirePropertyPlantAndEquipment", status: "statement_reviewed_tag_unverified", capexDefinition: "gross_cash_purchases_excluding_separately_reported_proceeds" },
+  META: { revenue: "RevenueFromContractWithCustomerExcludingAssessedTax", capex: "PaymentsToAcquirePropertyPlantAndEquipment", status: "statement_reviewed_tag_unverified" },
   TSLA: { revenue: "RevenueFromContractWithCustomerExcludingAssessedTax", capex: "PaymentsToAcquirePropertyPlantAndEquipment", status: "pending_filing_validation" },
   SPCX: { revenue: null, capex: null, status: "filing_mapping_required" },
 });
