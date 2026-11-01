@@ -84,13 +84,23 @@ export async function fetchSecCompanyFacts(cik, options = {}) {
 }
 
 /**
- * Extract filing-level observations for a configured set of US-GAAP tags.
+ * Extract filing-level observations from selected SEC Company Facts taxonomies.
+ * Standard Company Facts normally exposes standardized taxonomies such as
+ * us-gaap; company-specific extension concepts may require filing-level XBRL
+ * extraction and are not guaranteed to appear in this endpoint.
+ *
  * All original units, dates, form, accession and filing dates are retained.
  * No quarterly/YTD conversion, sign inversion or restatement selection occurs.
  */
 export function extractCompanyFactObservations(companyFacts, options = {}) {
-  if (!companyFacts || typeof companyFacts !== "object" || !companyFacts.facts?.["us-gaap"]) {
-    throw new TypeError("A valid SEC Company Facts us-gaap document is required");
+  if (!companyFacts || typeof companyFacts !== "object" || !companyFacts.facts ||
+      typeof companyFacts.facts !== "object") {
+    throw new TypeError("A valid SEC Company Facts facts object is required");
+  }
+  const taxonomies = options.taxonomies ?? ["us-gaap"];
+  if (!Array.isArray(taxonomies) || taxonomies.length === 0 ||
+      taxonomies.some(name => typeof name !== "string" || !name.trim())) {
+    throw new TypeError("taxonomies must be a non-empty array of taxonomy names");
   }
   const tags = options.tags ?? SEC_FACT_CANDIDATES;
   const metricNames = ["revenue", "capex"];
@@ -100,32 +110,37 @@ export function extractCompanyFactObservations(companyFacts, options = {}) {
     if (!Array.isArray(candidates) || candidates.length === 0) {
       throw new TypeError(`At least one XBRL tag candidate is required for ${metric}`);
     }
-    for (const tag of candidates) {
-      const fact = companyFacts.facts["us-gaap"][tag];
-      if (!fact?.units || typeof fact.units !== "object") continue;
-      for (const [unit, observations] of Object.entries(fact.units)) {
-        if (!Array.isArray(observations)) continue;
-        for (const item of observations) {
-          if (!ALLOWED_FORMS.has(item.form) || !validDate(item.end) ||
-              !Number.isFinite(Number(item.val)) || !item.accn || !validDate(item.filed)) continue;
-          const days = item.start ? durationDays(item.start, item.end) : null;
-          output.push({
-            metric,
-            tag,
-            label: fact.label ?? tag,
-            unit,
-            value: Number(item.val),
-            start: item.start ?? null,
-            end: item.end,
-            durationDays: days,
-            form: item.form,
-            fiscalYear: item.fy ?? null,
-            fiscalPeriod: item.fp ?? null,
-            filed: item.filed,
-            accession: item.accn,
-            frame: item.frame ?? null,
-            sourceUrl: `https://www.sec.gov/Archives/edgar/data/${Number(companyFacts.cik)}/${item.accn.replace(/-/g, "")}/`,
-          });
+    for (const taxonomy of taxonomies) {
+      const namespaceFacts = companyFacts.facts[taxonomy];
+      if (!namespaceFacts || typeof namespaceFacts !== "object") continue;
+      for (const tag of candidates) {
+        const fact = namespaceFacts[tag];
+        if (!fact?.units || typeof fact.units !== "object") continue;
+        for (const [unit, observations] of Object.entries(fact.units)) {
+          if (!Array.isArray(observations)) continue;
+          for (const item of observations) {
+            if (!ALLOWED_FORMS.has(item.form) || !validDate(item.end) ||
+                !Number.isFinite(Number(item.val)) || !item.accn || !validDate(item.filed)) continue;
+            const days = item.start ? durationDays(item.start, item.end) : null;
+            output.push({
+              metric,
+              taxonomy,
+              tag,
+              label: fact.label ?? tag,
+              unit,
+              value: Number(item.val),
+              start: item.start ?? null,
+              end: item.end,
+              durationDays: days,
+              form: item.form,
+              fiscalYear: item.fy ?? null,
+              fiscalPeriod: item.fp ?? null,
+              filed: item.filed,
+              accession: item.accn,
+              frame: item.frame ?? null,
+              sourceUrl: `https://www.sec.gov/Archives/edgar/data/${Number(companyFacts.cik)}/${item.accn.replace(/-/g, "")}/`,
+            });
+          }
         }
       }
     }
@@ -133,6 +148,7 @@ export function extractCompanyFactObservations(companyFacts, options = {}) {
   return output.sort((a, b) =>
     a.end.localeCompare(b.end) ||
     a.metric.localeCompare(b.metric) ||
+    a.taxonomy.localeCompare(b.taxonomy) ||
     a.tag.localeCompare(b.tag) ||
     a.filed.localeCompare(b.filed)
   );
@@ -147,7 +163,7 @@ export function groupFactVersions(observations) {
   if (!Array.isArray(observations)) throw new TypeError("observations must be an array");
   const groups = new Map();
   for (const row of observations) {
-    const key = [row.metric, row.tag, row.unit, row.start ?? "instant", row.end].join("|");
+    const key = [row.metric, row.taxonomy ?? "unknown", row.tag, row.unit, row.start ?? "instant", row.end].join("|");
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key).push(row);
   }
