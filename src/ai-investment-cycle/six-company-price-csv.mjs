@@ -1,4 +1,4 @@
-const DATE_RE = /^\\d{4}-\\d{2}-\\d{2}$/;
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const REQUIRED_HEADERS = ["date", "ticker", "close"];
 export const SIX_COMPANY_PRICE_TICKERS = Object.freeze(["MSFT", "GOOGL", "AMZN", "META", "TSLA", "SPCX"]);
 export const SPCX_LISTING_DATE = "2026-06-12";
@@ -8,7 +8,7 @@ function parseCsvRows(input) {
   let row = [];
   let field = "";
   let quoted = false;
-  const source = String(input ?? "").replace(/^\\uFEFF/, "");
+  const source = String(input ?? "").replace(/^\uFEFF/, "");
   for (let i = 0; i < source.length; i += 1) {
     const char = source[i];
     if (quoted) {
@@ -17,8 +17,8 @@ function parseCsvRows(input) {
       else field += char;
     } else if (char === '"' && field.length === 0) quoted = true;
     else if (char === ",") { row.push(field); field = ""; }
-    else if (char === "\\n" || char === "\\r") {
-      if (char === "\\r" && source[i + 1] === "\\n") i += 1;
+    else if (char === "\n" || char === "\r") {
+      if (char === "\r" && source[i + 1] === "\n") i += 1;
       row.push(field);
       if (row.some(value => value.trim() !== "")) rows.push(row);
       row = []; field = "";
@@ -66,7 +66,7 @@ export function parseSixCompanyPriceCsv(csvText) {
     const key = `${ticker}:${date}`;
     if (seen.has(key)) throw new TypeError(`Duplicate price observation: ${key}`);
     seen.add(key);
-    if (!/^(?:\\d+)(?:\\.\\d+)?$/.test(closeRaw)) {
+    if (!/^(?:\d+)(?:\.\d+)?$/.test(closeRaw)) {
       throw new TypeError(`CSV row ${index + 2} close must be a positive decimal number in USD`);
     }
     const close = Number(closeRaw);
