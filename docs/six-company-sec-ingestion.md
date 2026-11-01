@@ -24,6 +24,7 @@ SpaceX price history must never predate its confirmed 2026-06-12 listing date. T
 ## SEC ingestion boundary
 
 - Use `https://data.sec.gov/api/xbrl/companyfacts/CIK##########.json` from Node/server-side code only. SEC Company Facts does not support browser CORS.
+- Company Facts primarily exposes facts from standard taxonomies; do not assume issuer-specific extension concepts are present. For a custom taxonomy such as a possible SpaceX extension, obtain the filing's Inline XBRL / instance facts from the official filing package and preserve the namespace URI and local concept name. The taxonomy-aware adapter test uses a synthetic fixture and does not prove that SpaceX's live filing uses those example names.
 - Require a descriptive User-Agent including a contact address.
 - Respect SEC fair-access guidance: no more than 10 requests per second; this project should use a much lower sequential cadence and cache responses.
 - Retrieve only the six required issuer documents; do not crawl the entire EDGAR archive.
@@ -39,6 +40,12 @@ SpaceX price history must never predate its confirmed 2026-06-12 listing date. T
 - CAPEX: `PaymentsToAcquirePropertyPlantAndEquipment`, `PaymentsToAcquireProductiveAssets`.
 
 These are candidate tags, not an approved universal mapping. Each issuer's filings must be checked before values are promoted into the normalized dataset. If a company uses a custom extension or a different presentation, record that mapping and its source evidence explicitly.
+
+## XBRL taxonomy handling
+
+The Company Facts adapter now accepts an explicit list of taxonomy namespaces and preserves the taxonomy identifier with each fact. The default remains `us-gaap`; issuer-specific namespaces are never searched implicitly. If the official Company Facts payload does not contain a custom concept, it must be extracted from the corresponding filing's Inline XBRL / instance document before it can enter the same normalized observation shape.
+
+The extension-taxonomy unit test is synthetic: it validates namespace isolation and provenance handling only. It is not evidence of a verified SpaceX XBRL concept. SpaceX revenue and CAPEX mappings remain unassigned until the official filing instance is inspected.
 
 ## Quarterly derivation rules — not yet enabled
 
