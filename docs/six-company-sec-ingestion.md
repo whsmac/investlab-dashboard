@@ -151,6 +151,6 @@ Q2 comparator filings used:
 ### Remaining technical gate
 
 - Exact XBRL tag and unit validation remains pending for all six, especially SpaceX.
-- SEC Company Facts responses were not downloaded in this pass; no real contact identity was available to construct a descriptive SEC User-Agent. Do not make live SEC requests with placeholder contact details.
+- SEC Company Facts responses were not downloaded in this pass. A contact address for a descriptive SEC User-Agent has since been supplied by the user, but the available execution path still cannot issue HTTP requests with that custom header. Do not claim live payload retrieval or place the contact address in source code, repository files, logs, or commits.
 - SpaceX Q3 cash-flow PP&E is presented YTD in the Q3 filing. The Q2 10-Q cumulative comparator was reviewed (USD 28.476bn), so the source-review Q3 delta is USD 19.593bn (48.069bn less 28.476bn). This calculation is documented for review only; it is not an automated ingestion. Do not substitute segment CAPEX for consolidated cash purchases.
 - No financial values are committed to the production dataset. The values above are a filing review record only.
