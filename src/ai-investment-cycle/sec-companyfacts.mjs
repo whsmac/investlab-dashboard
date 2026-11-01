@@ -62,8 +62,9 @@ function durationDays(start, end) {
  * SEC's data.sec.gov API does not support browser CORS.
  */
 export async function fetchSecCompanyFacts(cik, options = {}) {
-  const normalizedCik = String(cik ?? "").replace(/\D/g, "").padStart(10, "0");
-  if (!/^\d{10}$/.test(normalizedCik)) throw new TypeError("A valid 10-digit SEC CIK is required");
+  const rawCik = String(cik ?? "").trim();
+  if (!/^\d{1,10}$/.test(rawCik)) throw new TypeError("A valid SEC CIK containing 1 to 10 digits is required");
+  const normalizedCik = rawCik.padStart(10, "0");
   const userAgent = String(options.userAgent ?? "").trim();
   if (!userAgent || !/\S+\s+\S+/.test(userAgent)) {
     throw new TypeError("A descriptive SEC User-Agent with contact information is required");
@@ -120,7 +121,8 @@ export function extractCompanyFactObservations(companyFacts, options = {}) {
           if (!Array.isArray(observations)) continue;
           for (const item of observations) {
             if (!ALLOWED_FORMS.has(item.form) || !validDate(item.end) ||
-                !Number.isFinite(Number(item.val)) || !item.accn || !validDate(item.filed)) continue;
+                typeof item.val !== "number" || !Number.isFinite(item.val) ||
+                !item.accn || !validDate(item.filed)) continue;
             const days = item.start ? durationDays(item.start, item.end) : null;
             output.push({
               metric,
