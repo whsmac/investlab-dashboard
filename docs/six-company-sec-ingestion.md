@@ -76,8 +76,8 @@ The normalizer is intentionally not a six-company mapping approval. The caller m
 ## Initial issuer review notes
 
 - Meta's SEC Form 10-Q for the quarter ended 2026-09-30 reports consolidated revenue using `RevenueFromContractWithCustomerExcludingAssessedTax` and cash PP&E purchases using `PaymentsToAcquirePropertyPlantAndEquipment`. Its CAPEX figure is presented for both the three-month and nine-month periods, demonstrating why duration-aware selection is required.
-- Amazon's cash-flow CAPEX line needs the distinct `PaymentsToAcquireProductiveAssets` concept; do not assume that the PP&E-only tag covers all issuers. This broader definition must remain explicitly identified and must not be ranked as identical to PP&E-only CAPEX without a documented comparability note.
-- Microsoft, Alphabet, Tesla, and SpaceX still require issuer-by-issuer tag confirmation against their latest filing facts before being marked approved. Candidate tags remain discovery-only for those issuers.
+- Amazon's Q3 2026 consolidated cash-flow statement labels the cash outflow as “Purchases of property and equipment”; proceeds from sales and incentives are shown separately. The current candidate is therefore `PaymentsToAcquirePropertyPlantAndEquipment`, not `PaymentsToAcquireProductiveAssets`. Statement-level definition reviewed; exact XBRL tag remains unverified.
+- Microsoft, Alphabet, Meta, Tesla, and SpaceX now have Q3 2026 statement-level source captions reviewed. Exact XBRL tags are still unverified for every issuer. SpaceX requires special handling because its filing may use company-specific taxonomy tags not included in the standard `us-gaap` Company Facts namespace.
 - The 2026-11-01 development pass did not retrieve live SEC Company Facts payloads. No actual quarterly values have been loaded into the application.
 
 References checked:
@@ -100,3 +100,39 @@ The code now exposes `SEC_ISSUER_FACT_CANDIDATES` with an explicit status for ea
 | SpaceX | Not assigned | Not assigned | Filing mapping required |
 
 Only Meta's two tags are marked as checked against a recent official filing in this pass. Amazon's alternative CAPEX tag is a discovery candidate and is not marked approved; the broader definition must be distinguished from PP&E-only spending. SpaceX is deliberately left unmapped until its filed statements and XBRL concepts are inspected. No issuer's missing value should be inferred from another issuer's tag.
+
+
+## Q3 2026 filing-level source review (2026-11-01)
+
+All six issuers' Q3 2026 Form 10-Q statements were reviewed for consolidated revenue and cash PP&E captions. This is a statement-level review, not final XBRL tag approval.
+
+| Ticker | Consolidated revenue caption | Cash PP&E caption | Important definition note |
+|---|---|---|---|
+| MSFT | Total revenue | Additions to property and equipment | Cash additions shown in investing activities |
+| GOOGL | Total revenues | Purchases of property and equipment | Gross cash purchases |
+| AMZN | Total net sales | Purchases of property and equipment | Gross purchases and proceeds from sales/incentives are separate; do not substitute non-GAAP net cash capex or finance-lease-inclusive net additions |
+| META | Total revenue | Purchases of property and equipment | Do not substitute earnings-release capex including finance lease principal |
+| TSLA | Total revenues | Purchases of property and equipment excluding finance leases, net of sales | Net-of-sales definition; not directly comparable with gross purchase lines |
+| SPCX | Revenue | Purchases of property, plant, and equipment | Company-specific XBRL namespace/tag verification required; cash flow statement provides nine-month values |
+
+### Q3 2026 examples from filings (USD billions)
+
+These reported values are for source review only; they are not loaded into INVESTLAB.
+
+| Ticker | Q3 consolidated revenue | Q3 CAPEX / source-period observation |
+|---|---:|---|
+| MSFT | 92.279 | Q3 cash-flow line reported directly |
+| GOOGL | 127.577 | Q3 CAPEX described as 51.4; cash-flow statement presents nine-month PP&E purchases of 131.953 |
+| AMZN | 201.944 | Gross cash PP&E purchases 77.259; proceeds from sales/incentives 1.381 separately |
+| META | 64.601 | Cash-flow statement presents nine-month PP&E purchases of 83.055; Q3 standalone requires Q2 YTD subtraction |
+| TSLA | 28.046 | Q3 cash-flow line reported as net purchases excluding finance leases; nine-month 13.014 |
+| SPCX | 14.575 | Cash-flow statement presents nine-month PP&E purchases of 48.069; Q3 standalone requires Q2 YTD subtraction |
+
+Do not treat the CAPEX examples as a fully comparable cross-company series. Alphabet's Q3 narrative CAPEX disclosure and its cash-flow PP&E line are not necessarily the same measurement basis. For Microsoft, the Q3 cash-flow line is directly reported. For Amazon, Meta, Tesla, and SpaceX, the reported line labels and gross/net/lease treatment must be preserved.
+
+### Remaining technical gate
+
+- Exact XBRL tag and unit validation remains pending for all six, especially SpaceX.
+- SEC Company Facts responses were not downloaded in this pass; no real contact identity was available to construct a descriptive SEC User-Agent. Do not make live SEC requests with placeholder contact details.
+- SpaceX Q3 cash-flow PP&E is presented YTD in the Q3 filing; retrieve its Q2 10-Q cumulative comparator before deriving standalone Q3. Do not substitute segment CAPEX for consolidated cash purchases.
+- No financial values are committed to the production dataset. The values above are a filing review record only.
