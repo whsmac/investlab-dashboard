@@ -154,3 +154,23 @@ Q2 comparator filings used:
 - SEC Company Facts responses were not downloaded in this pass. A contact address for a descriptive SEC User-Agent has since been supplied by the user, but the available execution path still cannot issue HTTP requests with that custom header. Do not claim live payload retrieval or place the contact address in source code, repository files, logs, or commits.
 - SpaceX Q3 cash-flow PP&E is presented YTD in the Q3 filing. The Q2 10-Q cumulative comparator was reviewed (USD 28.476bn), so the source-review Q3 delta is USD 19.593bn (48.069bn less 28.476bn). This calculation is documented for review only; it is not an automated ingestion. Do not substitute segment CAPEX for consolidated cash purchases.
 - No financial values are committed to the production dataset. The values above are a filing review record only.
+
+
+## Six-company adjusted-close preview (2026-11-02)
+
+The user confirmed that the supplied `close` column is the provider's Adjusted Close field, reflecting dividends and stock splits. The six-company CSV parser now records `priceBasis: "adjusted-close"`; it must not be mixed with unadjusted closes.
+
+A standalone preview was added at `six-company-price-preview.html`. It is deliberately isolated from `index.html`, production services, and Supabase. It accepts multiple annual or monthly CSV files in the combined `date,ticker,close` format and keeps imported observations in browser memory only.
+
+The preview provides:
+- Daily adjusted-close history.
+- Quarter-end adjusted close, selected as the last available trading-day observation for each ticker and quarter.
+- An indexed series with each ticker independently rebased to 100 at its first observation in the selected period. SPCX begins on 2026-06-12; it has no pre-listing line.
+- Shared ticker and 1Y / 3Y / 5Y / MAX selectors.
+- Latest quarter-end price, prior-year comparable quarter, and YoY change table.
+
+Series derivation is implemented in `six-company-price-series.mjs`. Exact duplicate observations across multiple files are deduplicated; conflicting values for the same ticker/date are rejected instead of silently overwritten. Financial quarters are not forward-filled. The 2026 Q4 label is marked provisional because the current supplied data end on 2026-10-30.
+
+The four uploaded annual CSV files were validated locally and are not committed to the repository. The validated combined set contains 4,908 observations. Five original issuers have daily data from 2023-01-03; SPCX starts on 2026-06-12.
+
+This preview is a data/visualization validation surface, not a production upload workflow. Persistent storage, monthly import history, correction/replacement approval, and integration into the main dashboard remain separate future work. The new preview and series modules have dedicated tests and are included in the validation workflow.
