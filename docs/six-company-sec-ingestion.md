@@ -57,3 +57,30 @@ No market-price provider is selected in this branch. The UI must show an explici
 ## Test boundary
 
 Unit tests validate extraction and provenance retention only. They do not claim that issuer tags or quarterly calculations are approved. No live SEC requests are made during tests. No credentials, Supabase, production dashboard, or holdings are touched.
+
+
+## Quarterly normalizer added (2026-11-01)
+
+The branch now includes `src/ai-investment-cycle/quarterly-normalizer.mjs`. It converts filing-level facts to standalone fiscal quarters only when the caller supplies an explicit issuer-reviewed XBRL tag.
+
+- Direct 3-month facts are retained as reported quarters.
+- YTD Q2/Q3 cash-flow facts are differenced against the prior cumulative period from the same fiscal-year start, tag, and unit.
+- Q4 can be derived as the annual 10-K value less the nine-month cumulative value.
+- CAPEX is presented as a positive spend amount while the original signed fact and both source accessions are retained.
+- Different XBRL tags and units are never combined.
+- If the comparison period is missing, the quarter is omitted rather than estimated.
+- When both direct-quarter and YTD-derived facts exist for the same fiscal quarter, the directly reported quarter takes precedence.
+
+The normalizer is intentionally not a six-company mapping approval. The caller must choose the reviewed tag per issuer. The current broad candidate list must not be passed through as if all candidates were interchangeable.
+
+## Initial issuer review notes
+
+- Meta's SEC Form 10-Q for the quarter ended 2026-09-30 reports consolidated revenue using `RevenueFromContractWithCustomerExcludingAssessedTax` and cash PP&E purchases using `PaymentsToAcquirePropertyPlantAndEquipment`. Its CAPEX figure is presented for both the three-month and nine-month periods, demonstrating why duration-aware selection is required.
+- Amazon's cash-flow CAPEX line needs the distinct `PaymentsToAcquireProductiveAssets` concept; do not assume that the PP&E-only tag covers all issuers. This broader definition must remain explicitly identified and must not be ranked as identical to PP&E-only CAPEX without a documented comparability note.
+- Microsoft, Alphabet, Tesla, and SpaceX still require issuer-by-issuer tag confirmation against their latest filing facts before being marked approved. Candidate tags remain discovery-only for those issuers.
+- The 2026-11-01 development pass did not retrieve live SEC Company Facts payloads. No actual quarterly values have been loaded into the application.
+
+References checked:
+- Meta 2026 Q3 Form 10-Q, SEC accession 0001628280-26-066773: https://www.sec.gov/Archives/edgar/data/1326801/000162828026066773/meta-20260930.htm
+- Tesla 2026 Q2 Form 10-Q: https://www.sec.gov/Archives/edgar/data/1318605/000162828026049270/tsla-20260630.htm
+- SEC EDGAR filing index for Alphabet 2026 Q3: https://www.sec.gov/Archives/edgar/data/1652044/000165204426000080/
