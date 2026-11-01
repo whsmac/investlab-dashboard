@@ -89,4 +89,21 @@ test("does not combine identical tag names across different taxonomies", () => {
   assert.equal(result.length, 2);
   assert.deepEqual(result.map(row => row.value).sort((a, b) => a - b), [30, 45]);
   assert.deepEqual(result.map(row => row.taxonomy).sort(), ["spcx-2026", "us-gaap"]);
+
+  const selected = normalizeStandaloneQuarters(rows, {
+    metric: "capex",
+    tag: "PaymentsToAcquirePropertyPlantAndEquipment",
+    unit: "USD",
+    taxonomy: "spcx-2026",
+  });
+  assert.equal(selected.length, 1);
+  assert.equal(selected[0].value, 45);
+  assert.equal(selected[0].taxonomy, "spcx-2026");
+});
+
+test("rejects an empty explicit taxonomy selector", () => {
+  const row = fact({ start: "2026-01-01", end: "2026-03-31", value: -10, period: "Q1" });
+  assert.throws(() => normalizeStandaloneQuarters([row], {
+    metric: "capex", tag: "PaymentsToAcquirePropertyPlantAndEquipment", unit: "USD", taxonomy: " ",
+  }), /taxonomy must be a non-empty namespace/);
 });
