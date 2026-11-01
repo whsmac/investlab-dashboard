@@ -51,8 +51,10 @@ export function normalizeStandaloneQuarters(observations, options = {}) {
   if (!Array.isArray(observations)) throw new TypeError("observations must be an array");
   const metric = options.metric;
   if (!["revenue", "capex"].includes(metric)) throw new TypeError("metric must be revenue or capex");
+  const tag = options.tag;
+  if (typeof tag !== "string" || !tag.trim()) throw new TypeError("an issuer-reviewed XBRL tag is required");
 
-  const rows = observations.filter(row => validObservation(row) && row.metric === metric);
+  const rows = observations.filter(row => validObservation(row) && row.metric === metric && row.tag === tag);
   const selected = new Map();
   for (const row of rows) {
     const key = periodKey(row);
