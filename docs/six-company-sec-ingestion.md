@@ -61,7 +61,7 @@ Unit tests validate extraction and provenance retention only. They do not claim 
 
 ## Quarterly normalizer added (2026-11-01)
 
-The branch now includes `src/ai-investment-cycle/quarterly-normalizer.mjs`. It converts filing-level facts to standalone fiscal quarters only when the caller supplies an explicit issuer-reviewed XBRL tag.
+The branch now includes `src/ai-investment-cycle/quarterly-normalizer.mjs`. It converts filing-level facts to standalone fiscal quarters only when the caller supplies an explicit issuer-reviewed XBRL tag and source unit.
 
 - Direct 3-month facts are retained as reported quarters.
 - YTD Q2/Q3 cash-flow facts are differenced against the prior cumulative period from the same fiscal-year start, tag, and unit.
