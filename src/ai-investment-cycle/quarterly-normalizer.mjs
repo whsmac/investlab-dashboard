@@ -35,7 +35,7 @@ function latestVersion(rows) {
 }
 
 function periodKey(row) {
-  return [row.metric, row.tag, row.unit, row.fiscalYear, row.start, row.end].join("|");
+  return [row.metric, row.taxonomy ?? "unknown", row.tag, row.unit, row.fiscalYear, row.start, row.end].join("|");
 }
 
 function quarterFromFiscalPeriod(fp) {
@@ -66,7 +66,7 @@ export function normalizeStandaloneQuarters(observations, options = {}) {
 
   const groups = new Map();
   for (const row of selected.values()) {
-    const key = [row.tag, row.unit, row.fiscalYear, row.start].join("|");
+    const key = [row.taxonomy ?? "unknown", row.tag, row.unit, row.fiscalYear, row.start].join("|");
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key).push(row);
   }
@@ -119,6 +119,7 @@ export function normalizeStandaloneQuarters(observations, options = {}) {
 
       output.push({
         metric,
+        taxonomy: row.taxonomy ?? "unknown",
         tag: row.tag,
         unit: row.unit,
         fiscalYear: Number(row.fiscalYear),
@@ -144,7 +145,7 @@ export function normalizeStandaloneQuarters(observations, options = {}) {
 
   const preferred = new Map();
   for (const row of output) {
-    const key = `${row.fiscalYear}|${row.fiscalPeriod}`;
+    const key = `${row.taxonomy}|${row.tag}|${row.unit}|${row.fiscalYear}|${row.fiscalPeriod}`;
     const current = preferred.get(key);
     if (!current || (row.derivation === "reported-quarter" && current.derivation !== "reported-quarter")) {
       preferred.set(key, row);
