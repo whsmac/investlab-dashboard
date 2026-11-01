@@ -55,8 +55,13 @@ export function normalizeStandaloneQuarters(observations, options = {}) {
   if (typeof tag !== "string" || !tag.trim()) throw new TypeError("an issuer-reviewed XBRL tag is required");
   const unit = options.unit;
   if (typeof unit !== "string" || !unit.trim()) throw new TypeError("an explicit source unit is required");
+  const taxonomy = options.taxonomy;
+  if (taxonomy !== undefined && (typeof taxonomy !== "string" || !taxonomy.trim())) {
+    throw new TypeError("taxonomy must be a non-empty namespace when supplied");
+  }
 
-  const rows = observations.filter(row => validObservation(row) && row.metric === metric && row.tag === tag && row.unit === unit);
+  const rows = observations.filter(row => validObservation(row) && row.metric === metric && row.tag === tag && row.unit === unit &&
+    (taxonomy === undefined || (row.taxonomy ?? "unknown") === taxonomy));
   const selected = new Map();
   for (const row of rows) {
     const key = periodKey(row);
