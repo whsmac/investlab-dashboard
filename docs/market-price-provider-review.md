@@ -1,8 +1,28 @@
 # Daily stock-price provider review — 2026-11-01
 
-## Decision
+## Decision (supersedes the automated-provider review)
 
-No market-price provider is approved for automated production ingestion yet. Keep the six-company price panel in an explicit unavailable / provider-not-approved state. Do not introduce scraping, undocumented endpoints, paid plans, or provider credentials.
+The user selected manual CSV uploads instead of automated stock-price collection. Do not implement an API provider, scheduled price retrieval, scraping, or provider credentials. Keep the daily-price charts and populate them from user-uploaded CSV observations. The provider screening below is retained only as historical research; it is no longer an implementation gate.
+
+## Manual CSV contract
+
+Use one combined UTF-8 CSV file with exactly these columns, in this order:
+
+```csv
+date,ticker,close
+2026-10-01,MSFT,521.40
+2026-10-01,GOOGL,248.30
+2026-10-01,AMZN,228.10
+2026-10-01,META,745.20
+2026-10-01,TSLA,452.60
+2026-10-01,SPCX,185.40
+```
+
+The values above are illustrative only. `date` is the US market trading date (`YYYY-MM-DD`); `ticker` is one of MSFT, GOOGL, AMZN, META, TSLA, SPCX; `close` is a positive USD daily closing price. The file may contain one or more tickers and partial date ranges. Rows for weekends and exchange holidays are omitted. The parser rejects duplicate `(ticker, date)` keys, invalid dates, unsupported tickers, non-positive prices, malformed rows, and SPCX dates before 2026-06-12.
+
+`close` means the unadjusted official close, not adjusted close or total-return data. Therefore historical split-related price discontinuities may remain; do not combine this series with adjusted-close observations. Upload metadata should separately record source name, source URL, retrieval timestamp, and the source's permitted use. Those fields are not repeated in every CSV row.
+
+Monthly uploads are the default operating cadence. A file may contain all six tickers or only the newly available rows for selected tickers. On import, merge by `(ticker, date)`, skip exact duplicates, and require explicit review before replacing an existing observation with a different close. Preserve the original uploaded file and import metadata as an audit record. No user-uploaded data is included in this code change.
 
 The required universe is MSFT, GOOGL, AMZN, META, TSLA, and SPCX. A provider must demonstrate daily historical OHLCV coverage for all six, including SPCX only from its listing date (2026-06-12), API access suitable for unattended server-side retrieval, corporate-action treatment, rate limits, and rights for the intended private-dashboard display and storage.
 
@@ -62,3 +82,9 @@ Its self-service plans are personal-use licenses and prohibit embedding live or 
 - No provider credentials have been requested, stored, or committed.
 - No market data has been fetched or loaded into the application.
 - The user's free-public-data requirement remains controlling.
+
+## Current implementation status
+
+- Added a parser for the combined `date,ticker,close` format and unit tests for parsing, sorting, partial coverage, duplicate detection, numeric validation, and the SPCX listing boundary.
+- This parser is a validation layer only. Persistent storage, upload UI, import history, merge/replacement workflow, and chart integration remain future work.
+- No automatic price collection or provider API is enabled.
