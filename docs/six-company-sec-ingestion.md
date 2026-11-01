@@ -1,6 +1,6 @@
 # Six-company SEC financial ingestion — implementation notes
 
-Updated: 2026-11-01
+Updated: 2026-11-01 (normalizer date-boundary correction)
 
 ## Scope of this development branch
 
@@ -70,6 +70,7 @@ The branch now includes `src/ai-investment-cycle/quarterly-normalizer.mjs`. It c
 - Different XBRL tags and units are never combined.
 - If the comparison period is missing, the quarter is omitted rather than estimated.
 - When both direct-quarter and YTD-derived facts exist for the same fiscal quarter, the directly reported quarter takes precedence.
+- Normalized date ranges represent the standalone quarter: Q2/Q3/Q4 start on the day after the prior cumulative period ends, rather than reusing the fiscal-year-to-date start date.
 
 The normalizer is intentionally not a six-company mapping approval. The caller must choose the reviewed tag per issuer. The current broad candidate list must not be passed through as if all candidates were interchangeable.
 
@@ -92,14 +93,14 @@ The code now exposes `SEC_ISSUER_FACT_CANDIDATES` with an explicit status for ea
 
 | Issuer | Revenue candidate | CAPEX candidate | Status |
 |---|---|---|---|
-| Microsoft | `RevenueFromContractWithCustomerExcludingAssessedTax` | `PaymentsToAcquirePropertyPlantAndEquipment` | Filing validation pending |
-| Alphabet | `RevenueFromContractWithCustomerExcludingAssessedTax` | `PaymentsToAcquirePropertyPlantAndEquipment` | Filing validation pending |
-| Amazon | `RevenueFromContractWithCustomerExcludingAssessedTax` | `PaymentsToAcquireProductiveAssets` | Filing validation pending; broader productive-assets definition |
-| Meta | `RevenueFromContractWithCustomerExcludingAssessedTax` | `PaymentsToAcquirePropertyPlantAndEquipment` | Checked against 2026 Q3 Form 10-Q |
-| Tesla | `RevenueFromContractWithCustomerExcludingAssessedTax` | `PaymentsToAcquirePropertyPlantAndEquipment` | Filing validation pending |
-| SpaceX | Not assigned | Not assigned | Filing mapping required |
+| Microsoft | `RevenueFromContractWithCustomerExcludingAssessedTax` | `PaymentsToAcquirePropertyPlantAndEquipment` | Statement reviewed; exact tag/unit pending |
+| Alphabet | `RevenueFromContractWithCustomerExcludingAssessedTax` | `PaymentsToAcquirePropertyPlantAndEquipment` | Statement reviewed; exact tag/unit pending |
+| Amazon | `SalesRevenueNet` | `PaymentsToAcquirePropertyPlantAndEquipment` | Statement reviewed; exact tag/unit pending |
+| Meta | `RevenueFromContractWithCustomerExcludingAssessedTax` | `PaymentsToAcquirePropertyPlantAndEquipment` | Statement reviewed; exact tag/unit pending |
+| Tesla | `RevenueFromContractWithCustomerExcludingAssessedTax` | `PaymentsToAcquirePropertyPlantAndEquipment` | Statement reviewed; exact tag/unit pending |
+| SpaceX | Not assigned | Not assigned | Company-specific XBRL mapping required |
 
-Only Meta's two tags are marked as checked against a recent official filing in this pass. Amazon's alternative CAPEX tag is a discovery candidate and is not marked approved; the broader definition must be distinguished from PP&E-only spending. SpaceX is deliberately left unmapped until its filed statements and XBRL concepts are inspected. No issuer's missing value should be inferred from another issuer's tag.
+These are issuer-specific candidates, not approved ingestion mappings. The Amazon candidate was corrected to the PP&E-only cash-flow concept; do not use the broader productive-assets candidate for this monitor. SpaceX remains unmapped until its filing's XBRL instance and any company-specific taxonomy are inspected. No issuer's missing value should be inferred from another issuer's tag.
 
 
 ## Q3 2026 filing-level source review (2026-11-01)
@@ -144,5 +145,5 @@ Q2 comparator filings used:
 
 - Exact XBRL tag and unit validation remains pending for all six, especially SpaceX.
 - SEC Company Facts responses were not downloaded in this pass; no real contact identity was available to construct a descriptive SEC User-Agent. Do not make live SEC requests with placeholder contact details.
-- SpaceX Q3 cash-flow PP&E is presented YTD in the Q3 filing; retrieve its Q2 10-Q cumulative comparator before deriving standalone Q3. Do not substitute segment CAPEX for consolidated cash purchases.
+- SpaceX Q3 cash-flow PP&E is presented YTD in the Q3 filing. The Q2 10-Q cumulative comparator was reviewed (USD 28.476bn), so the source-review Q3 delta is USD 19.593bn (48.069bn less 28.476bn). This calculation is documented for review only; it is not an automated ingestion. Do not substitute segment CAPEX for consolidated cash purchases.
 - No financial values are committed to the production dataset. The values above are a filing review record only.
