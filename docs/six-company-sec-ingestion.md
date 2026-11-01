@@ -115,20 +115,30 @@ All six issuers' Q3 2026 Form 10-Q statements were reviewed for consolidated rev
 | TSLA | Total revenues | Purchases of property and equipment excluding finance leases, net of sales | Net-of-sales definition; not directly comparable with gross purchase lines |
 | SPCX | Revenue | Purchases of property, plant, and equipment | Company-specific XBRL namespace/tag verification required; cash flow statement provides nine-month values |
 
-### Q3 2026 examples from filings (USD billions)
+### Q3 2026 standalone filing values (USD billions)
 
-These reported values are for source review only; they are not loaded into INVESTLAB.
+The following values were read from Q3 2026 Form 10-Q consolidated statements. Where the cash-flow statement reports only year-to-date values, Q3 is derived by subtracting the matching Q2 YTD figure. These are source-review calculations, not yet an automated production ingestion.
 
-| Ticker | Q3 consolidated revenue | Q3 CAPEX / source-period observation |
-|---|---:|---|
-| MSFT | 92.279 | Q3 cash-flow line reported directly |
-| GOOGL | 127.577 | Q3 CAPEX described as 51.4; cash-flow statement presents nine-month PP&E purchases of 131.953 |
-| AMZN | 201.944 | Gross cash PP&E purchases 77.259; proceeds from sales/incentives 1.381 separately |
-| META | 64.601 | Cash-flow statement presents nine-month PP&E purchases of 83.055; Q3 standalone requires Q2 YTD subtraction |
-| TSLA | 28.046 | Q3 cash-flow line reported as net purchases excluding finance leases; nine-month 13.014 |
-| SPCX | 14.575 | Cash-flow statement presents nine-month PP&E purchases of 48.069; Q3 standalone requires Q2 YTD subtraction |
+| Ticker | Q3 consolidated revenue | Q3 cash PP&E CAPEX | Calculation / definition |
+|---|---:|---:|---|
+| MSFT | 92.279 | 39.367 | Both directly shown for the three months ended September 30 |
+| GOOGL | 127.577 | 51.355 | CAPEX: 131.953 nine-month less 80.598 six-month |
+| AMZN | 201.944 | 77.259 | Gross Q3 cash purchases; proceeds from sales/incentives of 1.381 are separate |
+| META | 64.601 | 33.942 | CAPEX: 83.055 nine-month less 49.113 six-month |
+| TSLA | 28.046 | 4.732 | CAPEX: 13.014 nine-month less 8.282 six-month; net of sales, excludes finance leases |
+| SPCX | 14.575 | 19.593 | CAPEX: 48.069 nine-month less 28.476 six-month |
 
-Do not treat the CAPEX examples as a fully comparable cross-company series. Alphabet's Q3 narrative CAPEX disclosure and its cash-flow PP&E line are not necessarily the same measurement basis. For Microsoft, the Q3 cash-flow line is directly reported. For Amazon, Meta, Tesla, and SpaceX, the reported line labels and gross/net/lease treatment must be preserved.
+Important comparability limits:
+- Microsoft, Alphabet, Amazon, Meta, and SpaceX figures above use gross cash additions/purchases of PP&E; Amazon separately reports proceeds from sales and incentives.
+- Tesla's cash-flow definition is net of sales and excludes finance leases. It is not identical to the gross-purchase measure used by the other five issuers.
+- Alphabet's Q3 narrative CAPEX of approximately 51.4 billion agrees with the YTD cash-flow delta rounded to one decimal place; use the actual calculated 51.355 billion if using the cash-flow definition.
+- SpaceX Q3 cash CAPEX was derived from the consolidated cash-flow statement, not segment capital expenditure disclosures.
+
+Q2 comparator filings used:
+- Alphabet Q2 2026 10-Q: https://www.sec.gov/Archives/edgar/data/1652044/000165204426000071/goog-20260630.htm
+- Meta Q2 2026 10-Q: https://www.sec.gov/Archives/edgar/data/1326801/000162828026050705/meta-20260630.htm
+- Tesla Q2 2026 10-Q: https://www.sec.gov/Archives/edgar/data/1318605/000162828026049270/tsla-20260630.htm
+- SpaceX Q2 2026 10-Q: https://www.sec.gov/Archives/edgar/data/1181412/000162828026052535/spcx-20260630.htm
 
 ### Remaining technical gate
 
