@@ -30,6 +30,10 @@ test("derives standalone Q2 and Q3 CAPEX from same-fiscal-year YTD facts", () =>
   assert.deepEqual(result.map(row => row.derivation), ["reported-quarter", "ytd-delta", "ytd-delta"]);
   assert.equal(result[1].rawValue, -18);
   assert.equal(result[1].sourceObservations.length, 2);
+  assert.equal(result[1].periodStart, "2026-04-01");
+  assert.equal(result[1].periodEnd, "2026-06-30");
+  assert.equal(result[2].periodStart, "2026-07-01");
+  assert.equal(result[2].periodEnd, "2026-09-30");
 });
 
 test("derives Q4 from annual less nine-month cumulative value", () => {
@@ -43,6 +47,8 @@ test("derives Q4 from annual less nine-month cumulative value", () => {
   assert.equal(result.at(-1).fiscalPeriod, "Q4");
   assert.equal(result.at(-1).value, 25);
   assert.equal(result.at(-1).derivation, "annual-less-nine-months");
+  assert.equal(result.at(-1).periodStart, "2026-10-01");
+  assert.equal(result.at(-1).periodEnd, "2026-12-31");
 });
 
 test("does not combine different XBRL tags or units", () => {
