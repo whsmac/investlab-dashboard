@@ -25,7 +25,7 @@ test("derives standalone Q2 and Q3 CAPEX from same-fiscal-year YTD facts", () =>
     fact({ start: "2026-01-01", end: "2026-06-30", value: -28, period: "Q2", accession: "h1" }),
     fact({ start: "2026-01-01", end: "2026-09-30", value: -55, period: "Q3", accession: "q3" }),
   ];
-  const result = normalizeStandaloneQuarters(rows, { metric: "capex" });
+  const result = normalizeStandaloneQuarters(rows, { metric: "capex", tag: "PaymentsToAcquirePropertyPlantAndEquipment" });
   assert.deepEqual(result.map(row => row.value), [10, 18, 27]);
   assert.deepEqual(result.map(row => row.derivation), ["reported-quarter", "ytd-delta", "ytd-delta"]);
   assert.equal(result[1].rawValue, -18);
@@ -65,6 +65,6 @@ test("returns no fabricated quarter when cumulative comparison is missing", () =
 test("revenue values retain their reported sign and do not use CAPEX absolute-value rule", () => {
   const revenue = fact({ start: "2026-01-01", end: "2026-03-31", value: 42, period: "Q1", accession: "rev" });
   revenue.metric = "revenue";
-  const result = normalizeStandaloneQuarters([revenue], { metric: "revenue" });
+  const result = normalizeStandaloneQuarters([revenue], { metric: "revenue", tag: "PaymentsToAcquirePropertyPlantAndEquipment" });
   assert.equal(result[0].value, 42);
 });
