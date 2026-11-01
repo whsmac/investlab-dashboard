@@ -69,8 +69,7 @@ export function normalizeStandaloneQuarters(observations, options = {}) {
 
   const output = [];
   for (const group of groups.values()) {
-    const byEnd = new Map(group.map(row => [row.end, row]));
-    const sorted = [...group].sort((a, b) => a.end.localeCompare(b.end));
+      const sorted = [...group].sort((a, b) => a.end.localeCompare(b.end));
 
     for (const row of sorted) {
       const days = daysBetween(row.start, row.end);
@@ -135,7 +134,15 @@ export function normalizeStandaloneQuarters(observations, options = {}) {
     }
   }
 
-  return output.sort((a, b) =>
+  const preferred = new Map();
+  for (const row of output) {
+    const key = `${row.fiscalYear}|${row.fiscalPeriod}`;
+    const current = preferred.get(key);
+    if (!current || (row.derivation === "reported-quarter" && current.derivation !== "reported-quarter")) {
+      preferred.set(key, row);
+    }
+  }
+  return [...preferred.values()].sort((a, b) =>
     a.periodEnd.localeCompare(b.periodEnd) || a.quarterLabel.localeCompare(b.quarterLabel)
   );
 }
