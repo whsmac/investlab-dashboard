@@ -42,19 +42,19 @@ test("supports UTF-8 BOM, CRLF, and quoted fields without changing numeric seman
 });
 
 test("rejects malformed headers, rows, dates, and unsupported tickers", () => {
-  assert.throws(() => parseSixCompanyPriceCsv("ticker,date,close\\nMSFT,2026-10-01,10"), /header/);
-  assert.throws(() => parseSixCompanyPriceCsv("date,ticker,close\\n2026-10-01,MSFT"), /columns/);
-  assert.throws(() => parseSixCompanyPriceCsv("date,ticker,close\\n2026-02-30,MSFT,10"), /valid YYYY-MM-DD/);
-  assert.throws(() => parseSixCompanyPriceCsv("date,ticker,close\\n2026-10-01,SPY,10"), /ticker must be one of/);
+  assert.throws(() => parseSixCompanyPriceCsv("ticker,date,close\nMSFT,2026-10-01,10"), /header/);
+  assert.throws(() => parseSixCompanyPriceCsv("date,ticker,close\n2026-10-01,MSFT"), /columns/);
+  assert.throws(() => parseSixCompanyPriceCsv("date,ticker,close\n2026-02-30,MSFT,10"), /valid YYYY-MM-DD/);
+  assert.throws(() => parseSixCompanyPriceCsv("date,ticker,close\n2026-10-01,SPY,10"), /ticker must be one of/);
 });
 
 test("rejects duplicate ticker-date observations and non-positive or non-numeric closes", () => {
-  assert.throws(() => parseSixCompanyPriceCsv("date,ticker,close\\n2026-10-01,MSFT,10\\n2026-10-01,MSFT,11"), /Duplicate price observation/);
-  assert.throws(() => parseSixCompanyPriceCsv("date,ticker,close\\n2026-10-01,MSFT,0"), /positive decimal/);
-  assert.throws(() => parseSixCompanyPriceCsv("date,ticker,close\\n2026-10-01,MSFT,1,000"), /columns/);
+  assert.throws(() => parseSixCompanyPriceCsv("date,ticker,close\n2026-10-01,MSFT,10\n2026-10-01,MSFT,11"), /Duplicate price observation/);
+  assert.throws(() => parseSixCompanyPriceCsv("date,ticker,close\n2026-10-01,MSFT,0"), /positive decimal/);
+  assert.throws(() => parseSixCompanyPriceCsv("date,ticker,close\n2026-10-01,MSFT,1,000"), /columns/);
 });
 
 test("enforces the SpaceX listing-date boundary", () => {
-  assert.throws(() => parseSixCompanyPriceCsv(`date,ticker,close\\n2026-06-11,SPCX,100`), new RegExp(SPCX_LISTING_DATE));
-  assert.equal(parseSixCompanyPriceCsv(`date,ticker,close\\n${SPCX_LISTING_DATE},SPCX,100`).observations[0].ticker, "SPCX");
+  assert.throws(() => parseSixCompanyPriceCsv(`date,ticker,close\n2026-06-11,SPCX,100`), new RegExp(SPCX_LISTING_DATE));
+  assert.equal(parseSixCompanyPriceCsv(`date,ticker,close\n${SPCX_LISTING_DATE},SPCX,100`).observations[0].ticker, "SPCX");
 });
