@@ -37,7 +37,7 @@ test("accepts all six supported symbols and same date across different symbols",
 });
 
 test("supports UTF-8 BOM, CRLF, and quoted fields without changing numeric semantics", () => {
-  const result = parseSixCompanyPriceCsv("\\uFEFFdate,ticker,close\\r\\n2026-10-01,MSFT,\\\"521.40\\\"\\r\\n");
+  const result = parseSixCompanyPriceCsv("\uFEFFdate,ticker,close\r\n2026-10-01,MSFT,\"521.40\"\r\n");
   assert.equal(result.observations[0].close, 521.4);
 });
 
