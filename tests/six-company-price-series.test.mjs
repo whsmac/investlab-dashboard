@@ -69,3 +69,20 @@ test("quarter-end series is filtered after derivation, not recalculated from par
   assert.match(html, /quarterFiltered=filterPricePeriod\(quarterRows,period,asOf\)/);
   assert.doesNotMatch(html, /quarterFiltered=deriveQuarterlyAdjustedClose\(filtered\)/);
 });
+
+test("indexed series sorts input chronologically before selecting each ticker baseline", () => {
+  const rows = [
+    { date: "2026-06-13", ticker: "SPCX", close: 55 },
+    { date: "2023-01-04", ticker: "MSFT", close: 110 },
+    { date: "2026-06-12", ticker: "SPCX", close: 50 },
+    { date: "2023-01-03", ticker: "MSFT", close: 100 },
+  ];
+  const indexed = deriveIndexedAdjustedClose(rows);
+  assert.deepEqual(indexed.map(row => [row.ticker, row.date, Number(row.indexedClose.toFixed(2))]), [
+    ["MSFT", "2023-01-03", 100],
+    ["MSFT", "2023-01-04", 110],
+    ["SPCX", "2026-06-12", 100],
+    ["SPCX", "2026-06-13", 110],
+  ]);
+  assert.deepEqual(indexed.filter(row => row.ticker === "SPCX").map(row => row.baseDate), ["2026-06-12", "2026-06-12"]);
+});
