@@ -18,3 +18,11 @@ test("financial charts use the same ticker and period controls and keep CAPEX de
   assert.match(html, /CAPEX 산정 기준/);
   assert.match(html, /SEC 자동 수집은 이 단계에서 구현하지 않습니다/);
 });
+
+test("missing financial observations create chart gaps instead of false zero-value drops", () => {
+  assert.match(html, /if\(!point\|\|!Number\.isFinite\(point\[valueKey\]\)\)\{drawing=false;continue;\}/);
+});
+
+test("shared company and period controls refresh financial charts even before price CSV is loaded", () => {
+  assert.match(html, /function render\(\)\{\s*renderFinancial\(\);\s*if\(!allRows\.length\)return;/);
+});
