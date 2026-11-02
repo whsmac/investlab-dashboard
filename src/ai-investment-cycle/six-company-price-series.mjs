@@ -53,7 +53,10 @@ export function deriveQuarterlyAdjustedClose(observations) {
 export function deriveIndexedAdjustedClose(observations, options = {}) {
   const ticker = options.ticker ?? "ALL";
   const startDate = options.startDate ?? "0000-01-01";
-  const selected = observations.filter(row => (ticker === "ALL" || row.ticker === ticker) && row.date >= startDate);
+  const selected = observations
+    .filter(row => (ticker === "ALL" || row.ticker === ticker) && row.date >= startDate)
+    .slice()
+    .sort((a, b) => a.date.localeCompare(b.date) || a.ticker.localeCompare(b.ticker));
   const firstByTicker = new Map();
   const firstDateByTicker = new Map();
   for (const row of selected) {
