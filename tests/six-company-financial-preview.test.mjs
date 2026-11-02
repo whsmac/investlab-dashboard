@@ -26,3 +26,8 @@ test("missing financial observations create chart gaps instead of false zero-val
 test("shared company and period controls refresh financial charts even before price CSV is loaded", () => {
   assert.match(html, /function render\(\)\{\s*renderFinancial\(\);\s*if\(!allRows\.length\)return;/);
 });
+
+test("financial period selectors use rolling quarter windows rather than calendar-year cutoffs", () => {
+  assert.match(html, /latestQuarterIndex-years\*4\+1/);
+  assert.match(html, /quarterNumber\(row\.period\)/);
+});
