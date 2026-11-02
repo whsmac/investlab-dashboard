@@ -87,12 +87,13 @@ $("loadFiles").addEventListener("click",async()=>{
  try{
   $("status").textContent="파일을 읽고 검증하고 있습니다.";
   const imports=await Promise.all(files.map(async file=>parseSixCompanyPriceCsv(await file.text())));
-  const merged=mergeSixCompanyPriceImports(imports);allRows=merged.observations;quarterRows=deriveQuarterlyAdjustedClose(allRows);
+  const existingImport=allRows.length?{currency:"USD",priceBasis:"adjusted-close",observations:allRows}:null;
+  const merged=mergeSixCompanyPriceImports(existingImport?[existingImport,...imports]:imports);allRows=merged.observations;quarterRows=deriveQuarterlyAdjustedClose(allRows);
   const total=allRows.length;
   $("status").className="notice";$("status").textContent=files.length+"개 파일 검증 완료 · "+total.toLocaleString("en-US")+"개 관측값 · "+allRows[0].date+" ~ "+allRows.at(-1).date;
   $("coverage").textContent=merged.coverage.map(c=>c.ticker+": "+c.count+"건"+(c.firstDate?" ("+c.firstDate+" ~ "+c.lastDate+")":" (자료 없음)")).join(" · ");
   render();
- }catch(error){allRows=[];quarterRows=[];$("status").className="notice warning";$("status").textContent="가져오기 실패: "+error.message;$("coverage").textContent="파일을 수정한 뒤 다시 시도해 주세요.";}
+ }catch(error){$("status").className="notice warning";$("status").textContent="가져오기 실패: "+error.message+(allRows.length?" 기존에 불러온 자료는 유지했습니다.":"");$("coverage").textContent="파일을 수정한 뒤 다시 시도해 주세요. 기존 자료는 유지됩니다.";}
 });
 $("clearFiles").addEventListener("click",()=>{allRows=[];quarterRows=[];$("priceFiles").value="";$("status").className="empty";$("status").textContent="자료가 초기화되었습니다.";$("coverage").textContent="";["dailyChart","quarterChart","indexedChart"].forEach(id=>$(id).innerHTML='<div class="empty">CSV 자료를 불러오면 표시합니다.</div>');["dailyLegend","quarterLegend","indexedLegend"].forEach(id=>$(id).innerHTML="");$("latestTable").innerHTML='<tr><td colspan="6" class="muted">자료 미등록</td></tr>';});
 
@@ -114,11 +115,12 @@ $("loadFinancial").addEventListener("click",async()=>{
  try{
   const imports=await Promise.all(files.map(async file=>parseSixCompanyFinancialCsv(await file.text())));
   const map=new Map();
+  for(const row of financialRows)map.set(row.ticker+":"+row.period,row);
   for(const item of imports)for(const row of item.observations){const key=row.ticker+":"+row.period;const prior=map.get(key);if(prior&&JSON.stringify(prior)!==JSON.stringify(row))throw new Error("동일 종목·분기의 값이 서로 다릅니다: "+key);map.set(key,row);}
   financialRows=[...map.values()].map(row=>({...row,quarter:row.period,date:row.period})).sort((a,b)=>a.period.localeCompare(b.period)||a.ticker.localeCompare(b.ticker));
   $("financialStatus").className="notice";$("financialStatus").textContent=files.length+"개 파일 검증 완료 · "+financialRows.length+"개 분기 관측값";
   renderFinancial();
- }catch(error){financialRows=[];$("financialStatus").className="notice warning";$("financialStatus").textContent="재무자료 가져오기 실패: "+error.message;renderFinancial();}
+ }catch(error){$("financialStatus").className="notice warning";$("financialStatus").textContent="재무자료 가져오기 실패: "+error.message+(financialRows.length?" 기존에 불러온 재무자료는 유지했습니다.":"");renderFinancial();}
 });
 $("clearFinancial").addEventListener("click",()=>{$("financialFiles").value="";financialRows=[];$("financialStatus").className="empty";$("financialStatus").textContent="재무자료가 초기화되었습니다.";renderFinancial();});
 
