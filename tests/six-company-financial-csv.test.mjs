@@ -25,7 +25,7 @@ test("rejects invalid period, duplicate ticker-period, unsupported ticker and in
   assert.throws(() => parseSixCompanyFinancialCsv([header, "META,2026-Q5,1,,,",].join("\n")), /period/);
   assert.throws(() => parseSixCompanyFinancialCsv([header, "META,2026-Q3,1,,,", "META,2026-Q3,2,,,",].join("\n")), /Duplicate/);
   assert.throws(() => parseSixCompanyFinancialCsv([header, "XYZ,2026-Q3,1,,,",].join("\n")), /ticker/);
-  assert.throws(() => parseSixCompanyFinancialCsv([header, "META,2026-Q3,-1,,,,",].join("\n")), /non-negative/);
+  assert.throws(() => parseSixCompanyFinancialCsv([header, "META,2026-Q3,-1,,,",].join("\n")), /non-negative/);
 });
 
 test("requires HTTPS source links when provided and exact headers", () => {
