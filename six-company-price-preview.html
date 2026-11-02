@@ -39,7 +39,8 @@ select,button,input{font:inherit;color:var(--text);background:#1d2b43;border:1px
 </main>
 <script type="module">
 import { parseSixCompanyPriceCsv } from "./src/ai-investment-cycle/six-company-price-csv.mjs";
-import { mergeSixCompanyPriceImports, deriveQuarterlyAdjustedClose, deriveIndexedAdjustedClose, filterPricePeriod } from "./src/ai-investment-cycle/six-company-price-series.mjs";\nimport { parseSixCompanyFinancialCsv } from "./src/ai-investment-cycle/six-company-financial-csv.mjs";
+import { mergeSixCompanyPriceImports, deriveQuarterlyAdjustedClose, deriveIndexedAdjustedClose, filterPricePeriod } from "./src/ai-investment-cycle/six-company-price-series.mjs";
+import { parseSixCompanyFinancialCsv } from "./src/ai-investment-cycle/six-company-financial-csv.mjs";
 const COLORS={MSFT:"#83aaff",GOOGL:"#58c7d8",AMZN:"#f1c66d",META:"#bd9aff",TSLA:"#49d4a7",SPCX:"#ff8291"};
 const TICKERS=Object.keys(COLORS),$=id=>document.getElementById(id);
 let allRows=[],quarterRows=[],financialRows=[];
@@ -68,7 +69,8 @@ function render(){
  $("rangeNote").textContent="조회 범위: "+(filtered[0]?.date??"—")+" ~ "+asOf+" · 전체 "+filtered.length.toLocaleString("en-US")+"건 · 가격 기준 Adjusted Close";
  renderChart("dailyChart","dailyLegend",selectedRows(filtered),"close","USD");
  renderChart("quarterChart","quarterLegend",selectedRows(quarterFiltered),"close","USD");
- renderChart("indexedChart","indexedLegend",selectedRows(indexed),"indexedClose","%");\n renderFinancial();
+ renderChart("indexedChart","indexedLegend",selectedRows(indexed),"indexedClose","%");
+ renderFinancial();
  const tableTickers=ticker==="ALL"?TICKERS:[ticker];
  $("latestTable").innerHTML=tableTickers.map(t=>{const rows=quarterFiltered.filter(r=>r.ticker===t).sort((a,b)=>a.quarter.localeCompare(b.quarter));const last=rows.at(-1);if(!last)return '<tr><td>'+t+'</td><td colspan="5" class="muted">자료 없음</td></tr>';const prior=rows.find(r=>r.quarter===String(Number(last.quarter.slice(0,4))-1)+last.quarter.slice(4));const change=prior?(last.close/prior.close-1)*100:null;return '<tr><td>'+t+'</td><td>'+last.quarter+(last.quarter==="2026-Q4"?' <span class="tag">잠정</span>':"")+'</td><td>'+last.date+'</td><td>$'+fmt(last.close)+'</td><td>'+(prior?"$"+fmt(prior.close):"—")+'</td><td class="'+(change>0?"up":change<0?"down":"")+'">'+pct(change)+'</td></tr>';}).join("");
 }
@@ -105,7 +107,8 @@ $("loadFinancial").addEventListener("click",async()=>{
  }catch(error){financialRows=[];$("financialStatus").className="notice warning";$("financialStatus").textContent="재무자료 가져오기 실패: "+error.message;renderFinancial();}
 });
 $("clearFinancial").addEventListener("click",()=>{$("financialFiles").value="";financialRows=[];$("financialStatus").className="empty";$("financialStatus").textContent="재무자료가 초기화되었습니다.";renderFinancial();});
-\n$("company").addEventListener("change",render);$("period").addEventListener("change",render);
+
+$("company").addEventListener("change",render);$("period").addEventListener("change",render);
 </script>
 </body>
 </html>
