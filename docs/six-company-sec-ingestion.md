@@ -174,3 +174,41 @@ Series derivation is implemented in `six-company-price-series.mjs`. Exact duplic
 The four uploaded annual CSV files were validated locally and are not committed to the repository. The validated combined set contains 4,908 observations. Five original issuers have daily data from 2023-01-03; SPCX starts on 2026-06-12.
 
 This preview is a data/visualization validation surface, not a production upload workflow. Persistent storage, monthly import history, correction/replacement approval, and integration into the main dashboard remain separate future work. The new preview and series modules have dedicated tests and are included in the validation workflow.
+
+
+## MVP scope freeze (2026-11-02)
+
+The user approved limiting the current development to Phase 1 (MVP). Do not expand into Phase 2/3 work until the Phase 1 result is usable and reviewed.
+
+### Phase 1 deliverable
+- Six-company daily adjusted-close import by manual CSV (USD).
+- Daily price, quarter-end price, and indexed-to-100 charts.
+- Ticker and period selectors.
+- Manual quarterly consolidated-revenue and CAPEX CSV import.
+- Quarterly revenue and CAPEX charts and a latest-quarter comparison.
+- Keep issuer-specific CAPEX definition visible.
+- Show missing values as missing; do not interpolate or forward-fill.
+- Standalone preview only; no production dashboard, Supabase, holdings, or automated market-price provider changes.
+
+### Deliberately deferred
+- SEC Company Facts live ingestion and automatic XBRL mapping.
+- Automatic issuer-specific CAPEX reconciliation and taxonomy extension discovery.
+- AI investment-cycle interpretation, CAPEX/revenue lag analysis, warning signals, and composite investment judgments.
+- Persistent upload history, advanced correction workflow, and elaborate provenance/versioning.
+- Any additional dashboard integration beyond the isolated preview.
+
+### Simplified financial CSV contract
+One combined file, optionally split across multiple files, with exact headers:
+`ticker,period,revenue_usd_bn,capex_usd_bn,capex_definition,source_url`
+
+- `period` is the issuer's reported fiscal-quarter label (YYYY-Q1..Q4); it is not silently converted to a calendar quarter.
+- Revenue and CAPEX are USD billions. Blank metric cells mean unavailable.
+- At least one of revenue or CAPEX is required per row.
+- CAPEX rows require a short issuer-specific definition.
+- Optional source URL must be HTTPS.
+- Duplicate ticker/period rows and conflicting overlaps are rejected.
+- No SEC auto-fetch is performed by this MVP.
+
+The standalone preview now accepts multiple price CSVs and multiple quarterly financial CSVs. The blank template is `six-company-quarterly-financial-template.csv`. The template contains no prefilled financial observations; the user must enter verified values before importing.
+
+This is intentionally a practical first version. The current SEC adapter and quarterly normalizer remain in the branch as deferred groundwork but are not a Phase 1 completion requirement.
