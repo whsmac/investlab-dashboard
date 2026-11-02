@@ -100,8 +100,10 @@ function renderFinancial(){
  const ticker=$("company").value;
  const period=$("period").value;
  const years=period==="MAX"?null:Number(period.slice(0,-1));
- const latestYear=financialRows.reduce((max,row)=>Math.max(max,Number(row.period.slice(0,4))),0);
- const selected=financialRows.filter(row=>(ticker==="ALL"||row.ticker===ticker)&&(years===null||Number(row.period.slice(0,4))>=latestYear-years+1));
+ const quarterNumber=label=>{const match=/^(\\d{4})-Q([1-4])$/.exec(label);return Number(match[1])*4+Number(match[2])-1;};
+ const latestQuarter=financialRows.reduce((latest,row)=>!latest||quarterNumber(row.period)>quarterNumber(latest)?row.period:latest,null);
+ const latestQuarterIndex=latestQuarter===null?null:quarterNumber(latestQuarter);
+ const selected=financialRows.filter(row=>(ticker==="ALL"||row.ticker===ticker)&&(years===null||quarterNumber(row.period)>=latestQuarterIndex-years*4+1));
  renderChart("revenueChart","revenueLegend",selected,"revenueUsdBn","USD");
  renderChart("capexChart","capexLegend",selected,"capexUsdBn","USD");
  const defs=[...new Set(selected.filter(r=>r.capexUsdBn!==null).map(r=>r.ticker+": "+r.capexDefinition))];
