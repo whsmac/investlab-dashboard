@@ -31,3 +31,16 @@ test("financial period selectors use rolling quarter windows rather than calenda
   assert.match(html, /latestQuarterIndex-years\*4\+1/);
   assert.match(html, /quarterNumber\(row\.period\)/);
 });
+
+test("price CSV imports append to existing browser data and retain prior data on validation failure", () => {
+  assert.match(html, /mergeSixCompanyPriceImports\(existingImport\?\[existingImport,\.\.\.imports\]:imports\)/);
+  assert.match(html, /가져오기 실패: .*기존에 불러온 자료는 유지했습니다/);
+  assert.doesNotMatch(html, /catch\(error\)\{allRows=\[\];quarterRows=\[\]/);
+});
+
+test("financial CSV imports append to existing quarters and preserve prior data on conflicts", () => {
+  assert.match(html, /for\(const row of financialRows\)map\.set/);
+  assert.match(html, /prior\.revenueUsdBn!==row\.revenueUsdBn/);
+  assert.match(html, /재무자료 가져오기 실패: .*기존에 불러온 재무자료는 유지했습니다/);
+  assert.doesNotMatch(html, /catch\(error\)\{financialRows=\[\]/);
+});
