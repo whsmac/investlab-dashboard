@@ -38,3 +38,10 @@ test("clearing price data also clears stale index baseline and range labels", ()
   assert.match(html, /indexBasis"\)\.textContent="기준일 자료를 불러오면 종목별 기준일을 표시합니다\."/);
   assert.match(html, /rangeNote"\)\.textContent="자료를 불러오면 조회 기간이 표시됩니다\."/);
 });
+
+test("price import warns when cumulative data omits one or more supported companies", () => {
+  assert.match(html, /const missingTickers=merged\.coverage\.filter\(item=>item\.count===0\)/);
+  assert.match(html, /주의: .*자료가 누적 데이터에 없습니다/);
+  assert.match(html, /6개 종목 자료 포함/);
+  assert.match(html, /누적자료 종목별 현황/);
+});
