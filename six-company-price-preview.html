@@ -41,7 +41,7 @@ select,button,input{font:inherit;color:var(--text);background:#1d2b43;border:1px
 </section>
 <section class="panel"><div class="head"><div><h2>① 일별 수정종가</h2><div class="small">USD / 주 · 업로드된 거래일 관측값 표시</div></div></div><div id="dailyChart" class="chart"><div class="empty">CSV 자료를 불러오면 표시합니다.</div></div><div id="dailyLegend" class="legend"></div></section>
 <section class="panel"><div class="head"><div><h2>② 분기별 수정종가</h2><div class="small">각 분기의 마지막 거래일 종가 · USD / 주</div></div></div><div id="quarterChart" class="chart"><div class="empty">CSV 자료를 불러오면 표시합니다.</div></div><div id="quarterLegend" class="legend"></div></section>
-<section class="panel"><div class="head"><div><h2>③ 기준일 100 지수</h2><div class="small">선택 기간 내 종목별 첫 관측일 = 100 · SPCX는 상장 후 별도 시작</div></div></div><div id="indexedChart" class="chart"><div class="empty">CSV 자료를 불러오면 표시합니다.</div></div><div id="indexedLegend" class="legend"></div></section>
+<section class="panel"><div class="head"><div><h2>③ 기준일 100 지수</h2><div class="small">선택 기간 내 종목별 첫 관측일 = 100 · SPCX는 상장 후 별도 시작</div></div></div><div id="indexedChart" class="chart"><div class="empty">CSV 자료를 불러오면 표시합니다.</div></div><div id="indexedLegend" class="legend"></div><div id="indexBasis" class="small" style="margin-top:8px">기준일 자료를 불러오면 종목별 기준일을 표시합니다.</div></section>
 <section class="panel"><div class="head"><div><h2>최근 분기 비교</h2><div class="small">분기말 수정종가 및 전년 동기 대비 변화율</div></div></div><div class="table-wrap"><table><thead><tr><th>종목</th><th>최근 분기</th><th>분기말 날짜</th><th>수정종가</th><th>전년 동기</th><th>YoY</th></tr></thead><tbody id="latestTable"><tr><td colspan="6" class="muted">자료 미등록</td></tr></tbody></table></div></section>
 <footer class="foot">Adjusted Close는 원본 제공처의 수정종가 필드입니다. 이 화면은 배당·분할 조정 가격의 추세 비교이며, 제공처의 산출 방법을 별도로 검증하지 않은 독립적인 총수익률 지수라고 단정하지 않습니다. 2026년 4분기는 2026-10-30까지의 부분 자료입니다. 미공개·미수집 구간은 보간하거나 선으로 연결하지 않습니다.</footer>
 </main>
@@ -79,6 +79,8 @@ function render(){
  renderChart("dailyChart","dailyLegend",selectedRows(filtered),"close","USD");
  renderChart("quarterChart","quarterLegend",selectedRows(quarterFiltered),"close","USD");
  renderChart("indexedChart","indexedLegend",selectedRows(indexed),"indexedClose","%");
+ const basisTickers=ticker==="ALL"?TICKERS:[ticker];
+ $("indexBasis").textContent="기준일(각 종목의 선택 기간 내 최초 관측일): "+basisTickers.map(t=>{const row=indexed.find(r=>r.ticker===t);return t+": "+(row?.baseDate??"자료 없음");}).join(" · ");
  const tableTickers=ticker==="ALL"?TICKERS:[ticker];
  $("latestTable").innerHTML=tableTickers.map(t=>{const rows=quarterFiltered.filter(r=>r.ticker===t).sort((a,b)=>a.quarter.localeCompare(b.quarter));const last=rows.at(-1);if(!last)return '<tr><td>'+t+'</td><td colspan="5" class="muted">자료 없음</td></tr>';const prior=quarterRows.find(r=>r.ticker===t&&r.quarter===String(Number(last.quarter.slice(0,4))-1)+last.quarter.slice(4));const change=prior?(last.close/prior.close-1)*100:null;return '<tr><td>'+t+'</td><td>'+last.quarter+(last.quarter==="2026-Q4"?' <span class="tag">잠정</span>':"")+'</td><td>'+last.date+'</td><td>$'+fmt(last.close)+'</td><td>'+(prior?"$"+fmt(prior.close):"—")+'</td><td class="'+(change>0?"up":change<0?"down":"")+'">'+pct(change)+'</td></tr>';}).join("");
 }
