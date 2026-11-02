@@ -18,7 +18,7 @@ select,button,input{font:inherit;color:var(--text);background:#1d2b43;border:1px
 <main>
 <header class="top"><div><div class="brand">INVEST<span>LAB</span><span class="pill">SIX-COMPANY PREVIEW</span></div><div class="sub">수정종가(Adjusted Close) · MSFT · GOOGL · AMZN · META · TSLA · SPCX</div></div><div class="small">독립 미리보기 · 운영 대시보드 및 Supabase와 미연결</div></header>
 <h1>6개 기업 주가 모니터</h1>
-<div class="sub">일별 추이, 분기말 수정종가, 기준일 100 지수를 같은 데이터에서 계산합니다.</div>
+<div class="sub">일별·분기별 주가와 분기 매출·CAPEX를 함께 확인하는 1단계 MVP입니다.</div>
 <section class="panel">
  <div class="head"><h2>주가 자료 가져오기</h2><span class="tag">CSV · 로컬 브라우저 처리</span></div>
  <div class="notice">한 번에 여러 CSV를 선택할 수 있습니다. 형식은 <b>date,ticker,close</b>이며 close는 배당 및 주식분할 반영 수정종가(USD)입니다. 파일은 브라우저 메모리에서만 처리하고 서버나 Supabase로 전송하지 않습니다.</div>
@@ -39,10 +39,10 @@ select,button,input{font:inherit;color:var(--text);background:#1d2b43;border:1px
 </main>
 <script type="module">
 import { parseSixCompanyPriceCsv } from "./src/ai-investment-cycle/six-company-price-csv.mjs";
-import { mergeSixCompanyPriceImports, deriveQuarterlyAdjustedClose, deriveIndexedAdjustedClose, filterPricePeriod } from "./src/ai-investment-cycle/six-company-price-series.mjs";
+import { mergeSixCompanyPriceImports, deriveQuarterlyAdjustedClose, deriveIndexedAdjustedClose, filterPricePeriod } from "./src/ai-investment-cycle/six-company-price-series.mjs";\nimport { parseSixCompanyFinancialCsv } from "./src/ai-investment-cycle/six-company-financial-csv.mjs";
 const COLORS={MSFT:"#83aaff",GOOGL:"#58c7d8",AMZN:"#f1c66d",META:"#bd9aff",TSLA:"#49d4a7",SPCX:"#ff8291"};
 const TICKERS=Object.keys(COLORS),$=id=>document.getElementById(id);
-let allRows=[],quarterRows=[];
+let allRows=[],quarterRows=[],financialRows=[];
 const fmt=(v,d=2)=>Number.isFinite(v)?v.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d}):"—";
 const pct=v=>Number.isFinite(v)?(v>0?"+":"")+v.toFixed(1)+"%":"—";
 function selectedRows(rows){const ticker=$("company").value;return rows.filter(r=>ticker==="ALL"||r.ticker===ticker);}
@@ -68,7 +68,7 @@ function render(){
  $("rangeNote").textContent="조회 범위: "+(filtered[0]?.date??"—")+" ~ "+asOf+" · 전체 "+filtered.length.toLocaleString("en-US")+"건 · 가격 기준 Adjusted Close";
  renderChart("dailyChart","dailyLegend",selectedRows(filtered),"close","USD");
  renderChart("quarterChart","quarterLegend",selectedRows(quarterFiltered),"close","USD");
- renderChart("indexedChart","indexedLegend",selectedRows(indexed),"indexedClose","%");
+ renderChart("indexedChart","indexedLegend",selectedRows(indexed),"indexedClose","%");\n renderFinancial();
  const tableTickers=ticker==="ALL"?TICKERS:[ticker];
  $("latestTable").innerHTML=tableTickers.map(t=>{const rows=quarterFiltered.filter(r=>r.ticker===t).sort((a,b)=>a.quarter.localeCompare(b.quarter));const last=rows.at(-1);if(!last)return '<tr><td>'+t+'</td><td colspan="5" class="muted">자료 없음</td></tr>';const prior=rows.find(r=>r.quarter===String(Number(last.quarter.slice(0,4))-1)+last.quarter.slice(4));const change=prior?(last.close/prior.close-1)*100:null;return '<tr><td>'+t+'</td><td>'+last.quarter+(last.quarter==="2026-Q4"?' <span class="tag">잠정</span>':"")+'</td><td>'+last.date+'</td><td>$'+fmt(last.close)+'</td><td>'+(prior?"$"+fmt(prior.close):"—")+'</td><td class="'+(change>0?"up":change<0?"down":"")+'">'+pct(change)+'</td></tr>';}).join("");
 }
@@ -85,7 +85,27 @@ $("loadFiles").addEventListener("click",async()=>{
  }catch(error){allRows=[];quarterRows=[];$("status").className="notice warning";$("status").textContent="가져오기 실패: "+error.message;$("coverage").textContent="파일을 수정한 뒤 다시 시도해 주세요.";}
 });
 $("clearFiles").addEventListener("click",()=>{allRows=[];quarterRows=[];$("priceFiles").value="";$("status").className="empty";$("status").textContent="자료가 초기화되었습니다.";$("coverage").textContent="";["dailyChart","quarterChart","indexedChart"].forEach(id=>$(id).innerHTML='<div class="empty">CSV 자료를 불러오면 표시합니다.</div>');["dailyLegend","quarterLegend","indexedLegend"].forEach(id=>$(id).innerHTML="");$("latestTable").innerHTML='<tr><td colspan="6" class="muted">자료 미등록</td></tr>';});
-$("company").addEventListener("change",render);$("period").addEventListener("change",render);
+
+function renderFinancial(){
+ const selected=selectedRows(financialRows);
+ renderChart("revenueChart","revenueLegend",selected,"revenueUsdBn","USD");
+ renderChart("capexChart","capexLegend",selected,"capexUsdBn","USD");
+ const defs=[...new Set(selected.filter(r=>r.capexUsdBn!==null).map(r=>r.ticker+": "+r.capexDefinition))];
+ $("capexDefinitions").textContent=defs.length?"CAPEX 산정 기준: "+defs.join(" · "):"CAPEX 산정 기준 자료 없음";
+}
+$("loadFinancial").addEventListener("click",async()=>{
+ const files=[...($("financialFiles").files??[])];if(!files.length){$("financialStatus").textContent="재무 CSV 파일을 먼저 선택해 주세요.";return;}
+ try{
+  const imports=await Promise.all(files.map(async file=>parseSixCompanyFinancialCsv(await file.text())));
+  const map=new Map();
+  for(const item of imports)for(const row of item.observations){const key=row.ticker+":"+row.period;const prior=map.get(key);if(prior&&JSON.stringify(prior)!==JSON.stringify(row))throw new Error("동일 종목·분기의 값이 서로 다릅니다: "+key);map.set(key,row);}
+  financialRows=[...map.values()].map(row=>({...row,quarter:row.period,date:row.period})).sort((a,b)=>a.period.localeCompare(b.period)||a.ticker.localeCompare(b.ticker));
+  $("financialStatus").className="notice";$("financialStatus").textContent=files.length+"개 파일 검증 완료 · "+financialRows.length+"개 분기 관측값";
+  renderFinancial();
+ }catch(error){financialRows=[];$("financialStatus").className="notice warning";$("financialStatus").textContent="재무자료 가져오기 실패: "+error.message;renderFinancial();}
+});
+$("clearFinancial").addEventListener("click",()=>{$("financialFiles").value="";financialRows=[];$("financialStatus").className="empty";$("financialStatus").textContent="재무자료가 초기화되었습니다.";renderFinancial();});
+\n$("company").addEventListener("change",render);$("period").addEventListener("change",render);
 </script>
 </body>
 </html>
