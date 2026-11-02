@@ -33,3 +33,8 @@ test("indexed chart explicitly displays each selected company's actual baseline 
   assert.match(html, /기준일\(각 종목의 선택 기간 내 최초 관측일\)/);
   assert.match(html, /indexed\.find\(r=>r\.ticker===t\)/);
 });
+
+test("clearing price data also clears stale index baseline and range labels", () => {
+  assert.match(html, /indexBasis"\)\.textContent="기준일 자료를 불러오면 종목별 기준일을 표시합니다\."/);
+  assert.match(html, /rangeNote"\)\.textContent="자료를 불러오면 조회 기간이 표시됩니다\."/);
+});
