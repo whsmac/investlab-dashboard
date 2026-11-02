@@ -27,3 +27,9 @@ test("preview labels adjusted-close basis, SPCX listing start, and partial 2026 
   assert.match(html, /SPCX는 상장 후 별도 시작/);
   assert.match(html, /2026년 4분기는 2026-10-30까지의 부분 자료/);
 });
+
+test("indexed chart explicitly displays each selected company's actual baseline date", () => {
+  assert.match(html, /id="indexBasis"/);
+  assert.match(html, /기준일\(각 종목의 선택 기간 내 최초 관측일\)/);
+  assert.match(html, /indexed\.find\(r=>r\.ticker===t\)/);
+});
