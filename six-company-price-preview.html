@@ -21,14 +21,14 @@ select,button,input{font:inherit;color:var(--text);background:#1d2b43;border:1px
 <div class="sub">일별·분기별 주가와 분기 매출·CAPEX를 함께 확인하는 1단계 MVP입니다.</div>
 <section class="panel">
  <div class="head"><h2>주가 자료 가져오기</h2><span class="tag">CSV · 로컬 브라우저 처리</span></div>
- <div class="notice">한 번에 여러 CSV를 선택할 수 있습니다. 형식은 <b>date,ticker,close</b>이며 close는 배당 및 주식분할 반영 수정종가(USD)입니다. 파일은 브라우저 메모리에서만 처리하고 서버나 Supabase로 전송하지 않습니다.</div>
+ <div class="notice">여러 CSV를 한 번에 선택하거나, 월별 파일을 나누어 추가로 불러올 수 있습니다. 기존 자료와 중복되는 동일 값은 한 건으로 처리하고 값이 다른 중복 자료는 오류로 알립니다. 형식은 <b>date,ticker,close</b>이며 close는 배당 및 주식분할 반영 수정종가(USD)입니다. 파일은 브라우저 메모리에서만 처리하고 서버나 Supabase로 전송하지 않습니다.</div>
  <div class="upload" style="margin-top:12px"><input id="priceFiles" type="file" accept=".csv,text/csv" multiple><button id="loadFiles" type="button">CSV 검증 및 불러오기</button><button id="clearFiles" type="button">초기화</button></div>
  <div id="status" class="empty" style="margin-top:11px">2023~2026년 CSV 파일을 선택해 주세요.</div>
  <div id="coverage" class="small" style="margin-top:8px"></div>
 </section>
 <section class="panel">
  <div class="head"><h2>분기 재무자료 가져오기</h2><span class="tag">수동 CSV · USD 십억 달러</span></div>
- <div class="notice">재무자료는 직접 준비한 분기별 CSV로 입력합니다. 형식은 <b>ticker,period,revenue_usd_bn,capex_usd_bn,capex_definition,source_url</b>입니다. 모르는 값은 비워 두고, CAPEX를 입력할 때는 산정 기준을 반드시 적어 주세요. SEC 자동 수집은 이 단계에서 구현하지 않습니다.</div>
+ <div class="notice">재무자료는 직접 준비한 분기별 CSV로 입력합니다. 기존 자료에 새 파일을 추가할 수 있으며, 같은 종목·분기의 값이 다르면 기존 자료를 보존하고 오류를 알립니다. 형식은 <b>ticker,period,revenue_usd_bn,capex_usd_bn,capex_definition,source_url</b>입니다. 모르는 값은 비워 두고, CAPEX를 입력할 때는 산정 기준을 반드시 적어 주세요. SEC 자동 수집은 이 단계에서 구현하지 않습니다.</div>
  <div class="upload" style="margin-top:12px"><input id="financialFiles" type="file" accept=".csv,text/csv" multiple><button id="loadFinancial" type="button">재무 CSV 검증 및 불러오기</button><button id="clearFinancial" type="button">재무자료 초기화</button><a href="./six-company-quarterly-financial-template.csv" download style="color:#a9c4ff">입력 양식 다운로드</a></div>
  <div id="financialStatus" class="empty" style="margin-top:11px">분기 재무자료 CSV를 선택해 주세요.</div>
 </section>
@@ -116,7 +116,7 @@ $("loadFinancial").addEventListener("click",async()=>{
   const imports=await Promise.all(files.map(async file=>parseSixCompanyFinancialCsv(await file.text())));
   const map=new Map();
   for(const row of financialRows)map.set(row.ticker+":"+row.period,row);
-  for(const item of imports)for(const row of item.observations){const key=row.ticker+":"+row.period;const prior=map.get(key);if(prior&&JSON.stringify(prior)!==JSON.stringify(row))throw new Error("동일 종목·분기의 값이 서로 다릅니다: "+key);map.set(key,row);}
+  for(const item of imports)for(const row of item.observations){const key=row.ticker+":"+row.period;const prior=map.get(key);if(prior&&(prior.revenueUsdBn!==row.revenueUsdBn||prior.capexUsdBn!==row.capexUsdBn||prior.capexDefinition!==row.capexDefinition||prior.sourceUrl!==row.sourceUrl))throw new Error("동일 종목·분기의 값이 서로 다릅니다: "+key);map.set(key,row);}
   financialRows=[...map.values()].map(row=>({...row,quarter:row.period,date:row.period})).sort((a,b)=>a.period.localeCompare(b.period)||a.ticker.localeCompare(b.ticker));
   $("financialStatus").className="notice";$("financialStatus").textContent=files.length+"개 파일 검증 완료 · "+financialRows.length+"개 분기 관측값";
   renderFinancial();
