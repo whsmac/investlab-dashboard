@@ -16,15 +16,15 @@ test("parses quarterly revenue and CAPEX with issuer definitions and source URLs
 });
 
 test("allows missing metrics but requires at least one value and a CAPEX definition", () => {
-  assert.equal(parseSixCompanyFinancialCsv([header, "META,2026-Q3,64.601,,,,",].join("\n")).observations[0].capexUsdBn, null);
-  assert.throws(() => parseSixCompanyFinancialCsv([header, "META,2026-Q3,64.601,33.942,,,",].join("\n")), /capex_definition/);
-  assert.throws(() => parseSixCompanyFinancialCsv([header, "META,2026-Q3,,,,,",].join("\n")), /revenue or CAPEX/);
+  assert.equal(parseSixCompanyFinancialCsv([header, "META,2026-Q3,64.601,,,",].join("\n")).observations[0].capexUsdBn, null);
+  assert.throws(() => parseSixCompanyFinancialCsv([header, "META,2026-Q3,64.601,33.942,,",].join("\n")), /capex_definition/);
+  assert.throws(() => parseSixCompanyFinancialCsv([header, "META,2026-Q3,,,,",].join("\n")), /revenue or CAPEX/);
 });
 
 test("rejects invalid period, duplicate ticker-period, unsupported ticker and invalid values", () => {
-  assert.throws(() => parseSixCompanyFinancialCsv([header, "META,2026-Q5,1,,,,",].join("\n")), /period/);
-  assert.throws(() => parseSixCompanyFinancialCsv([header, "META,2026-Q3,1,,,,", "META,2026-Q3,2,,,,",].join("\n")), /Duplicate/);
-  assert.throws(() => parseSixCompanyFinancialCsv([header, "XYZ,2026-Q3,1,,,,",].join("\n")), /ticker/);
+  assert.throws(() => parseSixCompanyFinancialCsv([header, "META,2026-Q5,1,,,",].join("\n")), /period/);
+  assert.throws(() => parseSixCompanyFinancialCsv([header, "META,2026-Q3,1,,,", "META,2026-Q3,2,,,",].join("\n")), /Duplicate/);
+  assert.throws(() => parseSixCompanyFinancialCsv([header, "XYZ,2026-Q3,1,,,",].join("\n")), /ticker/);
   assert.throws(() => parseSixCompanyFinancialCsv([header, "META,2026-Q3,-1,,,,",].join("\n")), /non-negative/);
 });
 
