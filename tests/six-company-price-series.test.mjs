@@ -47,3 +47,25 @@ test("filters period windows without forward filling", () => {
   assert.deepEqual(filterPricePeriod(rows, "1Y", "2026-10-30").map(row => row.close), [300]);
   assert.equal(filterPricePeriod(rows, "MAX", "2026-10-30").length, 3);
 });
+
+test("period filtering keeps quarter-end closes derived from the complete daily history", () => {
+  const daily = [
+    { date: "2025-10-29", ticker: "MSFT", close: 100 },
+    { date: "2025-10-30", ticker: "MSFT", close: 101 },
+    { date: "2025-12-31", ticker: "MSFT", close: 110 },
+    { date: "2026-01-02", ticker: "MSFT", close: 111 },
+  ];
+  const fullQuarterSeries = deriveQuarterlyAdjustedClose(daily);
+  const windowed = filterPricePeriod(fullQuarterSeries, "1Y", "2026-10-30");
+  assert.deepEqual(windowed.map(row => [row.quarter, row.date, row.close]), [
+    ["2025-Q4", "2025-12-31", 110],
+    ["2026-Q1", "2026-01-02", 111],
+  ]);
+});
+
+test("quarter-end series is filtered after derivation, not recalculated from partial daily windows", async () => {
+  const { readFile } = await import("node:fs/promises");
+  const html = await readFile(new URL("../six-company-price-preview.html", import.meta.url), "utf8");
+  assert.match(html, /quarterFiltered=filterPricePeriod\(quarterRows,period,asOf\)/);
+  assert.doesNotMatch(html, /quarterFiltered=deriveQuarterlyAdjustedClose\(filtered\)/);
+});
