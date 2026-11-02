@@ -39,7 +39,7 @@ select,button,input{font:inherit;color:var(--text);background:#1d2b43;border:1px
  <div class="controls"><label class="small" for="company">기업</label><select id="company"><option value="ALL">전체 기업</option><option>MSFT</option><option>GOOGL</option><option>AMZN</option><option>META</option><option>TSLA</option><option>SPCX</option></select><label class="small" for="period">기간</label><select id="period"><option value="1Y">1년</option><option value="3Y">3년</option><option value="5Y">5년</option><option value="MAX" selected>전체</option></select></div></div>
  <div id="rangeNote" class="small">자료를 불러오면 조회 기간이 표시됩니다.</div>
 </section>
-<section class="panel"><div class="head"><div><h2>① 일별 수정종가</h2><div class="small">USD / 주 · 시각적 표시만 최대 500개 점으로 축약</div></div></div><div id="dailyChart" class="chart"><div class="empty">CSV 자료를 불러오면 표시합니다.</div></div><div id="dailyLegend" class="legend"></div></section>
+<section class="panel"><div class="head"><div><h2>① 일별 수정종가</h2><div class="small">USD / 주 · 업로드된 거래일 관측값 표시</div></div></div><div id="dailyChart" class="chart"><div class="empty">CSV 자료를 불러오면 표시합니다.</div></div><div id="dailyLegend" class="legend"></div></section>
 <section class="panel"><div class="head"><div><h2>② 분기별 수정종가</h2><div class="small">각 분기의 마지막 거래일 종가 · USD / 주</div></div></div><div id="quarterChart" class="chart"><div class="empty">CSV 자료를 불러오면 표시합니다.</div></div><div id="quarterLegend" class="legend"></div></section>
 <section class="panel"><div class="head"><div><h2>③ 기준일 100 지수</h2><div class="small">선택 기간 내 종목별 첫 관측일 = 100 · SPCX는 상장 후 별도 시작</div></div></div><div id="indexedChart" class="chart"><div class="empty">CSV 자료를 불러오면 표시합니다.</div></div><div id="indexedLegend" class="legend"></div></section>
 <section class="panel"><div class="head"><div><h2>최근 분기 비교</h2><div class="small">분기말 수정종가 및 전년 동기 대비 변화율</div></div></div><div class="table-wrap"><table><thead><tr><th>종목</th><th>최근 분기</th><th>분기말 날짜</th><th>수정종가</th><th>전년 동기</th><th>YoY</th></tr></thead><tbody id="latestTable"><tr><td colspan="6" class="muted">자료 미등록</td></tr></tbody></table></div></section>
@@ -60,7 +60,7 @@ function renderChart(target,legendTarget,rows,valueKey,unit){
  if(!rows.length){$(target).innerHTML='<div class="empty">선택한 조건에 표시할 자료가 없습니다.</div>';$(legendTarget).innerHTML="";return;}
  const ticker=$("company").value,seriesTickers=ticker==="ALL"?TICKERS:[ticker],groups=seriesTickers.map(t=>({ticker:t,rows:rows.filter(r=>r.ticker===t).sort((a,b)=>a.date.localeCompare(b.date))})).filter(g=>g.rows.length);
  const dates=[...new Set(rows.map(r=>r.quarter??r.date))].sort(),width=1100,height=330,left=66,right=24,top=20,bottom=48,values=rows.map(r=>r[valueKey]).filter(Number.isFinite);
- if(!values.length){$(target).innerHTML='<div class="empty">표시할 수 있는 숫자 자료가 없습니다.</div>';return;}
+ if(!values.length){$(target).innerHTML='<div class="empty">표시할 수 있는 숫자 자료가 없습니다.</div>';$(legendTarget).innerHTML="";return;}
  let min=Math.min(...values),max=Math.max(...values);if(min===max){min-=1;max+=1;}const pad=(max-min)*.08;min-=pad;max+=pad;
  const x=i=>left+(dates.length<2?(width-left-right)/2:i*(width-left-right)/(dates.length-1)),y=v=>top+(max-v)*(height-top-bottom)/(max-min);
  let svg='<svg viewBox="0 0 '+width+' '+height+'" role="img" aria-label="'+target+'">';
