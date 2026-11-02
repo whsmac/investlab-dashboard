@@ -93,7 +93,14 @@ $("loadFiles").addEventListener("click",async()=>{
   const merged=mergeSixCompanyPriceImports(existingImport?[existingImport,...imports]:imports);allRows=merged.observations;quarterRows=deriveQuarterlyAdjustedClose(allRows);
   const total=allRows.length;
   $("status").className="notice";$("status").textContent=files.length+"개 파일 검증 완료 · "+total.toLocaleString("en-US")+"개 관측값 · "+allRows[0].date+" ~ "+allRows.at(-1).date;
-  $("coverage").textContent=merged.coverage.map(c=>c.ticker+": "+c.count+"건"+(c.firstDate?" ("+c.firstDate+" ~ "+c.lastDate+")":" (자료 없음)")).join(" · ");
+  const missingTickers=merged.coverage.filter(item=>item.count===0).map(item=>item.ticker);
+  $("coverage").textContent="누적자료 종목별 현황: "+merged.coverage.map(item=>item.ticker+": "+item.count+"건"+(item.firstDate?" ("+item.firstDate+" ~ "+item.lastDate+")":" (자료 없음)")).join(" · ");
+  if(missingTickers.length){
+   $("status").className="notice warning";
+   $("status").textContent+=" · 주의: "+missingTickers.join(", ")+" 자료가 누적 데이터에 없습니다. 해당 종목은 그래프에 표시되지 않습니다.";
+  }else{
+   $("status").textContent+=" · 6개 종목 자료 포함";
+  }
   render();
  }catch(error){$("status").className="notice warning";$("status").textContent="가져오기 실패: "+error.message+(allRows.length?" 기존에 불러온 자료는 유지했습니다.":"");$("coverage").textContent="파일을 수정한 뒤 다시 시도해 주세요. 기존 자료는 유지됩니다.";}
 });
