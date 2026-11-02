@@ -55,3 +55,7 @@ test("financial coverage distinguishes absent company rows from blank revenue an
 test("financial reset clears the displayed coverage summary", () => {
   assert.match(html, /financialCoverage"\)\.textContent="재무자료를 불러오면 기업별·지표별 입력 현황을 표시합니다\."/);
 });
+
+test("empty financial state is not mislabeled as six missing company observations", () => {
+  assert.match(html, /if\(!financialRows\.length\)\{[\s\S]*?financialCoverage"\)\.textContent="재무자료를 불러오면 기업별·지표별 입력 현황을 표시합니다\."/);
+});
