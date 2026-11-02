@@ -73,14 +73,14 @@ function render(){
  renderFinancial();
  if(!allRows.length)return;
  const asOf=allRows.at(-1).date,period=$("period").value,ticker=$("company").value;
- const filtered=filterPricePeriod(allRows,period,asOf),quarterFiltered=deriveQuarterlyAdjustedClose(filtered);
+ const filtered=filterPricePeriod(allRows,period,asOf),quarterFiltered=filterPricePeriod(quarterRows,period,asOf);
  const indexed=deriveIndexedAdjustedClose(filtered);
  $("rangeNote").textContent="조회 범위: "+(filtered[0]?.date??"—")+" ~ "+asOf+" · 전체 "+filtered.length.toLocaleString("en-US")+"건 · 가격 기준 Adjusted Close";
  renderChart("dailyChart","dailyLegend",selectedRows(filtered),"close","USD");
  renderChart("quarterChart","quarterLegend",selectedRows(quarterFiltered),"close","USD");
  renderChart("indexedChart","indexedLegend",selectedRows(indexed),"indexedClose","%");
  const tableTickers=ticker==="ALL"?TICKERS:[ticker];
- $("latestTable").innerHTML=tableTickers.map(t=>{const rows=quarterFiltered.filter(r=>r.ticker===t).sort((a,b)=>a.quarter.localeCompare(b.quarter));const last=rows.at(-1);if(!last)return '<tr><td>'+t+'</td><td colspan="5" class="muted">자료 없음</td></tr>';const prior=rows.find(r=>r.quarter===String(Number(last.quarter.slice(0,4))-1)+last.quarter.slice(4));const change=prior?(last.close/prior.close-1)*100:null;return '<tr><td>'+t+'</td><td>'+last.quarter+(last.quarter==="2026-Q4"?' <span class="tag">잠정</span>':"")+'</td><td>'+last.date+'</td><td>$'+fmt(last.close)+'</td><td>'+(prior?"$"+fmt(prior.close):"—")+'</td><td class="'+(change>0?"up":change<0?"down":"")+'">'+pct(change)+'</td></tr>';}).join("");
+ $("latestTable").innerHTML=tableTickers.map(t=>{const rows=quarterFiltered.filter(r=>r.ticker===t).sort((a,b)=>a.quarter.localeCompare(b.quarter));const last=rows.at(-1);if(!last)return '<tr><td>'+t+'</td><td colspan="5" class="muted">자료 없음</td></tr>';const prior=quarterRows.find(r=>r.ticker===t&&r.quarter===String(Number(last.quarter.slice(0,4))-1)+last.quarter.slice(4));const change=prior?(last.close/prior.close-1)*100:null;return '<tr><td>'+t+'</td><td>'+last.quarter+(last.quarter==="2026-Q4"?' <span class="tag">잠정</span>':"")+'</td><td>'+last.date+'</td><td>$'+fmt(last.close)+'</td><td>'+(prior?"$"+fmt(prior.close):"—")+'</td><td class="'+(change>0?"up":change<0?"down":"")+'">'+pct(change)+'</td></tr>';}).join("");
 }
 $("loadFiles").addEventListener("click",async()=>{
  const files=[...($("priceFiles").files??[])];if(!files.length){$("status").textContent="CSV 파일을 먼저 선택해 주세요.";return;}
