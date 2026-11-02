@@ -107,6 +107,13 @@ $("loadFiles").addEventListener("click",async()=>{
 $("clearFiles").addEventListener("click",()=>{allRows=[];quarterRows=[];$("priceFiles").value="";$("status").className="empty";$("status").textContent="자료가 초기화되었습니다.";$("coverage").textContent="";["dailyChart","quarterChart","indexedChart"].forEach(id=>$(id).innerHTML='<div class="empty">CSV 자료를 불러오면 표시합니다.</div>');["dailyLegend","quarterLegend","indexedLegend"].forEach(id=>$(id).innerHTML="");$("latestTable").innerHTML='<tr><td colspan="6" class="muted">자료 미등록</td></tr>'; $("indexBasis").textContent="기준일 자료를 불러오면 종목별 기준일을 표시합니다."; $("rangeNote").textContent="자료를 불러오면 조회 기간이 표시됩니다.";});
 
 function renderFinancial(){
+ if(!financialRows.length){
+  renderChart("revenueChart","revenueLegend",[],"revenueUsdBn","USD");
+  renderChart("capexChart","capexLegend",[],"capexUsdBn","USD");
+  $("capexDefinitions").textContent="CAPEX 산정 기준 자료 없음";
+  $("financialCoverage").textContent="재무자료를 불러오면 기업별·지표별 입력 현황을 표시합니다.";
+  return;
+ }
  const ticker=$("company").value;
  const period=$("period").value;
  const years=period==="MAX"?null:Number(period.slice(0,-1));
