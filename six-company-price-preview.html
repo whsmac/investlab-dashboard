@@ -97,7 +97,7 @@ $("loadFiles").addEventListener("click",async()=>{
   render();
  }catch(error){$("status").className="notice warning";$("status").textContent="가져오기 실패: "+error.message+(allRows.length?" 기존에 불러온 자료는 유지했습니다.":"");$("coverage").textContent="파일을 수정한 뒤 다시 시도해 주세요. 기존 자료는 유지됩니다.";}
 });
-$("clearFiles").addEventListener("click",()=>{allRows=[];quarterRows=[];$("priceFiles").value="";$("status").className="empty";$("status").textContent="자료가 초기화되었습니다.";$("coverage").textContent="";["dailyChart","quarterChart","indexedChart"].forEach(id=>$(id).innerHTML='<div class="empty">CSV 자료를 불러오면 표시합니다.</div>');["dailyLegend","quarterLegend","indexedLegend"].forEach(id=>$(id).innerHTML="");$("latestTable").innerHTML='<tr><td colspan="6" class="muted">자료 미등록</td></tr>';});
+$("clearFiles").addEventListener("click",()=>{allRows=[];quarterRows=[];$("priceFiles").value="";$("status").className="empty";$("status").textContent="자료가 초기화되었습니다.";$("coverage").textContent="";["dailyChart","quarterChart","indexedChart"].forEach(id=>$(id).innerHTML='<div class="empty">CSV 자료를 불러오면 표시합니다.</div>');["dailyLegend","quarterLegend","indexedLegend"].forEach(id=>$(id).innerHTML="");$("latestTable").innerHTML='<tr><td colspan="6" class="muted">자료 미등록</td></tr>'; $("indexBasis").textContent="기준일 자료를 불러오면 종목별 기준일을 표시합니다."; $("rangeNote").textContent="자료를 불러오면 조회 기간이 표시됩니다.";});
 
 function renderFinancial(){
  const ticker=$("company").value;
