@@ -44,3 +44,14 @@ test("financial CSV imports append to existing quarters and preserve prior data 
   assert.match(html, /재무자료 가져오기 실패: .*기존에 불러온 재무자료는 유지했습니다/);
   assert.doesNotMatch(html, /catch\(error\)\{financialRows=\[\]/);
 });
+
+test("financial coverage distinguishes absent company rows from blank revenue and CAPEX metrics", () => {
+  assert.match(html, /id="financialCoverage"/);
+  assert.match(html, /관측행 없음/);
+  assert.match(html, /매출 .*개 · CAPEX .*개/);
+  assert.match(html, /공란은 0으로 간주하지 않으며/);
+  assert.match(html, /관측행이 없는 분기는 미수집 여부를 판정하지 않습니다/);
+});
+test("financial reset clears the displayed coverage summary", () => {
+  assert.match(html, /financialCoverage"\)\.textContent="재무자료를 불러오면 기업별·지표별 입력 현황을 표시합니다\."/);
+});
