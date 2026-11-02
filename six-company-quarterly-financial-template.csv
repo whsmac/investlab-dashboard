@@ -1,0 +1,7 @@
+ticker,period,revenue_usd_bn,capex_usd_bn,capex_definition,source_url
+MSFT,2026-Q3,92.279,39.367,gross cash PP&E purchases,https://www.sec.gov/Archives/edgar/data/789019/
+GOOGL,2026-Q3,127.577,51.355,Q3 derived from nine-month YTD less prior six-month YTD,https://www.sec.gov/Archives/edgar/data/1652044/
+AMZN,2026-Q3,201.944,77.259,gross cash PP&E purchases,https://www.sec.gov/Archives/edgar/data/1018724/
+META,2026-Q3,64.601,33.942,Q3 derived from nine-month YTD less prior six-month YTD,https://www.sec.gov/Archives/edgar/data/1326801/
+TSLA,2026-Q3,28.046,4.732,net of PP&E sale proceeds and excludes finance leases,https://www.sec.gov/Archives/edgar/data/1318605/
+SPCX,2026-Q3,14.575,19.593,Q3 derived from nine-month YTD less prior six-month YTD,https://www.sec.gov/Archives/edgar/data/1181412/
