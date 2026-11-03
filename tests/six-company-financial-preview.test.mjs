@@ -79,3 +79,12 @@ test("a failed financial merge does not assign partially merged rows to live pre
   assert.match(html, /const mergedRows=mergeSixCompanyFinancialObservations\(financialRows,incomingRows\);\s*financialRows=mergedRows\.map/);
   assert.match(html, /catch\(error\)\{\$\("financialStatus"\)\.className="notice warning";[\s\S]*?renderFinancial\(\);\}/);
 });
+
+test("latest financial comparison shows each issuer's latest fiscal quarter and preserves CAPEX/source metadata", () => {
+  assert.match(html, /id="latestFinancialTable"/);
+  assert.match(html, /최근 분기 재무 비교/);
+  assert.match(html, /row=>row\.ticker===t\)\.sort\(\(a,b\)=>quarterNumber\(a\.period\)-quarterNumber\(b\.period\)\)\.at\(-1\)/);
+  assert.match(html, /latest\.capexDefinition/);
+  assert.match(html, /latest\.sourceUrl/);
+  assert.match(html, /function escapeHtml/);
+});
