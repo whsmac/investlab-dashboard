@@ -86,7 +86,7 @@ test("latest financial comparison shows each issuer's latest fiscal quarter and 
   assert.match(html, /row=>row\.ticker===t\)\.sort\(\(a,b\)=>quarterNumber\(a\.period\)-quarterNumber\(b\.period\)\)\.at\(-1\)/);
   assert.match(html, /latest\.capexDefinition/);
   assert.match(html, /latest\.sourceUrl/);
-  assert.match(html, /function escapeHtml/);
+  assert.match(html, /const escapeHtml=value=>/);
 });
 
 test("clearing financial imports also clears the latest-quarter comparison table", () => {
