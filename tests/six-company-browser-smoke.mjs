@@ -34,7 +34,7 @@ try {
     ...["MSFT", "GOOGL", "AMZN", "META", "TSLA"].map((ticker, i) => `2026-10-02,${ticker},${101 + i}`),
     "2026-06-12,SPCX,180",
     "2026-10-02,SPCX,190",
-  ].join("\\n");
+  ].join("\n");
   await page.locator("#priceFiles").setInputFiles({ name: "price-smoke.csv", mimeType: "text/csv", buffer: Buffer.from(priceCsv) });
   await page.locator("#loadFiles").click();
   await page.locator("#dailyChart svg").waitFor();
@@ -48,7 +48,7 @@ try {
     "MSFT,2026-Q3,92.279,39.367,gross cash PP&E purchases,https://www.sec.gov/example",
     "GOOGL,2026-Q3,127.577,,,https://abc.xyz/example",
     "SPCX,2026-Q2,14.575,19.593,YTD cash PP&E purchases less prior YTD,https://www.sec.gov/example",
-  ].join("\\n");
+  ].join("\n");
   await page.locator("#financialFiles").setInputFiles({ name: "financial-smoke.csv", mimeType: "text/csv", buffer: Buffer.from(financialCsv) });
   await page.locator("#loadFinancial").click();
   await page.locator("#revenueChart svg").waitFor();
