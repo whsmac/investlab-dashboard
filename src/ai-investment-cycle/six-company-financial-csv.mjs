@@ -62,3 +62,32 @@ export function parseSixCompanyFinancialCsv(csvText) {
   }).sort((a, b) => a.period.localeCompare(b.period) || a.ticker.localeCompare(b.ticker));
   return { schemaVersion: 1, importMethod: "manual-quarterly-csv", currency: "USD", unit: "billions", observations };
 }
+
+/**
+ * Merge quarterly observations field by field.
+ * Blank incoming metrics never erase known values; newly supplied metrics fill
+ * blanks. Two different non-null values for the same field remain a conflict.
+ */
+export function mergeSixCompanyFinancialObservations(existingRows = [], incomingRows = []) {
+  const map = new Map();
+  for (const row of existingRows) map.set(`${row.ticker}:${row.period}`, { ...row });
+  for (const incoming of incomingRows) {
+    const key = `${incoming.ticker}:${incoming.period}`;
+    const prior = map.get(key);
+    if (!prior) {
+      map.set(key, { ...incoming });
+      continue;
+    }
+    const merged = { ...prior };
+    for (const field of ["revenueUsdBn", "capexUsdBn", "capexDefinition", "sourceUrl"]) {
+      const before = prior[field] ?? null;
+      const next = incoming[field] ?? null;
+      if (before !== null && next !== null && before !== next) {
+        throw new TypeError(`Conflicting financial field ${field} for ${key}`);
+      }
+      if (before === null && next !== null) merged[field] = next;
+    }
+    map.set(key, merged);
+  }
+  return [...map.values()].sort((a, b) => a.period.localeCompare(b.period) || a.ticker.localeCompare(b.ticker));
+}
