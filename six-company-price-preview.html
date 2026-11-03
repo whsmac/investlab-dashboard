@@ -112,6 +112,7 @@ function renderFinancial(){
   renderChart("revenueChart","revenueLegend",[],"revenueUsdBn","USD");
   renderChart("capexChart","capexLegend",[],"capexUsdBn","USD");
   $("capexDefinitions").textContent="CAPEX 산정 기준 자료 없음";
+  $("latestFinancialTable").innerHTML='<tr><td colspan="6" class="muted">재무자료 미등록</td></tr>';
   $("financialCoverage").textContent="재무자료를 불러오면 기업별·지표별 입력 현황을 표시합니다.";
   return;
  }
