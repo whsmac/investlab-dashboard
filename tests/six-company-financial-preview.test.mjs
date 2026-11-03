@@ -39,8 +39,8 @@ test("price CSV imports append to existing browser data and retain prior data on
 });
 
 test("financial CSV imports append to existing quarters and preserve prior data on conflicts", () => {
-  assert.match(html, /for\(const row of financialRows\)map\.set/);
-  assert.match(html, /prior\.revenueUsdBn!==row\.revenueUsdBn/);
+  assert.match(html, /mergeSixCompanyFinancialObservations\(financialRows,incomingRows\)/);
+  assert.match(html, /mergeSixCompanyFinancialObservations/);
   assert.match(html, /재무자료 가져오기 실패: .*기존에 불러온 재무자료는 유지했습니다/);
   assert.doesNotMatch(html, /catch\(error\)\{financialRows=\[\]/);
 });
@@ -58,4 +58,10 @@ test("financial reset clears the displayed coverage summary", () => {
 
 test("empty financial state is not mislabeled as six missing company observations", () => {
   assert.match(html, /if\(!financialRows\.length\)\{[\s\S]*?financialCoverage"\)\.textContent="재무자료를 불러오면 기업별·지표별 입력 현황을 표시합니다\."/);
+});
+
+test("financial preview imports use field-level supplementation instead of replacing a whole quarter row", () => {
+  assert.match(html, /import \{ parseSixCompanyFinancialCsv, mergeSixCompanyFinancialObservations \}/);
+  assert.match(html, /const incomingRows=imports\.flatMap/);
+  assert.match(html, /같은 종목·분기의 공란은 새 값으로 보완/);
 });
