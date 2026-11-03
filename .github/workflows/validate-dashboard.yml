@@ -86,3 +86,18 @@ jobs:
               raise SystemExit("Missing required elements: " + ", ".join(missing))
           print("Required symbol-management elements are present")
           PY
+
+  browser-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Playwright and Chromium
+        run: |
+          npm init -y
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - name: Exercise the six-company preview in Chromium
+        run: node tests/six-company-browser-smoke.mjs
