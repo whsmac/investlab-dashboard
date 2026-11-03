@@ -28,7 +28,7 @@ select,button,input{font:inherit;color:var(--text);background:#1d2b43;border:1px
 </section>
 <section class="panel">
  <div class="head"><h2>분기 재무자료 가져오기</h2><span class="tag">수동 CSV · USD 십억 달러</span></div>
- <div class="notice">재무자료는 직접 준비한 분기별 CSV로 입력합니다. 기존 자료에 새 파일을 추가할 수 있으며, 같은 종목·분기의 값이 다르면 기존 자료를 보존하고 오류를 알립니다. 기업별 관측행이 없는 경우와 관측행은 있지만 매출·CAPEX 값이 비어 있는 경우를 구분해 표시합니다. 형식은 <b>ticker,period,revenue_usd_bn,capex_usd_bn,capex_definition,source_url</b>입니다. 모르는 값은 비워 두고, CAPEX를 입력할 때는 산정 기준을 반드시 적어 주세요. SEC 자동 수집은 이 단계에서 구현하지 않습니다.</div>
+ <div class="notice">재무자료는 직접 준비한 분기별 CSV로 입력합니다. 기존 자료에 새 파일을 추가할 수 있으며, 같은 종목·분기의 공란은 새 값으로 보완하고, 이미 입력된 서로 다른 값은 오류로 처리합니다. 기업별 관측행이 없는 경우와 관측행은 있지만 매출·CAPEX 값이 비어 있는 경우를 구분해 표시합니다. 형식은 <b>ticker,period,revenue_usd_bn,capex_usd_bn,capex_definition,source_url</b>입니다. 모르는 값은 비워 두고, CAPEX를 입력할 때는 산정 기준을 반드시 적어 주세요. SEC 자동 수집은 이 단계에서 구현하지 않습니다.</div>
  <div class="upload" style="margin-top:12px"><input id="financialFiles" type="file" accept=".csv,text/csv" multiple><button id="loadFinancial" type="button">재무 CSV 검증 및 불러오기</button><button id="clearFinancial" type="button">재무자료 초기화</button><a href="./six-company-quarterly-financial-template.csv" download style="color:#a9c4ff">입력 양식 다운로드</a></div>
  <div id="financialStatus" class="empty" style="margin-top:11px">분기 재무자료 CSV를 선택해 주세요.</div><div id="financialCoverage" class="small" style="margin-top:8px">재무자료를 불러오면 기업별·지표별 입력 현황을 표시합니다.</div>
 </section>
@@ -48,7 +48,7 @@ select,button,input{font:inherit;color:var(--text);background:#1d2b43;border:1px
 <script type="module">
 import { parseSixCompanyPriceCsv } from "./src/ai-investment-cycle/six-company-price-csv.mjs";
 import { mergeSixCompanyPriceImports, deriveQuarterlyAdjustedClose, deriveIndexedAdjustedClose, filterPricePeriod } from "./src/ai-investment-cycle/six-company-price-series.mjs";
-import { parseSixCompanyFinancialCsv } from "./src/ai-investment-cycle/six-company-financial-csv.mjs";
+import { parseSixCompanyFinancialCsv, mergeSixCompanyFinancialObservations } from "./src/ai-investment-cycle/six-company-financial-csv.mjs";
 const COLORS={MSFT:"#83aaff",GOOGL:"#58c7d8",AMZN:"#f1c66d",META:"#bd9aff",TSLA:"#49d4a7",SPCX:"#ff8291"};
 const TICKERS=Object.keys(COLORS),$=id=>document.getElementById(id);
 let allRows=[],quarterRows=[],financialRows=[];
@@ -137,10 +137,9 @@ $("loadFinancial").addEventListener("click",async()=>{
  const files=[...($("financialFiles").files??[])];if(!files.length){$("financialStatus").textContent="재무 CSV 파일을 먼저 선택해 주세요.";return;}
  try{
   const imports=await Promise.all(files.map(async file=>parseSixCompanyFinancialCsv(await file.text())));
-  const map=new Map();
-  for(const row of financialRows)map.set(row.ticker+":"+row.period,row);
-  for(const item of imports)for(const row of item.observations){const key=row.ticker+":"+row.period;const prior=map.get(key);if(prior&&(prior.revenueUsdBn!==row.revenueUsdBn||prior.capexUsdBn!==row.capexUsdBn||prior.capexDefinition!==row.capexDefinition||prior.sourceUrl!==row.sourceUrl))throw new Error("동일 종목·분기의 값이 서로 다릅니다: "+key);map.set(key,row);}
-  financialRows=[...map.values()].map(row=>({...row,quarter:row.period,date:row.period})).sort((a,b)=>a.period.localeCompare(b.period)||a.ticker.localeCompare(b.ticker));
+  const incomingRows=imports.flatMap(item=>item.observations);
+  const mergedRows=mergeSixCompanyFinancialObservations(financialRows,incomingRows);
+  financialRows=mergedRows.map(row=>({...row,quarter:row.period,date:row.period}));
   $("financialStatus").className="notice";$("financialStatus").textContent=files.length+"개 파일 검증 완료 · "+financialRows.length+"개 분기 관측값";
   renderFinancial();
  }catch(error){$("financialStatus").className="notice warning";$("financialStatus").textContent="재무자료 가져오기 실패: "+error.message+(financialRows.length?" 기존에 불러온 재무자료는 유지했습니다.":"");renderFinancial();}
