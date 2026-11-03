@@ -34,6 +34,7 @@ select,button,input{font:inherit;color:var(--text);background:#1d2b43;border:1px
 </section>
 <section class="panel"><div class="head"><div><h2>④ 분기별 매출</h2><div class="small">연결 매출 · USD 십억 달러 · 미입력 분기는 공백</div></div></div><div id="revenueChart" class="chart"><div class="empty">재무 CSV를 불러오면 표시합니다.</div></div><div id="revenueLegend" class="legend"></div></section>
 <section class="panel"><div class="head"><div><h2>⑤ 분기별 CAPEX</h2><div class="small">USD 십억 달러 · 기업별 산정 기준은 원본 자료에 보존</div></div></div><div id="capexChart" class="chart"><div class="empty">재무 CSV를 불러오면 표시합니다.</div></div><div id="capexLegend" class="legend"></div><div id="capexDefinitions" class="small" style="margin-top:8px"></div></section>
+<section class="panel"><div class="head"><div><h2>최근 분기 재무 비교</h2><div class="small">기업별 최신 입력 분기 기준 · 회계연도 분기는 기업별로 다를 수 있음 · USD 십억 달러</div></div></div><div class="table-wrap"><table><thead><tr><th>종목</th><th>보고 분기</th><th>매출</th><th>CAPEX</th><th>CAPEX 산정 기준</th><th>출처</th></tr></thead><tbody id="latestFinancialTable"><tr><td colspan="6" class="muted">재무자료 미등록</td></tr></tbody></table></div></section>
 <section class="panel">
  <div class="head"><div><h2>공통 조회 조건</h2><div class="small">세 그래프에 동일한 기업·기간 조건 적용</div></div>
  <div class="controls"><label class="small" for="company">기업</label><select id="company"><option value="ALL">전체 기업</option><option>MSFT</option><option>GOOGL</option><option>AMZN</option><option>META</option><option>TSLA</option><option>SPCX</option></select><label class="small" for="period">기간</label><select id="period"><option value="1Y">1년</option><option value="3Y">3년</option><option value="5Y">5년</option><option value="MAX" selected>전체</option></select></div></div>
@@ -132,6 +133,13 @@ function renderFinancial(){
   const capexCount=rows.filter(r=>Number.isFinite(r.capexUsdBn)).length;
   return t+": "+(rows.length?rows.length+"개 분기 행 · 매출 "+revenueCount+"개 · CAPEX "+capexCount+"개":"관측행 없음");
  }).join(" · ")+" / 공란은 0으로 간주하지 않으며, 관측행이 없는 분기는 미수집 여부를 판정하지 않습니다.";
+ const escapeHtml=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
+ $("latestFinancialTable").innerHTML=coverageTickers.map(t=>{
+  const latest=financialRows.filter(row=>row.ticker===t).sort((a,b)=>quarterNumber(a.period)-quarterNumber(b.period)).at(-1);
+  if(!latest)return '<tr><td>'+t+'</td><td colspan="5" class="muted">자료 없음</td></tr>';
+  const source=latest.sourceUrl?'<a href="'+escapeHtml(latest.sourceUrl)+'" target="_blank" rel="noopener noreferrer" style="color:#a9c4ff">원문</a>':"—";
+  return '<tr><td>'+t+'</td><td>'+escapeHtml(latest.period)+'</td><td>'+(Number.isFinite(latest.revenueUsdBn)?fmt(latest.revenueUsdBn):"—")+'</td><td>'+(Number.isFinite(latest.capexUsdBn)?fmt(latest.capexUsdBn):"—")+'</td><td style="text-align:left;white-space:normal;min-width:220px">'+escapeHtml(latest.capexDefinition||"—")+'</td><td>'+source+'</td></tr>';
+ }).join("");
 }
 $("loadFinancial").addEventListener("click",async()=>{
  const files=[...($("financialFiles").files??[])];if(!files.length){$("financialStatus").textContent="재무 CSV 파일을 먼저 선택해 주세요.";return;}
