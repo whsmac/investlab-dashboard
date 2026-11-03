@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>INVESTLAB · 6개 기업 주가 모니터 Preview</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--panel:#141d30;--line:#2b3a56;--text:#edf3ff;--muted:#9baac5;--blue:#83aaff;--green:#49d4a7;--amber:#f1c66d;--red:#ff8291}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#1a2946 0,#0b1020 55%);color:var(--text);font:14px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+main{max-width:1440px;margin:auto;padding:26px 20px 56px}.top{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}.brand{font-size:20px;font-weight:850;letter-spacing:.06em}.brand span{color:var(--blue)}h1{font-size:clamp(25px,4vw,35px);margin:22px 0 4px}.sub,.muted,.small{color:var(--muted)}.sub{font-size:13px}.small{font-size:11px}.pill,.tag{display:inline-block;padding:3px 9px;border-radius:30px;background:#263653;color:#c9d8ff;font-size:11px;margin-left:6px}
+.panel{background:linear-gradient(145deg,#17243a,#121b2d);border:1px solid var(--line);border-radius:15px;padding:17px;min-width:0;margin-top:14px}.head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}h2{font-size:17px;margin:0}.controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+select,button,input{font:inherit;color:var(--text);background:#1d2b43;border:1px solid var(--line);border-radius:8px;padding:8px 10px}button{cursor:pointer}button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.upload{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.upload input{max-width:100%}.notice{border:1px solid #314665;background:#14243a;color:#c9d8f1;border-radius:10px;padding:11px 13px;font-size:12px}.warning{border-color:#6a572c;background:#2b2618;color:#f4d990}.chart{width:100%;overflow-x:auto}.chart svg{display:block;width:100%;min-width:620px;height:auto}.legend{display:flex;gap:13px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-top:7px}.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}.empty{color:var(--muted);padding:25px 12px;text-align:center;border:1px dashed var(--line);border-radius:10px}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;white-space:nowrap}th,td{text-align:right;padding:9px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}th:first-child,td:first-child{text-align:left}th{font-size:11px;color:var(--muted)}td{font-size:12px}.up{color:var(--green)}.down{color:var(--red)}.foot{margin-top:18px;font-size:11px;color:var(--muted)}
+@media(max-width:600px){main{padding:17px 11px 40px}.panel{padding:12px}}
+</style>
+</head>
+<body>
+<main>
+<header class="top"><div><div class="brand">INVEST<span>LAB</span><span class="pill">SIX-COMPANY PREVIEW</span></div><div class="sub">수정종가(Adjusted Close) · MSFT · GOOGL · AMZN · META · TSLA · SPCX</div></div><div class="small">독립 미리보기 · 운영 대시보드 및 Supabase와 미연결</div></header>
+<h1>6개 기업 주가 모니터</h1>
+<div class="sub">일별·분기별 주가와 분기 매출·CAPEX를 함께 확인하는 1단계 MVP입니다.</div>
+<section class="panel">
+ <div class="head"><h2>주가 자료 가져오기</h2><span class="tag">CSV · 로컬 브라우저 처리</span></div>
+ <div class="notice">여러 CSV를 한 번에 선택하거나, 월별 파일을 나누어 추가로 불러올 수 있습니다. 기존 자료와 중복되는 동일 값은 한 건으로 처리하고 값이 다른 중복 자료는 오류로 알립니다. 형식은 <b>date,ticker,close</b>이며 close는 배당 및 주식분할 반영 수정종가(USD)입니다. 파일은 브라우저 메모리에서만 처리하고 서버나 Supabase로 전송하지 않습니다.</div>
+ <div class="upload" style="margin-top:12px"><input id="priceFiles" type="file" accept=".csv,text/csv" multiple><button id="loadFiles" type="button">CSV 검증 및 불러오기</button><button id="clearFiles" type="button">초기화</button></div>
+ <div id="status" class="empty" style="margin-top:11px">2023~2026년 CSV 파일을 선택해 주세요.</div>
+ <div id="coverage" class="small" style="margin-top:8px"></div>
+</section>
+<section class="panel">
+ <div class="head"><h2>분기 재무자료 가져오기</h2><span class="tag">수동 CSV · USD 십억 달러</span></div>
+ <div class="notice">재무자료는 직접 준비한 분기별 CSV로 입력합니다. 기존 자료에 새 파일을 추가할 수 있으며, 같은 종목·분기의 공란은 새 값으로 보완하고, 이미 입력된 서로 다른 값은 오류로 처리합니다. 기업별 관측행이 없는 경우와 관측행은 있지만 매출·CAPEX 값이 비어 있는 경우를 구분해 표시합니다. 형식은 <b>ticker,period,revenue_usd_bn,capex_usd_bn,capex_definition,source_url</b>입니다. 모르는 값은 비워 두고, CAPEX를 입력할 때는 산정 기준을 반드시 적어 주세요. SEC 자동 수집은 이 단계에서 구현하지 않습니다.</div>
+ <div class="upload" style="margin-top:12px"><input id="financialFiles" type="file" accept=".csv,text/csv" multiple><button id="loadFinancial" type="button">재무 CSV 검증 및 불러오기</button><button id="clearFinancial" type="button">재무자료 초기화</button><a href="./six-company-quarterly-financial-template.csv" download style="color:#a9c4ff">입력 양식 다운로드</a></div>
+ <div id="financialStatus" class="empty" style="margin-top:11px">분기 재무자료 CSV를 선택해 주세요.</div><div id="financialCoverage" class="small" style="margin-top:8px">재무자료를 불러오면 기업별·지표별 입력 현황을 표시합니다.</div>
+</section>
+<section class="panel"><div class="head"><div><h2>④ 분기별 매출</h2><div class="small">연결 매출 · USD 십억 달러 · 미입력 분기는 공백</div></div></div><div id="revenueChart" class="chart"><div class="empty">재무 CSV를 불러오면 표시합니다.</div></div><div id="revenueLegend" class="legend"></div></section>
+<section class="panel"><div class="head"><div><h2>⑤ 분기별 CAPEX</h2><div class="small">USD 십억 달러 · 기업별 산정 기준은 원본 자료에 보존</div></div></div><div id="capexChart" class="chart"><div class="empty">재무 CSV를 불러오면 표시합니다.</div></div><div id="capexLegend" class="legend"></div><div id="capexDefinitions" class="small" style="margin-top:8px"></div></section>
+<section class="panel"><div class="head"><div><h2>최근 분기 재무 비교</h2><div class="small">기업별 최신 입력 분기 기준 · 회계연도 분기는 기업별로 다를 수 있음 · USD 십억 달러</div></div></div><div class="table-wrap"><table><thead><tr><th>종목</th><th>보고 분기</th><th>매출</th><th>CAPEX</th><th>CAPEX 산정 기준</th><th>출처</th></tr></thead><tbody id="latestFinancialTable"><tr><td colspan="6" class="muted">재무자료 미등록</td></tr></tbody></table></div></section>
+<section class="panel">
+ <div class="head"><div><h2>공통 조회 조건</h2><div class="small">세 그래프에 동일한 기업·기간 조건 적용</div></div>
+ <div class="controls"><label class="small" for="company">기업</label><select id="company"><option value="ALL">전체 기업</option><option>MSFT</option><option>GOOGL</option><option>AMZN</option><option>META</option><option>TSLA</option><option>SPCX</option></select><label class="small" for="period">기간</label><select id="period"><option value="1Y">1년</option><option value="3Y">3년</option><option value="5Y">5년</option><option value="MAX" selected>전체</option></select></div></div>
+ <div id="rangeNote" class="small">자료를 불러오면 조회 기간이 표시됩니다.</div>
+</section>
+<section class="panel"><div class="head"><div><h2>① 일별 수정종가</h2><div class="small">USD / 주 · 업로드된 거래일 관측값 표시</div></div></div><div id="dailyChart" class="chart"><div class="empty">CSV 자료를 불러오면 표시합니다.</div></div><div id="dailyLegend" class="legend"></div></section>
+<section class="panel"><div class="head"><div><h2>② 분기별 수정종가</h2><div class="small">각 분기의 마지막 거래일 종가 · USD / 주</div></div></div><div id="quarterChart" class="chart"><div class="empty">CSV 자료를 불러오면 표시합니다.</div></div><div id="quarterLegend" class="legend"></div></section>
+<section class="panel"><div class="head"><div><h2>③ 기준일 100 지수</h2><div class="small">선택 기간 내 종목별 첫 관측일 = 100 · SPCX는 상장 후 별도 시작</div></div></div><div id="indexedChart" class="chart"><div class="empty">CSV 자료를 불러오면 표시합니다.</div></div><div id="indexedLegend" class="legend"></div><div id="indexBasis" class="small" style="margin-top:8px">기준일 자료를 불러오면 종목별 기준일을 표시합니다.</div></section>
+<section class="panel"><div class="head"><div><h2>최근 분기 비교</h2><div class="small">분기말 수정종가 및 전년 동기 대비 변화율</div></div></div><div class="table-wrap"><table><thead><tr><th>종목</th><th>최근 분기</th><th>분기말 날짜</th><th>수정종가</th><th>전년 동기</th><th>YoY</th></tr></thead><tbody id="latestTable"><tr><td colspan="6" class="muted">자료 미등록</td></tr></tbody></table></div></section>
+<footer class="foot">Adjusted Close는 원본 제공처의 수정종가 필드입니다. 이 화면은 배당·분할 조정 가격의 추세 비교이며, 제공처의 산출 방법을 별도로 검증하지 않은 독립적인 총수익률 지수라고 단정하지 않습니다. 2026년 4분기는 2026-10-30까지의 부분 자료입니다. 미공개·미수집 구간은 보간하거나 선으로 연결하지 않습니다.</footer>
+</main>
+<script type="module">
+import { parseSixCompanyPriceCsv } from "./src/ai-investment-cycle/six-company-price-csv.mjs";
+import { mergeSixCompanyPriceImports, deriveQuarterlyAdjustedClose, deriveIndexedAdjustedClose, filterPricePeriod } from "./src/ai-investment-cycle/six-company-price-series.mjs";
+import { parseSixCompanyFinancialCsv, mergeSixCompanyFinancialObservations } from "./src/ai-investment-cycle/six-company-financial-csv.mjs";
+const COLORS={MSFT:"#83aaff",GOOGL:"#58c7d8",AMZN:"#f1c66d",META:"#bd9aff",TSLA:"#49d4a7",SPCX:"#ff8291"};
+const TICKERS=Object.keys(COLORS),$=id=>document.getElementById(id);
+let allRows=[],quarterRows=[],financialRows=[];
+const fmt=(v,d=2)=>Number.isFinite(v)?v.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d}):"—";
+const pct=v=>Number.isFinite(v)?(v>0?"+":"")+v.toFixed(1)+"%":"—";
+function selectedRows(rows){const ticker=$("company").value;return rows.filter(r=>ticker==="ALL"||r.ticker===ticker);}
+function downsample(rows,max=500){if(rows.length<=max)return rows;const out=[];for(let i=0;i<max;i++)out.push(rows[Math.round(i*(rows.length-1)/(max-1))]);return out;}
+function renderChart(target,legendTarget,rows,valueKey,unit){
+ if(!rows.length){$(target).innerHTML='<div class="empty">선택한 조건에 표시할 자료가 없습니다.</div>';$(legendTarget).innerHTML="";return;}
+ const ticker=$("company").value,seriesTickers=ticker==="ALL"?TICKERS:[ticker],groups=seriesTickers.map(t=>({ticker:t,rows:rows.filter(r=>r.ticker===t).sort((a,b)=>a.date.localeCompare(b.date))})).filter(g=>g.rows.length);
+ const dates=[...new Set(rows.map(r=>r.quarter??r.date))].sort(),width=1100,height=330,left=66,right=24,top=20,bottom=48,values=rows.map(r=>r[valueKey]).filter(Number.isFinite);
+ if(!values.length){$(target).innerHTML='<div class="empty">표시할 수 있는 숫자 자료가 없습니다.</div>';$(legendTarget).innerHTML="";return;}
+ let min=Math.min(...values),max=Math.max(...values);if(min===max){min-=1;max+=1;}const pad=(max-min)*.08;min-=pad;max+=pad;
+ const x=i=>left+(dates.length<2?(width-left-right)/2:i*(width-left-right)/(dates.length-1)),y=v=>top+(max-v)*(height-top-bottom)/(max-min);
+ let svg='<svg viewBox="0 0 '+width+' '+height+'" role="img" aria-label="'+target+'">';
+ for(let i=0;i<=5;i++){const v=min+(max-min)*i/5,yy=y(v);svg+='<line x1="'+left+'" y1="'+yy+'" x2="'+(width-right)+'" y2="'+yy+'" stroke="#2b3a56"/><text x="'+(left-9)+'" y="'+(yy+4)+'" fill="#9baac5" font-size="11" text-anchor="end">'+fmt(v,unit==="%"?0:2)+'</text>';}
+ const labelCount=7;for(let i=0;i<dates.length;i++){if(i%Math.max(1,Math.ceil(dates.length/labelCount))===0||i===dates.length-1)svg+='<text x="'+x(i)+'" y="'+(height-15)+'" fill="#9baac5" font-size="11" text-anchor="middle">'+dates[i]+'</text>';}
+ groups.forEach(g=>{const byDate=new Map(g.rows.map(row=>[row.quarter??row.date,row]));let path="",drawing=false;for(const date of dates){const point=byDate.get(date);if(!point||!Number.isFinite(point[valueKey])){drawing=false;continue;}const xi=x(dates.indexOf(date)),yi=y(point[valueKey]);path+=(drawing?" L":"M")+xi+" "+yi;drawing=true;}if(path)svg+='<path d="'+path+'" fill="none" stroke="'+COLORS[g.ticker]+'" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>';});
+ svg+="</svg>";$(target).innerHTML=svg;$(legendTarget).innerHTML=groups.map(g=>'<span><i style="background:'+COLORS[g.ticker]+'"></i>'+g.ticker+'</span>').join("");
+}
+function render(){
+ renderFinancial();
+ if(!allRows.length)return;
+ const asOf=allRows.at(-1).date,period=$("period").value,ticker=$("company").value;
+ const filtered=filterPricePeriod(allRows,period,asOf),quarterFiltered=filterPricePeriod(quarterRows,period,asOf);
+ const indexed=deriveIndexedAdjustedClose(filtered);
+ $("rangeNote").textContent="조회 범위: "+(filtered[0]?.date??"—")+" ~ "+asOf+" · 전체 "+filtered.length.toLocaleString("en-US")+"건 · 가격 기준 Adjusted Close";
+ renderChart("dailyChart","dailyLegend",selectedRows(filtered),"close","USD");
+ renderChart("quarterChart","quarterLegend",selectedRows(quarterFiltered),"close","USD");
+ renderChart("indexedChart","indexedLegend",selectedRows(indexed),"indexedClose","%");
+ const basisTickers=ticker==="ALL"?TICKERS:[ticker];
+ $("indexBasis").textContent="기준일(각 종목의 선택 기간 내 최초 관측일): "+basisTickers.map(t=>{const row=indexed.find(r=>r.ticker===t);return t+": "+(row?.baseDate??"자료 없음");}).join(" · ");
+ const tableTickers=ticker==="ALL"?TICKERS:[ticker];
+ $("latestTable").innerHTML=tableTickers.map(t=>{const rows=quarterFiltered.filter(r=>r.ticker===t).sort((a,b)=>a.quarter.localeCompare(b.quarter));const last=rows.at(-1);if(!last)return '<tr><td>'+t+'</td><td colspan="5" class="muted">자료 없음</td></tr>';const prior=quarterRows.find(r=>r.ticker===t&&r.quarter===String(Number(last.quarter.slice(0,4))-1)+last.quarter.slice(4));const change=prior?(last.close/prior.close-1)*100:null;return '<tr><td>'+t+'</td><td>'+last.quarter+(last.quarter==="2026-Q4"?' <span class="tag">잠정</span>':"")+'</td><td>'+last.date+'</td><td>$'+fmt(last.close)+'</td><td>'+(prior?"$"+fmt(prior.close):"—")+'</td><td class="'+(change>0?"up":change<0?"down":"")+'">'+pct(change)+'</td></tr>';}).join("");
+}
+$("loadFiles").addEventListener("click",async()=>{
+ const files=[...($("priceFiles").files??[])];if(!files.length){$("status").textContent="CSV 파일을 먼저 선택해 주세요.";return;}
+ try{
+  $("status").textContent="파일을 읽고 검증하고 있습니다.";
+  const imports=await Promise.all(files.map(async file=>parseSixCompanyPriceCsv(await file.text())));
+  const existingImport=allRows.length?{currency:"USD",priceBasis:"adjusted-close",observations:allRows}:null;
+  const merged=mergeSixCompanyPriceImports(existingImport?[existingImport,...imports]:imports);allRows=merged.observations;quarterRows=deriveQuarterlyAdjustedClose(allRows);
+  const total=allRows.length;
+  $("status").className="notice";$("status").textContent=files.length+"개 파일 검증 완료 · "+total.toLocaleString("en-US")+"개 관측값 · "+allRows[0].date+" ~ "+allRows.at(-1).date;
+  const missingTickers=merged.coverage.filter(item=>item.count===0).map(item=>item.ticker);
+  $("coverage").textContent="누적자료 종목별 현황: "+merged.coverage.map(item=>item.ticker+": "+item.count+"건"+(item.firstDate?" ("+item.firstDate+" ~ "+item.lastDate+")":" (자료 없음)")).join(" · ");
+  if(missingTickers.length){
+   $("status").className="notice warning";
+   $("status").textContent+=" · 주의: "+missingTickers.join(", ")+" 자료가 누적 데이터에 없습니다. 해당 종목은 그래프에 표시되지 않습니다.";
+  }else{
+   $("status").textContent+=" · 6개 종목 자료 포함";
+  }
+  render();
+ }catch(error){$("status").className="notice warning";$("status").textContent="가져오기 실패: "+error.message+(allRows.length?" 기존에 불러온 자료는 유지했습니다.":"");$("coverage").textContent="파일을 수정한 뒤 다시 시도해 주세요. 기존 자료는 유지됩니다.";}
+});
+$("clearFiles").addEventListener("click",()=>{allRows=[];quarterRows=[];$("priceFiles").value="";$("status").className="empty";$("status").textContent="자료가 초기화되었습니다.";$("coverage").textContent="";["dailyChart","quarterChart","indexedChart"].forEach(id=>$(id).innerHTML='<div class="empty">CSV 자료를 불러오면 표시합니다.</div>');["dailyLegend","quarterLegend","indexedLegend"].forEach(id=>$(id).innerHTML="");$("latestTable").innerHTML='<tr><td colspan="6" class="muted">자료 미등록</td></tr>'; $("indexBasis").textContent="기준일 자료를 불러오면 종목별 기준일을 표시합니다."; $("rangeNote").textContent="자료를 불러오면 조회 기간이 표시됩니다.";});
+
+function renderFinancial(){
+ if(!financialRows.length){
+  renderChart("revenueChart","revenueLegend",[],"revenueUsdBn","USD");
+  renderChart("capexChart","capexLegend",[],"capexUsdBn","USD");
+  $("capexDefinitions").textContent="CAPEX 산정 기준 자료 없음";
+  $("latestFinancialTable").innerHTML='<tr><td colspan="6" class="muted">재무자료 미등록</td></tr>';
+  $("financialCoverage").textContent="재무자료를 불러오면 기업별·지표별 입력 현황을 표시합니다.";
+  return;
+ }
+ const ticker=$("company").value;
+ const period=$("period").value;
+ const years=period==="MAX"?null:Number(period.slice(0,-1));
+ const quarterNumber=label=>{const match=/^(\d{4})-Q([1-4])$/.exec(label);return Number(match[1])*4+Number(match[2])-1;};
+ const latestQuarter=financialRows.reduce((latest,row)=>!latest||quarterNumber(row.period)>quarterNumber(latest)?row.period:latest,null);
+ const latestQuarterIndex=latestQuarter===null?null:quarterNumber(latestQuarter);
+ const selected=financialRows.filter(row=>(ticker==="ALL"||row.ticker===ticker)&&(years===null||quarterNumber(row.period)>=latestQuarterIndex-years*4+1));
+ renderChart("revenueChart","revenueLegend",selected,"revenueUsdBn","USD");
+ renderChart("capexChart","capexLegend",selected,"capexUsdBn","USD");
+ const defs=[...new Set(selected.filter(r=>r.capexUsdBn!==null).map(r=>r.ticker+": "+r.capexDefinition))];
+ $("capexDefinitions").textContent=defs.length?"CAPEX 산정 기준: "+defs.join(" · "):"CAPEX 산정 기준 자료 없음";
+ const coverageTickers=ticker==="ALL"?TICKERS:[ticker];
+ $("financialCoverage").textContent="기업별 누적 입력 현황(선택 종목 기준): "+coverageTickers.map(t=>{
+  const rows=financialRows.filter(r=>r.ticker===t);
+  const revenueCount=rows.filter(r=>Number.isFinite(r.revenueUsdBn)).length;
+  const capexCount=rows.filter(r=>Number.isFinite(r.capexUsdBn)).length;
+  return t+": "+(rows.length?rows.length+"개 분기 행 · 매출 "+revenueCount+"개 · CAPEX "+capexCount+"개":"관측행 없음");
+ }).join(" · ")+" / 공란은 0으로 간주하지 않으며, 관측행이 없는 분기는 미수집 여부를 판정하지 않습니다.";
+ const escapeHtml=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
+ $("latestFinancialTable").innerHTML=coverageTickers.map(t=>{
+  const latest=financialRows.filter(row=>row.ticker===t).sort((a,b)=>quarterNumber(a.period)-quarterNumber(b.period)).at(-1);
+  if(!latest)return '<tr><td>'+t+'</td><td colspan="5" class="muted">자료 없음</td></tr>';
+  const source=latest.sourceUrl?'<a href="'+escapeHtml(latest.sourceUrl)+'" target="_blank" rel="noopener noreferrer" style="color:#a9c4ff">원문</a>':"—";
+  return '<tr><td>'+t+'</td><td>'+escapeHtml(latest.period)+'</td><td>'+(Number.isFinite(latest.revenueUsdBn)?fmt(latest.revenueUsdBn):"—")+'</td><td>'+(Number.isFinite(latest.capexUsdBn)?fmt(latest.capexUsdBn):"—")+'</td><td style="text-align:left;white-space:normal;min-width:220px">'+escapeHtml(latest.capexDefinition||"—")+'</td><td>'+source+'</td></tr>';
+ }).join("");
+}
+$("loadFinancial").addEventListener("click",async()=>{
+ const files=[...($("financialFiles").files??[])];if(!files.length){$("financialStatus").textContent="재무 CSV 파일을 먼저 선택해 주세요.";return;}
+ try{
+  const imports=await Promise.all(files.map(async file=>parseSixCompanyFinancialCsv(await file.text())));
+  const incomingRows=imports.flatMap(item=>item.observations);
+  const mergedRows=mergeSixCompanyFinancialObservations(financialRows,incomingRows);
+  financialRows=mergedRows.map(row=>({...row,quarter:row.period,date:row.period}));
+  $("financialStatus").className="notice";$("financialStatus").textContent=files.length+"개 파일 검증 완료 · "+financialRows.length+"개 분기 관측값";
+  renderFinancial();
+ }catch(error){$("financialStatus").className="notice warning";$("financialStatus").textContent="재무자료 가져오기 실패: "+error.message+(financialRows.length?" 기존에 불러온 재무자료는 유지했습니다.":"");renderFinancial();}
+});
+$("clearFinancial").addEventListener("click",()=>{$("financialFiles").value="";financialRows=[];$("financialStatus").className="empty";$("financialStatus").textContent="재무자료가 초기화되었습니다."; $("financialCoverage").textContent="재무자료를 불러오면 기업별·지표별 입력 현황을 표시합니다.";renderFinancial();});
+
+$("company").addEventListener("change",render);$("period").addEventListener("change",render);
+</script>
+</body>
+</html>
