@@ -65,3 +65,17 @@ test("financial preview imports use field-level supplementation instead of repla
   assert.match(html, /const incomingRows=imports\.flatMap/);
   assert.match(html, /같은 종목·분기의 공란은 새 값으로 보완/);
 });
+
+test("merged financial rows feed both charts and cumulative company-level coverage", () => {
+  assert.match(html, /financialRows=mergedRows\.map\(row=>\(\{\.\.\.row,quarter:row\.period,date:row\.period\}\)\);\s*\$\("financialStatus"\)\.className="notice";[\s\S]*?renderFinancial\(\);/);
+  assert.match(html, /renderChart\("revenueChart","revenueLegend",selected,"revenueUsdBn","USD"\)/);
+  assert.match(html, /renderChart\("capexChart","capexLegend",selected,"capexUsdBn","USD"\)/);
+  assert.match(html, /const rows=financialRows\.filter\(r=>r\.ticker===t\)/);
+  assert.match(html, /rows\.filter\(r=>Number\.isFinite\(r\.revenueUsdBn\)\)\.length/);
+  assert.match(html, /rows\.filter\(r=>Number\.isFinite\(r\.capexUsdBn\)\)\.length/);
+});
+
+test("a failed financial merge does not assign partially merged rows to live preview state", () => {
+  assert.match(html, /const mergedRows=mergeSixCompanyFinancialObservations\(financialRows,incomingRows\);\s*financialRows=mergedRows\.map/);
+  assert.match(html, /catch\(error\)\{\$\("financialStatus"\)\.className="notice warning";[\s\S]*?renderFinancial\(\);\}/);
+});
