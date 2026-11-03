@@ -88,3 +88,7 @@ test("latest financial comparison shows each issuer's latest fiscal quarter and 
   assert.match(html, /latest\.sourceUrl/);
   assert.match(html, /function escapeHtml/);
 });
+
+test("clearing financial imports also clears the latest-quarter comparison table", () => {
+  assert.match(html, /if\(!financialRows\.length\)\{[\s\S]*?latestFinancialTable"\)\.innerHTML='<tr><td colspan="6" class="muted">재무자료 미등록<\/td><\/tr>'/);
+});
