@@ -1,7 +1,7 @@
 # Shared data architecture proposal
 
 Status: Proposed; design only. No database, credentials, production deployment, or application runtime changes are included.
-Date: 2026-11-05
+Date: 2026-11-06
 
 ## 1. Decision and goal
 
@@ -24,15 +24,35 @@ Non-goals for the first shared-data increment:
 - Portfolio holdings, account balances, or personally sensitive investment records.
 - Production dashboard integration.
 
-## 2. Proposed system boundaries
+## 2. Selected project and system boundaries
+
+### Selected Supabase project
+
+Reuse the existing Supabase project `investlab-ledger-test` as the isolated development/shared-data backend. Do not create a third Supabase project for this phase.
+
+- Project ID: `gopofxyezhwpfbxebcrxd`
+- Current region: `eu-west-1` (West EU / Ireland)
+- Current plan/compute observed during review: Free / Nano
+- Intended role: development and shared public-company market/financial observations only
+- This is not the existing operating dashboard backend.
+
+The existing `whsmac’s Project` (project ID `duffpsvaphccgxvkiobm`) is referenced by the operating dashboard and is explicitly out of scope. Do not add tables, change policies, or alter settings in that project.
+
+Before the first write to `investlab-ledger-test`, perform a read-only preflight of its schemas, tables, views, functions, triggers, extensions, Auth configuration, users, and existing policies. Screenshots showing an empty Table Editor are not sufficient proof that every database object or setting is absent. If unexpected objects or dependencies are found, stop and review them before making changes.
+
+The selected project is in Ireland rather than Korea. This may increase request latency compared with a Tokyo region, but the initial workflow is manual CSV import and dashboard viewing, not latency-sensitive trading. Reassess only if actual usage shows latency is a material problem; do not migrate or recreate the project as part of this step.
+
+The Free plan may pause projects after periods of low activity and does not provide the same automatic backup coverage as paid plans. Plan for periodic portable exports and a tested restore procedure. Confirm current plan limits and project status before relying on the service operationally.
+
+### System boundaries
 
 1. Dashboard UI: renders charts and tables; contains no authoritative dataset.
 2. Data access layer: typed/query functions for companies, prices, financial observations, and import history.
 3. Validation/import layer: validates CSV content, detects duplicates/conflicts, previews changes, and writes only approved rows.
-4. Dedicated Supabase project: PostgreSQL, Supabase Auth, Row Level Security (RLS), and backups.
+4. Reused Supabase project `investlab-ledger-test`: PostgreSQL, Supabase Auth, Row Level Security (RLS), and the shared-data store.
 5. GitHub repository: application source, migrations, tests, and design records; never credentials or user-uploaded data files.
 
-The new Supabase project must be separate from any production Supabase project. It must not reuse production tables, credentials, or service-role keys.
+The selected project must remain separate from the operating dashboard backend. Do not reuse production tables, credentials, or service-role keys.
 
 ## 3. Logical data model
 
@@ -143,9 +163,10 @@ Financial duplicate policy:
 ## 7. Reliability, backup, and migration
 
 - Keep schema changes as version-controlled SQL migrations.
-- Apply migrations first to a non-production development project.
-- Test migrations against a disposable database or local Supabase environment before applying them to the shared project.
-- Enable database backups appropriate to the selected Supabase plan; also support a periodic CSV export as a portable recovery copy.
+- Treat `investlab-ledger-test` as the non-production development target for this work.
+- Before applying the first migration, complete and record the read-only preflight described in Section 2.
+- Test migrations against a disposable database or local Supabase environment before applying them to the shared project where practical.
+- Because the selected project is on the Free plan, do not assume automatic daily database backups are available. Produce periodic portable exports and verify that a restore can be completed.
 - Document restore steps and test a restore before relying on the database.
 - Use idempotent migrations and additive schema changes where possible.
 - Do not drop or rename columns while an older deployed preview may still use them; use expand/migrate/contract.
@@ -155,17 +176,17 @@ Financial duplicate policy:
 
 - Keep the existing preview URL and Vercel project unchanged during design and implementation.
 - Use separate environment variables for local development, shared-data preview, and any future production environment.
-- Do not connect the existing production dashboard to the new database as part of the first increment.
+- Do not connect the existing production dashboard to the shared-data database as part of the first increment.
 - Deploy the shared-data version to a separate preview deployment or isolated route only after schema, auth, and import tests pass.
 - No live data provider, scheduled job, SEC fetch, or paid API is introduced by this proposal.
 
 ## 9. Incremental implementation plan
 
 ### Step A — approve the design
-Review this document and confirm the dedicated Supabase project, authentication approach, and initial single-owner write model.
+Review this document and confirm reuse of `investlab-ledger-test`, the authentication approach, and the initial single-owner write model.
 
 ### Step B — schema and security foundation
-Create a separate Supabase project only after the owner authorizes project creation and billing/region settings are confirmed. Add migrations, Auth configuration, RLS policies, and schema tests. Do not seed or import data yet.
+After the owner authorizes database writes, complete the read-only preflight on `investlab-ledger-test`. Then prepare and review migrations, Auth configuration, RLS policies, and schema tests. Do not create another Supabase project. Do not seed or import data until the schema and security foundation pass review.
 
 ### Step C — data-access adapter
 Add a provider-neutral application interface for loading and writing prices and financial observations. Keep chart components independent of Supabase-specific calls.
@@ -184,7 +205,8 @@ Test backups/restores, migration rollback strategy, error states, session expiry
 Until a separate implementation step is approved:
 - PR #27 remains Draft, open, and unmerged.
 - PR #24–#26 remain untouched.
-- No existing production dashboard, Supabase project, holdings, or production data is modified.
+- The existing operating dashboard and its Supabase project `whsmac’s Project` remain untouched.
+- No database schema, Auth setting, RLS policy, or data in `investlab-ledger-test` is changed merely by this design update.
 - No Supabase project is created and no credentials are requested or stored.
 - No existing Vercel alias or preview deployment is changed.
 - No automatic price or SEC data collection is enabled.
