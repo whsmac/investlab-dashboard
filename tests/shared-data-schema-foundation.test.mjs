@@ -7,33 +7,52 @@ const migration = await readFile(
   'utf8'
 );
 
-test('creates only the four shared-data public tables', () => {
-  for (const table of [
-    'companies',
-    'import_batches',
-    'market_price_observations',
-    'quarterly_financial_observations'
-  ]) {
-    assert.match(migration, new RegExp('create table if not exists public\\.' + table));
+const tables = [
+  'companies',
+  'import_batches',
+  'market_price_observations',
+  'quarterly_financial_observations'
+];
+
+test('preflight aborts rather than adopting pre-existing target objects', () => {
+  assert.match(migration, /raise exception 'Preflight required:[\s\S]*app_private already exists/i);
+  assert.match(migration, /to_regclass\('public\.companies'\)/);
+  assert.match(migration, /to_regclass\('public\.quarterly_financial_observations'\)/);
+  assert.doesNotMatch(migration, /create table if not exists public\./i);
+});
+
+test('creates the four expected tables with RLS and authenticated read policies', () => {
+  for (const table of tables) {
+    assert.match(migration, new RegExp('create table public\\.' + table + '\\s*\\('));
     assert.match(migration, new RegExp('alter table public\\.' + table + ' enable row level security'));
+    assert.match(migration, new RegExp('on public\\.' + table + ' for select to authenticated'));
+    assert.match(migration, new RegExp('on public\\.' + table + ' for all to authenticated'));
   }
 });
 
-test('keeps owner registration empty and writes owner-gated', () => {
-  assert.match(migration, /create table if not exists app_private\.data_owners/);
-  assert.doesNotMatch(migration, /insert into app_private\.data_owners/i);
+test('owner helper is private, hardened, and has no seeded owner', () => {
+  assert.match(migration, /create table app_private\.data_owners/);
   assert.match(migration, /security definer[\s\S]*set search_path = ''/i);
-  assert.match(migration, /create policy "Owners manage market prices"[\s\S]*app_private\.is_data_owner/);
+  assert.match(migration, /revoke all on table app_private\.data_owners from public, anon, authenticated/);
+  assert.match(migration, /grant execute on function app_private\.is_data_owner\(\) to authenticated/);
+  assert.doesNotMatch(migration, /insert into app_private\.data_owners/i);
 });
 
-test('preserves observation provenance and revision constraints', () => {
-  assert.match(migration, /import_batch_id bigint not null references public\.import_batches/);
+test('import ownership and data provenance are enforced', () => {
+  assert.match(migration, /submitted_by uuid not null references auth\.users\(id\)/);
+  assert.match(migration, /and submitted_by = \(select auth\.uid\(\)\)/);
+  assert.equal((migration.match(/import_batch_id bigint not null references public\.import_batches/g) ?? []).length, 2);
+  assert.match(migration, /source_url text check \(source_url is null or source_url ~ '\^https:\/\/'\)/);
+});
+
+test('market-price duplicates and financial revisions are constrained', () => {
   assert.match(migration, /unique \(company_id, trading_date, price_basis\)/);
   assert.match(migration, /unique \(company_id, fiscal_period, revision_number\)/);
-  assert.match(migration, /where is_current/);
-  assert.match(migration, /capex_definition/);
+  assert.match(migration, /create unique index quarterly_financial_one_current_idx[\s\S]*where is_current/);
+  assert.match(migration, /check \(capex_usd_bn is null or length\(trim\(coalesce\(capex_definition, ''\)\)\) > 0\)/);
 });
 
-test('does not seed companies or financial observations', () => {
+test('migration contains no seed data or changes to personal ledger tables', () => {
   assert.doesNotMatch(migration, /insert into public\.(companies|market_price_observations|quarterly_financial_observations)/i);
+  assert.doesNotMatch(migration, /\b(holdings|instruments|transactions)\b/i);
 });
