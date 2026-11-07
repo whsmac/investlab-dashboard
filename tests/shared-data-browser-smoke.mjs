@@ -46,6 +46,12 @@ try {
   assert.equal(await page.evaluate(() => localStorage.getItem("investlab_shared_data_connection_v1")), null);
 
   await page.locator("#projectUrl").fill("https://gopofxyezhwpfbxebcrxd.supabase.co");
+  await page.locator("#publicKey").fill("sb_secret_test_only");
+  await page.locator("#connect").click();
+  assert.match(await page.locator("#connectionStatus").innerText(), /sb_secret 키는 사용할 수 없습니다/);
+  assert.equal(await page.evaluate(() => localStorage.getItem("investlab_shared_data_connection_v1")), null);
+
+  await page.locator("#projectUrl").fill("https://gopofxyezhwpfbxebcrxd.supabase.co");
   await page.locator("#publicKey").fill("sb_publishable_test_only");
   await page.locator("#connect").click();
   const stored = await page.evaluate(() => JSON.parse(localStorage.getItem("investlab_shared_data_connection_v1")));
