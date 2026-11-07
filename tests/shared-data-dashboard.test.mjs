@@ -20,7 +20,7 @@ test("shared data view never exposes signup or write operations", () => {
   assert.doesNotMatch(page, /\.auth\.signUp\s*\(/);
   assert.doesNotMatch(page, /\.from\([^)]*\)\.(insert|upsert|update|delete)\s*\(/);
   assert.match(page, /\.select\(/);
-  assert.match(page, /service_role/i);
+  assert.match(page, /service_role/i);\n  assert.match(page, /sb_secret_/i);
 });
 
 test("shared data page reads only the three approved shared tables", () => {
