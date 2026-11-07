@@ -17,7 +17,7 @@ h1{font-size:clamp(25px,4vw,36px);margin:24px 0 4px}.grid{display:grid;grid-temp
 <body><main class="wrap">
 <header class="top"><div><div class="brand">INVEST<span>LAB</span> <span class="pill">PERSONAL</span></div><div class="sub">미국 주식 · ETF 포트폴리오 모니터</div></div>
 <div class="actions"><button id="refreshBtn">↻ 시세 갱신</button><button id="settingsBtn">연결 설정</button><button id="authBtn" class="primary">로그인</button></div></header>
-<nav class="section actions" aria-label="주요 메뉴" style="margin-top:18px"><button type="button" class="primary" id="menuDashboard">기존 대시보드</button><button type="button" id="menuSymbols">종목 관리</button></nav><div id="dashboardView"><h1>내 투자 현황</h1><div class="sub">보유 내역은 직접 입력한 매입 기준값입니다. 시세가 연결되면 평가금액과 손익이 자동 계산됩니다.</div>
+<nav class="section actions" aria-label="주요 메뉴" style="margin-top:18px"><button type="button" class="primary" id="menuDashboard">기존 대시보드</button><button type="button" id="menuSymbols">종목 관리</button></nav><a href="./shared-data.html" style="display:inline-block;margin-top:18px;border:1px solid var(--line);border-radius:10px;padding:9px 13px;background:var(--panel2);color:var(--text);text-decoration:none">공유 기업 데이터</a><div id="dashboardView"><h1>내 투자 현황</h1><div class="sub">보유 내역은 직접 입력한 매입 기준값입니다. 시세가 연결되면 평가금액과 손익이 자동 계산됩니다.</div>
 <div id="notice" class="notice section">초기 모드입니다. 여러 기기 동기화와 자동 시세를 사용하려면 Supabase 및 시세 API 설정을 완료하세요.</div>
 <!-- 자체 시장 지표: 외부 위젯 스크립트 없이 렌더링 -->
 <section class="section panel" id="market-overview-panel">
