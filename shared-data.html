@@ -111,7 +111,7 @@
   $("connect").onclick = () => {
     const url = $("projectUrl").value.trim().replace(/\/$/, ""), key = $("publicKey").value.trim();
     if (url !== TARGET_URL) return status("대상 프로젝트 URL이 일치하지 않습니다. investlab-ledger-test 주소를 확인하세요.");
-    if (!key || key.toLowerCase().includes("service_role")) return status("공개용 publishable/anon 키만 입력하세요. service_role 키는 사용할 수 없습니다.");
+    if (!key || key.toLowerCase().includes("service_role") || key.startsWith("sb_secret_")) return status("공개용 publishable/anon 키만 입력하세요. service_role 또는 sb_secret 키는 사용할 수 없습니다.");
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ url, key }));
     status("공유 데이터 연결 설정을 이 브라우저에 저장했습니다."); connect();
   };
