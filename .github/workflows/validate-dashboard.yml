@@ -107,3 +107,5 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Exercise the six-company preview in Chromium
         run: node tests/six-company-browser-smoke.mjs
+      - name: Exercise the shared data view in Chromium
+        run: node tests/shared-data-browser-smoke.mjs
