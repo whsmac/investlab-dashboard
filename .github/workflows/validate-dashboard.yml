@@ -55,29 +55,35 @@ jobs:
           preview.feed(Path("ai-investment-cycle-preview.html").read_text(encoding="utf-8"))
           six_company = InlineScripts()
           six_company.feed(Path("six-company-price-preview.html").read_text(encoding="utf-8"))
+          shared_data = InlineScripts()
+          shared_data.feed(Path("shared-data.html").read_text(encoding="utf-8"))
           if not preview.scripts:
               raise SystemExit("No preview module script found")
           if not six_company.scripts:
               raise SystemExit("No six-company preview module script found")
+          if not shared_data.scripts:
+              raise SystemExit("No shared-data module script found")
           for i, code in enumerate(preview.scripts, 1):
               Path(f"/tmp/investlab-preview-{i}.mjs").write_text(code, encoding="utf-8")
           for i, code in enumerate(six_company.scripts, 1):
               Path(f"/tmp/investlab-six-company-{i}.mjs").write_text(code, encoding="utf-8")
-          print(f"Extracted {len(parser.scripts)} production inline blocks and {len(preview.scripts)} preview module blocks")
+          for i, code in enumerate(shared_data.scripts, 1):
+              Path(f"/tmp/investlab-shared-data-{i}.js").write_text(code, encoding="utf-8")
+          print(f"Extracted {len(parser.scripts)} production inline blocks, {len(preview.scripts)} preview blocks, {len(shared_data.scripts)} shared-data blocks")
           PY
-          for file in /tmp/investlab-inline-*.js /tmp/investlab-preview-*.mjs /tmp/investlab-six-company-*.mjs; do
+          for file in /tmp/investlab-inline-*.js /tmp/investlab-preview-*.mjs /tmp/investlab-six-company-*.mjs /tmp/investlab-shared-data-*.js; do
             echo "Checking $file"
             node --check "$file"
           done
       - name: Run isolated investment-cycle tests
-        run: node --test tests/ai-investment-cycle.test.mjs tests/market-data-csv.test.mjs tests/market-data-bundle.test.mjs tests/market-cycle-analysis.test.mjs tests/ai-investment-cycle-preview.test.mjs tests/market-performance-ui.test.mjs tests/sec-companyfacts.test.mjs tests/quarterly-normalizer.test.mjs tests/sec-issuer-statement-map.test.mjs tests/six-company-price-csv.test.mjs tests/six-company-price-series.test.mjs tests/six-company-price-preview.test.mjs tests/six-company-financial-csv.test.mjs tests/six-company-financial-preview.test.mjs tests/shared-data-schema-foundation.test.mjs
+        run: node --test tests/ai-investment-cycle.test.mjs tests/market-data-csv.test.mjs tests/market-data-bundle.test.mjs tests/market-cycle-analysis.test.mjs tests/ai-investment-cycle-preview.test.mjs tests/market-performance-ui.test.mjs tests/sec-companyfacts.test.mjs tests/quarterly-normalizer.test.mjs tests/sec-issuer-statement-map.test.mjs tests/six-company-price-csv.test.mjs tests/six-company-price-series.test.mjs tests/six-company-price-preview.test.mjs tests/six-company-financial-csv.test.mjs tests/six-company-financial-preview.test.mjs tests/shared-data-schema-foundation.test.mjs tests/shared-data-dashboard.test.mjs
       - name: Check required symbol-management elements
         run: |
           python3 - <<'PY'
           from pathlib import Path
           html = Path("index.html").read_text(encoding="utf-8")
           required = [
-              'id="menuDashboard"', 'id="menuSymbols"', 'id="symbolManagementView"',
+              'id="menuDashboard"', 'id="menuSymbols"', 'href="./shared-data.html"', 'id="symbolManagementView"',
               'id="symbolInput"', 'id="managedHoldingsBody"', 'id="watchlistBody"',
               'id="pastSymbolsBody"', 'function renderSymbolManagement'
           ]
