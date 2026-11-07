@@ -42,7 +42,7 @@ try {
   await page.locator("#projectUrl").fill("https://gopofxyezhwpfbxebcrxd.supabase.co");
   await page.locator("#publicKey").fill("service_role_secret");
   await page.locator("#connect").click();
-  assert.match(await page.locator("#connectionStatus").innerText(), /service_role 키는 사용할 수 없습니다/);
+  assert.match(await page.locator("#connectionStatus").innerText(), /service_role 또는 sb_secret 키는 사용할 수 없습니다/);
   assert.equal(await page.evaluate(() => localStorage.getItem("investlab_shared_data_connection_v1")), null);
 
   await page.locator("#projectUrl").fill("https://gopofxyezhwpfbxebcrxd.supabase.co");
