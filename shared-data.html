@@ -55,11 +55,11 @@
     if (!cfg.url || !cfg.key) {
       client = null; status("Project URL과 공개용 키를 입력해 연결하세요."); return;
     }
-    if (!window.supabase?.createClient) {
-      client = null; status("연결 설정은 저장되어 있습니다. Supabase 클라이언트 라이브러리를 불러오면 연결할 수 있습니다."); return;
-    }
     if (cfg.url !== TARGET_URL) {
       client = null; status("안전 확인: 대상 프로젝트 URL이 지정된 investlab-ledger-test와 다릅니다. 올바른 URL을 확인하세요."); return;
+    }
+    if (!window.supabase?.createClient) {
+      client = null; status("연결 설정을 저장했습니다. Supabase 클라이언트 라이브러리를 불러오면 연결할 수 있습니다."); return;
     }
     client = window.supabase.createClient(cfg.url, cfg.key, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, storageKey: "investlab_shared_data_auth_v1" } });
     client.auth.getSession().then(({ data, error }) => {
