@@ -36,3 +36,11 @@ test('RPC installation uses a valid dollar-quoted PostgreSQL guard block',()=>{
   assert.doesNotMatch(sql,/\bdo \$\s*begin/i);
   assert.match(sql,/\bbegin;[\s\S]*\bcommit;/i);
 });
+
+test('RPC validates JSON array type before accessing its length and limits tickers',()=>{
+  const typeCheck=sql.indexOf("jsonb_typeof(p_rows) is distinct from 'array'");
+  const lengthCheck=sql.indexOf('jsonb_array_length(p_rows) not between 1 and 5000');
+  assert.ok(typeCheck>=0 && lengthCheck>typeCheck);
+  assert.match(sql,/where c\.id is null or r\.ticker not in \('MSFT','GOOGL','AMZN','META','TSLA','SPCX'\)/);
+  assert.equal((sql.match(/r\.ticker not in \('MSFT','GOOGL','AMZN','META','TSLA','SPCX'\)/g)||[]).length,2);
+});
