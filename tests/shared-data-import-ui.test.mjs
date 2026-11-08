@@ -19,3 +19,9 @@ test('validated file identity is checked again before saving',()=>{
   assert.match(html,/prepared=\{csv,kind,fileName:file\.name,file\}/);
   assert.match(html,/current!==prepared\.file/);
 });
+
+test('validation result is discarded if file, dataset kind or connection changed mid-flight',()=>{
+  assert.match(html,/validationClient=client/);
+  assert.match(html,/\$\('file'\)\.files\?\.\[0\]!==file\|\|\$\('kind'\)\.value!==kind\|\|client!==validationClient/);
+  assert.match(html,/검증 중 파일·데이터 종류·연결이 변경되었습니다/);
+});
