@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>INVESTLAB · 공유 기업 데이터</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--panel:#141b2d;--panel2:#1b2439;--text:#edf2ff;--muted:#9ba8c4;--line:#2a3550;--blue:#7ca7ff;--green:#42d3a5;--amber:#f5d98b}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#17233e 0,#0b1020 55%);color:var(--text);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.wrap{max-width:1180px;margin:auto;padding:26px 18px 56px}.top,.head,.actions{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.brand{font-weight:800;font-size:22px;letter-spacing:.05em}.brand span{color:var(--blue)}.muted,.small{color:var(--muted)}.small{font-size:12px}h1{font-size:30px;margin:24px 0 4px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:18px;margin-top:16px}.notice{background:#292516;border:1px solid #67582a;color:var(--amber);padding:12px 14px;border-radius:11px;margin-top:16px}.form{display:grid;grid-template-columns:1fr 1.5fr auto;gap:9px;align-items:end}.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}input{width:100%;min-width:0;padding:10px;border-radius:9px;border:1px solid var(--line);background:#0d1424;color:var(--text)}button,.link{border:1px solid var(--line);border-radius:9px;padding:9px 13px;background:var(--panel2);color:var(--text);cursor:pointer;text-decoration:none}button.primary{background:var(--blue);border-color:var(--blue);color:#071024;font-weight:700}button:disabled{opacity:.45;cursor:not-allowed}.status{font-size:13px;color:var(--muted);margin-top:10px}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}.metric{background:#111a2c;border:1px solid var(--line);border-radius:12px;padding:14px}.metric strong{display:block;font-size:22px;margin-top:5px}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;white-space:nowrap}th,td{text-align:left;padding:10px;border-bottom:1px solid var(--line)}th{font-size:12px;color:var(--muted)}.empty{padding:18px;text-align:center;color:var(--muted)}.hidden{display:none!important}
+@media(max-width:700px){.form{grid-template-columns:1fr}.grid{grid-template-columns:1fr 1fr}.wrap{padding:18px 12px 40px}}
+</style>
+</head>
+<body><main class="wrap">
+<header class="top"><div><div class="brand">INVEST<span>LAB</span> <span class="small">SHARED DATA</span></div><div class="small">공유 기업 데이터 · 기존 개인 투자원장과 분리</div></div><div class="actions"><a class="link" href="./index.html">← 기존 대시보드</a><button id="logout" disabled>로그아웃</button></div></header>
+<h1>공유 기업 데이터</h1><div class="muted">기업별 주가와 분기 재무지표를 조회하는 공간입니다. 이 화면은 공유 데이터 프로젝트에 별도로 연결되며 개인 보유내역을 읽거나 수정하지 않습니다.</div>
+<div class="notice" id="schemaNotice">공유 데이터 스키마 적용 전 · migration 적용 및 Auth 계정 등록 후 기업, 주가 및 분기 재무 테이블을 읽기 전용으로 조회할 수 있습니다. 현재 이 화면에서는 데이터 쓰기 작업을 제공하지 않습니다.</div>
+<section class="panel"><div class="head"><h2 style="margin:0;font-size:17px">공유 데이터 프로젝트 연결</h2><span class="small">공개용 publishable / anon 키만 사용</span></div>
+<div class="form" style="margin-top:14px"><div class="field"><label for="projectUrl">Supabase Project URL</label><input id="projectUrl" type="url" placeholder="https://YOUR-PROJECT.supabase.co"></div><div class="field"><label for="publicKey">Publishable key 또는 anon key</label><input id="publicKey" type="password" autocomplete="off" placeholder="공개용 키를 입력하세요"></div><button id="connect" class="primary">연결 저장</button></div>
+<div class="status" id="connectionStatus">공유 데이터 전용 연결 설정은 이 브라우저에만 저장됩니다. 기존 개인 대시보드의 연결 설정에는 영향을 주지 않습니다.</div>
+</section>
+<section class="panel"><div class="head"><h2 style="margin:0;font-size:17px">계정 로그인</h2><span class="small" id="authState">로그인하지 않음</span></div>
+<div class="form" style="grid-template-columns:1fr 1fr auto;margin-top:14px"><div class="field"><label for="email">이메일</label><input id="email" type="email" autocomplete="username" placeholder="등록된 계정 이메일"></div><div class="field"><label for="password">비밀번호</label><input id="password" type="password" autocomplete="current-password" placeholder="비밀번호"></div><button id="login" class="primary">로그인</button></div>
+<div class="status" id="authStatus">공유 데이터 프로젝트에 등록된 계정으로 로그인하세요. 공개 회원가입 기능은 제공하지 않습니다.</div></section>
+<section class="grid"><div class="metric"><span class="small">등록 기업</span><strong id="companyCount">—</strong></div><div class="metric"><span class="small">주가 관측값</span><strong id="priceCount">—</strong></div><div class="metric"><span class="small">분기 재무 관측값</span><strong id="financialCount">—</strong></div></section>
+<section class="panel"><div class="head"><h2 style="margin:0;font-size:17px">기업 목록</h2><button id="reload" disabled>새로고침</button></div><div class="table-wrap" id="companies"><div class="empty">프로젝트 연결 및 로그인 후 조회할 수 있습니다.</div></div></section>
+<section class="panel"><h2 style="margin:0 0 12px;font-size:17px">최근 주가 관측값</h2><div class="table-wrap" id="prices"><div class="empty">조회 대기</div></div></section>
+<section class="panel"><h2 style="margin:0 0 12px;font-size:17px">최근 분기 재무 관측값</h2><div class="table-wrap" id="financials"><div class="empty">조회 대기</div></div></section>
+<div class="small" style="margin-top:18px">보안 원칙: service_role 키를 입력하거나 저장하지 마세요. 개인 투자원장용 Supabase 프로젝트 주소·키와 혼용하지 마세요. 데이터 입력·수정은 스키마 적용, 소유자 계정 확인 및 별도 권한 검증 이후에 추가합니다.</div>
+</main>
+<script>
+(() => {
+  const TARGET_URL = "https://gopofxyezhwpfbxebcrxd.supabase.co";
+  const STORAGE_KEY = "investlab_shared_data_connection_v1";
+  const $ = id => document.getElementById(id);
+  let client = null, session = null;
+  const saved = (() => { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); } catch (_) { return {}; } })();
+  $("projectUrl").value = saved.url || TARGET_URL;
+  $("publicKey").value = saved.key || "";
+  function status(message) { $("connectionStatus").textContent = message; }
+  function authStatus(message) { $("authStatus").textContent = message; }
+  function table(headers, rows) {
+    if (!rows.length) return '<div class="empty">조회된 데이터가 없습니다.</div>';
+    return '<table><thead><tr>' + headers.map(x => '<th>' + x + '</th>').join("") + '</tr></thead><tbody>' +
+      rows.map(row => '<tr>' + row.map(x => '<td>' + escapeHtml(x ?? "—") + '</td>').join("") + '</tr>').join("") + '</tbody></table>';
+  }
+  function escapeHtml(value) { return String(value).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+  function updateAuth() {
+    $("authState").textContent = session ? "로그인됨" : "로그인하지 않음";
+    $("logout").disabled = !session;
+    $("reload").disabled = !session;
+  }
+  function connect() {
+    const cfg = (() => { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); } catch (_) { return {}; } })();
+    if (!cfg.url || !cfg.key) {
+      client = null; status("Project URL과 공개용 키를 입력해 연결하세요."); return;
+    }
+    if (cfg.url !== TARGET_URL) {
+      client = null; status("안전 확인: 대상 프로젝트 URL이 지정된 investlab-ledger-test와 다릅니다. 올바른 URL을 확인하세요."); return;
+    }
+    if (!window.supabase?.createClient) {
+      client = null; status("연결 설정을 저장했습니다. Supabase 클라이언트 라이브러리를 불러오면 연결할 수 있습니다."); return;
+    }
+    client = window.supabase.createClient(cfg.url, cfg.key, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, storageKey: "investlab_shared_data_auth_v1" } });
+    client.auth.getSession().then(({ data, error }) => {
+      if (error) authStatus("세션 확인 실패: " + error.message);
+      session = data?.session || null; updateAuth(); if (session) loadData();
+    });
+    client.auth.onAuthStateChange((_event, next) => { session = next; updateAuth(); if (session) loadData(); });
+    status("공유 데이터 프로젝트 연결 설정을 읽었습니다. 로그인 후 조회할 수 있습니다.");
+  }
+  async function login() {
+    if (!client) return authStatus("먼저 공유 데이터 프로젝트 연결을 저장하세요.");
+    const email = $("email").value.trim(), password = $("password").value;
+    if (!email || !password) return authStatus("이메일과 비밀번호를 입력하세요.");
+    $("login").disabled = true;
+    try {
+      const { data, error } = await client.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      session = data.session; updateAuth(); authStatus("로그인되었습니다."); await loadData();
+    } catch (error) { authStatus("로그인 실패: " + error.message); }
+    finally { $("login").disabled = false; }
+  }
+  async function loadData() {
+    if (!client || !session) return;
+    $("companies").innerHTML = '<div class="empty">조회 중…</div>';
+    const specs = [
+      ["companies", "id,ticker,company_name,exchange,is_active"],
+      ["market_price_observations", "id,company_id,trading_date,close_price,currency,price_basis"],
+      ["quarterly_financial_observations", "id,company_id,fiscal_period,revision_number,is_current,revenue_usd_bn,capex_usd_bn,capex_definition"]
+    ];
+    try {
+      const results = await Promise.all(specs.map(([name, columns]) => client.from(name).select(columns).limit(100)));
+      const failed = results.find(x => x.error);
+      if (failed) throw failed.error;
+      const [companies, prices, financials] = results.map(x => x.data || []);
+      $("companyCount").textContent = companies.length;
+      $("priceCount").textContent = prices.length;
+      $("financialCount").textContent = financials.length;
+      $("companies").innerHTML = table(["Ticker","기업명","거래소","상태"], companies.map(x => [x.ticker,x.company_name,x.exchange,x.is_active ? "활성" : "비활성"]));
+      $("prices").innerHTML = table(["기업 ID","거래일","조정종가","통화"], prices.slice().sort((a,b)=>b.trading_date.localeCompare(a.trading_date)).slice(0,20).map(x => [x.company_id,x.trading_date,x.close_price,x.currency]));
+      $("financials").innerHTML = table(["기업 ID","회계분기","매출(USD bn)","CAPEX(USD bn)","CAPEX 정의"], financials.slice().sort((a,b)=>b.fiscal_period.localeCompare(a.fiscal_period)).slice(0,20).map(x => [x.company_id,x.fiscal_period,x.revenue_usd_bn,x.capex_usd_bn,x.capex_definition]));
+      authStatus("조회 완료 · 읽기 전용 · 최대 100행씩 확인했습니다.");
+    } catch (error) {
+      $("companyCount").textContent = $("priceCount").textContent = $("financialCount").textContent = "—";
+      $("companies").innerHTML = '<div class="empty">공유 데이터 테이블을 조회할 수 없습니다.</div>';
+      $("prices").innerHTML = $("financials").innerHTML = '<div class="empty">조회 대기</div>';
+      authStatus("조회 실패: " + error.message + " · 스키마 migration이 아직 적용되지 않았다면 정상적인 상태입니다.");
+    }
+  }
+  $("connect").onclick = () => {
+    const url = $("projectUrl").value.trim().replace(/\/$/, ""), key = $("publicKey").value.trim();
+    if (url !== TARGET_URL) return status("대상 프로젝트 URL이 일치하지 않습니다. investlab-ledger-test 주소를 확인하세요.");
+    if (!key || key.toLowerCase().includes("service_role") || key.startsWith("sb_secret_")) return status("공개용 publishable/anon 키만 입력하세요. service_role 또는 sb_secret 키는 사용할 수 없습니다.");
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ url, key }));
+    status("공유 데이터 연결 설정을 이 브라우저에 저장했습니다."); connect();
+  };
+  $("login").onclick = login;
+  $("password").addEventListener("keydown", e => { if (e.key === "Enter") login(); });
+  $("logout").onclick = async () => { if (client) await client.auth.signOut(); session = null; updateAuth(); authStatus("로그아웃했습니다."); };
+  $("reload").onclick = loadData;
+  connect(); updateAuth();
+})();
+</script>
+</body></html>
