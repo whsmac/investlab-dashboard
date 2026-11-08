@@ -28,6 +28,7 @@ await page.route("https://cdn.jsdelivr.net/**", route => route.abort());
 try {
   await page.goto(`http://127.0.0.1:${address.port}/shared-data.html`);
   await page.locator("h1").getByText("공유 기업 데이터").waitFor();
+  await page.waitForFunction(() => document.querySelector("#projectUrl")?.value === "https://gopofxyezhwpfbxebcrxd.supabase.co");
   assert.equal(await page.locator("#projectUrl").inputValue(), "https://gopofxyezhwpfbxebcrxd.supabase.co");
   assert.equal(await page.locator("#logout").isDisabled(), true);
   assert.equal(await page.locator("#reload").isDisabled(), true);
