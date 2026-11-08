@@ -43,6 +43,12 @@ try{
   assert.equal(await page.locator('#commit').isDisabled(),true);
   await page.locator('#confirm').check();
   assert.equal(await page.locator('#commit').isEnabled(),true);
+  // Cancelling the browser's final confirmation must never write.
+  await page.evaluate(() => { window.confirm=()=>false; });
+  await page.locator('#commit').click();
+  assert.equal(await page.evaluate(()=>window.__writes.length),0,'cancelled confirmation must not write');
+  assert.equal(await page.locator('#commit').isEnabled(),true);
+  await page.evaluate(() => { window.confirm=()=>true; });
   await page.locator('#commit').click();
   await page.waitForFunction(() => document.getElementById('result').textContent.includes('저장 완료: 1행'));
   const writes=await page.evaluate(()=>window.__writes);
