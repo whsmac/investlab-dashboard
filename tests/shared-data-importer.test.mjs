@@ -5,6 +5,8 @@ const csv='date,ticker,close\n2026-11-06,TSLA,299.12\n';
 function mock({existing=[],signedIn=true}={}) {
   const calls=[];
   const client={
+    supabaseUrl:'https://gopofxyezhwpfbxebcrxd.supabase.co',
+    supabaseKey:'sb_publishable_mock',
     auth:{getUser:async()=>({data:{user:signedIn?{id:'owner'}:null},error:null})},
     rpc:async(name,args)=>{calls.push(name);return {data:{status:'committed',accepted_count:args.p_rows.length,batch_id:7},error:null}},
     from(name) {
@@ -72,4 +74,19 @@ test('mismatched RPC accepted count is rejected',async()=>{
   const {client}=mock();
   client.rpc=async()=>({data:{status:'committed',accepted_count:0,batch_id:7},error:null});
   await assert.rejects(()=>importSharedCsv(client,csv,'price',{commit:true}),/Import response count mismatch/);
+});
+
+test('importer refuses production, unknown projects and privileged keys before any queries',async()=>{
+  for (const [url,key] of [
+    ['https://duffpsvaphccgxvkiobm.supabase.co','sb_publishable_mock'],
+    ['https://unknown.supabase.co','sb_publishable_mock'],
+    ['https://gopofxyezhwpfbxebcrxd.supabase.co','sb_secret_example'],
+    ['https://gopofxyezhwpfbxebcrxd.supabase.co','service_role_example']
+  ]) {
+    const {client,calls}=mock();
+    client.supabaseUrl=url;
+    client.supabaseKey=key;
+    await assert.rejects(()=>importSharedCsv(client,csv,'price',{commit:true}),/Refusing import outside|Only a public/);
+    assert.deepEqual(calls,[]);
+  }
 });
