@@ -1,11 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {prepareSharedImport,importSharedCsv} from '../src/shared-data/shared-importer.mjs';
-const csv='date,ticker,close\n2026-11-06,TSLA,299.12\n';
+const csv='date,ticker,close
+2026-11-06,TSLA,299.12
+';
 function mock({existing=[],signedIn=true}={}) {
   const calls=[];
   const client={
-    auth:{getUser:async()=>({data:{user:signedIn?{id:'owner'}:null},error:null})},\n    rpc:async(name,args)=>{calls.push(name);return {data:{status:'committed',accepted_count:args.p_rows.length,batch_id:7},error:null}},
+    auth:{getUser:async()=>({data:{user:signedIn?{id:'owner'}:null},error:null})},
+    rpc:async(name,args)=>{calls.push(name);return {data:{status:'committed',accepted_count:args.p_rows.length,batch_id:7},error:null}},
     from(name) {
       calls.push(name);
       if(name==='companies') return {select:async()=>({data:[{id:5,ticker:'TSLA'}],error:null})};
