@@ -30,3 +30,11 @@ test("shared data page reads only the three approved shared tables", () => {
   }
   assert.doesNotMatch(page, /ledger_transactions|from\(["']holdings["']\)/);
 });
+
+
+test("recent observations are ordered on the server before limiting results", () => {
+  assert.match(page, /query\.order\("trading_date", \{ ascending: false \}\)/);
+  assert.match(page, /query\.order\("fiscal_period", \{ ascending: false \}\)/);
+  assert.match(page, /return query\.limit\(100\)/);
+  assert.match(page, /count: "exact"/);
+});
