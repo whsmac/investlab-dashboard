@@ -3,12 +3,12 @@
 -- Does not touch ledger_transactions, auth.users or any production project.
 begin;
 -- Fail closed if an object with the same signature already exists. Do not overwrite it.
-do $
+do $$
 begin
   if to_regprocedure('public.import_shared_observations(text,jsonb,text,text,text)') is not null then
     raise exception 'Import RPC already exists: stop and review before applying';
   end if;
-end $;
+end $$;
 create function public.import_shared_observations(
   p_kind text,
   p_rows jsonb,
