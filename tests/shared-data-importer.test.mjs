@@ -1,9 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {prepareSharedImport,importSharedCsv} from '../src/shared-data/shared-importer.mjs';
-const csv='date,ticker,close
-2026-11-06,TSLA,299.12
-';
+const csv='date,ticker,close\n2026-11-06,TSLA,299.12\n';
 function mock({existing=[],signedIn=true}={}) {
   const calls=[];
   const client={
@@ -25,8 +23,10 @@ test('valid dry-run maps company id and performs no writes',async()=>{
   assert.deepEqual(await importSharedCsv(client,csv,'price'),{status:'validated',written:0,rows:1});
 });
 test('explicit commit calls only atomic RPC',async()=>{
-  const {client}=mock();
-  await assert.rejects(()=>importSharedCsv(client,csv,'price',{commit:true}),/Commit disabled/);
+  const {client,calls}=mock();
+  const result=await importSharedCsv(client,csv,'price',{commit:true});
+  assert.deepEqual(result,{status:'committed',written:1,batchId:7});
+  assert.equal(calls.at(-1),'import_shared_observations');
 });
 test('existing observations are rejected',async()=>{
   const {client}=mock({existing:[{trading_date:'2026-11-06'}]});
