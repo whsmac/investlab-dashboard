@@ -30,3 +30,9 @@ test('preflight script is read-only and never reveals owner IDs',()=>{
   assert.match(active,/configured_owner_count/);
   assert.doesNotMatch(active,/select\s+user_id/i);
 });
+
+test('RPC installation uses a valid dollar-quoted PostgreSQL guard block',()=>{
+  assert.match(sql,/\bdo \$\$\s*begin[\s\S]*?end \$\$;/i);
+  assert.doesNotMatch(sql,/\bdo \$\s*begin/i);
+  assert.match(sql,/\bbegin;[\s\S]*\bcommit;/i);
+});
