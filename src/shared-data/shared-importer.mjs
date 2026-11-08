@@ -33,7 +33,11 @@ export async function importSharedCsv(client,csvText,kind,{commit=false,sourceNa
   const prepared = await prepareSharedImport(client,csvText,kind);
   if (!commit) return {status:'validated',written:0,rows:prepared.rows};
   if (sourceUrl && !/^https:\/\//.test(sourceUrl)) throw new Error('sourceUrl must be HTTPS');
-  // Deliberately fail closed for multi-step writes: a single transaction via
-  // server-side RPC is required to avoid orphaned batches/partial observations.
-  throw new Error('Commit disabled until atomic owner-only import RPC is deployed and verified. No rows written.');
+  const rows = prepared.records.map(({company_id,...row})=>row);
+  const {data,error} = await client.rpc('import_shared_observations',{
+    p_kind:kind,p_rows:rows,p_source_name:sourceName,p_source_url:sourceUrl,p_file_name:fileName
+  });
+  fail(error,'atomic import RPC');
+  if (data?.status!=='committed' || data.accepted_count!==prepared.rows) throw new Error('Import response count mismatch');
+  return {status:data.status,written:data.accepted_count,batchId:data.batch_id};
 }
