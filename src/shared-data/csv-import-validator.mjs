@@ -56,7 +56,7 @@ export function validateSharedCsv(text, kind) {
       seen.add(key);
       if (kind==='price') {
         if (!strictDate(r.date)) throw new Error('Invalid trading date');
-        // Do not infer a listing date from a ticker. The database catalog is authoritative.
+        // Verified: SpaceX began trading as SPCX on 2026-06-12 (SpaceX IR; Nasdaq DTN2026-8).\n        // Nasdaq warns that earlier SPCX data belonged to another security.\n        if (r.ticker==='SPCX' && r.date<'2026-06-12') throw new Error('SPCX predates SpaceX first trading day (2026-06-12)');
         const close = number(r.close,'close',true);
         if (close<=0) throw new Error('close must be positive');
         observations.push({ticker:r.ticker,trading_date:r.date,close_price:close,price_basis:'adjusted_close',currency:'USD'});
