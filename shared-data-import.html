@@ -66,7 +66,7 @@ $('validate').onclick=async()=>{
     if(file.size>5*1024*1024)throw Error('CSV 파일은 5MB 이하만 허용합니다.');
     const csv=await file.text(),kind=$('kind').value;
     const result=await importSharedCsv(client,csv,kind);
-    prepared={csv,kind,fileName:file.name};
+    prepared={csv,kind,fileName:file.name,file};
     status('사전 검증 성공: '+result.rows+'행. 데이터베이스에는 저장하지 않았습니다.');
   }catch(e){status('검증 실패: '+e.message);}
   finally{busy=false;$('validate').disabled=false;toggle();}
@@ -74,7 +74,7 @@ $('validate').onclick=async()=>{
 $('commit').onclick=async()=>{
   if(!prepared||!$('confirm').checked||busy||!client)return;
   const current=$('file').files?.[0];
-  if(!current||current.name!==prepared.fileName||$('kind').value!==prepared.kind)return reset();
+  if(!current||current!==prepared.file||$('kind').value!==prepared.kind)return reset();
   if(!window.confirm('TEST Supabase에 '+prepared.fileName+' 파일을 실제 저장하시겠습니까?'))return;
   busy=true;toggle();$('validate').disabled=true;
   try{
