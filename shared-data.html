@@ -14,7 +14,7 @@
 <body><main class="wrap">
 <header class="top"><div><div class="brand">INVEST<span>LAB</span> <span class="small">SHARED DATA</span></div><div class="small">공유 기업 데이터 · 기존 개인 투자원장과 분리</div></div><div class="actions"><a class="link" href="./index.html">← 기존 대시보드</a><button id="logout" disabled>로그아웃</button></div></header>
 <h1>공유 기업 데이터</h1><div class="muted">기업별 주가와 분기 재무지표를 조회하는 공간입니다. 이 화면은 공유 데이터 프로젝트에 별도로 연결되며 개인 보유내역을 읽거나 수정하지 않습니다.</div>
-<div class="notice" id="schemaNotice">공유 데이터 스키마 적용 전 · migration 적용 및 Auth 계정 등록 후 기업, 주가 및 분기 재무 테이블을 읽기 전용으로 조회할 수 있습니다. 현재 이 화면에서는 데이터 쓰기 작업을 제공하지 않습니다.</div>
+<div class="notice" id="schemaNotice">공유 데이터 TEST 프로젝트 연결 및 로그인 확인 완료 · 기업 6개 등록됨. 주가·분기 재무자료는 아직 적재 전이며, 이 화면은 읽기 전용입니다.</div>
 <section class="panel"><div class="head"><h2 style="margin:0;font-size:17px">공유 데이터 프로젝트 연결</h2><span class="small">공개용 publishable / anon 키만 사용</span></div>
 <div class="form" style="margin-top:14px"><div class="field"><label for="projectUrl">Supabase Project URL</label><input id="projectUrl" type="url" placeholder="https://YOUR-PROJECT.supabase.co"></div><div class="field"><label for="publicKey">Publishable key 또는 anon key</label><input id="publicKey" type="password" autocomplete="off" placeholder="공개용 키를 입력하세요"></div><button id="connect" class="primary">연결 저장</button></div>
 <div class="status" id="connectionStatus">공유 데이터 전용 연결 설정은 이 브라우저에만 저장됩니다. 기존 개인 대시보드의 연결 설정에는 영향을 주지 않습니다.</div>
@@ -84,23 +84,24 @@
   async function loadData() {
     if (!client || !session) return;
     $("companies").innerHTML = '<div class="empty">조회 중…</div>';
-    const specs = [
-      ["companies", "id,ticker,company_name,exchange,is_active"],
-      ["market_price_observations", "id,company_id,trading_date,close_price,currency,price_basis"],
-      ["quarterly_financial_observations", "id,company_id,fiscal_period,revision_number,is_current,revenue_usd_bn,capex_usd_bn,capex_definition"]
-    ];
     try {
-      const results = await Promise.all(specs.map(([name, columns]) => client.from(name).select(columns).limit(100)));
-      const failed = results.find(x => x.error);
+      const [companyResult, priceResult, financialResult] = await Promise.all([
+        client.from("companies").select("id,ticker,company_name,exchange,is_active", { count: "exact" }).order("ticker").limit(100),
+        client.from("market_price_observations").select("id,company_id,trading_date,close_price,currency,price_basis", { count: "exact" }).order("trading_date", { ascending: false }).order("id", { ascending: false }).limit(20),
+        client.from("quarterly_financial_observations").select("id,company_id,fiscal_period,revision_number,is_current,revenue_usd_bn,capex_usd_bn,capex_definition", { count: "exact" }).eq("is_current", true).order("fiscal_period", { ascending: false }).order("id", { ascending: false }).limit(20)
+      ]);
+      const failed = [companyResult, priceResult, financialResult].find(result => result.error);
       if (failed) throw failed.error;
-      const [companies, prices, financials] = results.map(x => x.data || []);
-      $("companyCount").textContent = companies.length;
-      $("priceCount").textContent = prices.length;
-      $("financialCount").textContent = financials.length;
+      const companies = companyResult.data || [];
+      const prices = priceResult.data || [];
+      const financials = financialResult.data || [];
+      $("companyCount").textContent = (companyResult.count ?? "—").toLocaleString("ko-KR");
+      $("priceCount").textContent = (priceResult.count ?? "—").toLocaleString("ko-KR");
+      $("financialCount").textContent = (financialResult.count ?? "—").toLocaleString("ko-KR");
       $("companies").innerHTML = table(["Ticker","기업명","거래소","상태"], companies.map(x => [x.ticker,x.company_name,x.exchange,x.is_active ? "활성" : "비활성"]));
-      $("prices").innerHTML = table(["기업 ID","거래일","조정종가","통화"], prices.slice().sort((a,b)=>b.trading_date.localeCompare(a.trading_date)).slice(0,20).map(x => [x.company_id,x.trading_date,x.close_price,x.currency]));
-      $("financials").innerHTML = table(["기업 ID","회계분기","매출(USD bn)","CAPEX(USD bn)","CAPEX 정의"], financials.slice().sort((a,b)=>b.fiscal_period.localeCompare(a.fiscal_period)).slice(0,20).map(x => [x.company_id,x.fiscal_period,x.revenue_usd_bn,x.capex_usd_bn,x.capex_definition]));
-      authStatus("조회 완료 · 읽기 전용 · 최대 100행씩 확인했습니다.");
+      $("prices").innerHTML = table(["기업 ID","거래일","조정종가","통화"], prices.map(x => [x.company_id,x.trading_date,x.close_price,x.currency]));
+      $("financials").innerHTML = table(["기업 ID","회계분기","매출(USD bn)","CAPEX(USD bn)","CAPEX 정의"], financials.map(x => [x.company_id,x.fiscal_period,x.revenue_usd_bn,x.capex_usd_bn,x.capex_definition]));
+      authStatus("조회 완료 · 읽기 전용 · 전체 건수와 최근 20건을 확인했습니다. 분기 재무 건수는 현재 유효한 버전 기준입니다.");
     } catch (error) {
       $("companyCount").textContent = $("priceCount").textContent = $("financialCount").textContent = "—";
       $("companies").innerHTML = '<div class="empty">공유 데이터 테이블을 조회할 수 없습니다.</div>';
