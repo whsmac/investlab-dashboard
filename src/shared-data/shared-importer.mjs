@@ -16,7 +16,7 @@ export async function prepareSharedImport(client, csvText, kind) {
   const ids = new Map((companies||[]).map(c=>[c.ticker,c.id]));
   const missing = [...new Set(checked.observations.map(x=>x.ticker).filter(t=>!ids.has(t)))];
   if (missing.length) throw new Error('Missing companies: '+missing.join(', '));
-  const records = checked.observations.map(({ticker,...observation})=>({company_id:ids.get(ticker),...observation}));
+  const records = checked.observations.map(({ticker,...observation})=>({ticker,company_id:ids.get(ticker),...observation}));
   const dateColumn = kind==='price'?'trading_date':'fiscal_period';
   // Preflight detects collisions; DB unique constraints remain the final guard.
   for (const ticker of new Set(checked.observations.map(x=>x.ticker))) {
