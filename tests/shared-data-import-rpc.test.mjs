@@ -17,3 +17,16 @@ test('atomic import RPC inserts batch and observations within one function trans
   assert.match(sql,/status='committed'/);
   assert.doesNotMatch(sql,/on conflict do update/i);
 });
+
+test('RPC installation refuses to overwrite an existing function',()=>{
+  assert.match(sql,/to_regprocedure\('public\.import_shared_observations\(text,jsonb,text,text,text\)'\)/);
+  assert.match(sql,/create function public\.import_shared_observations/);
+  assert.doesNotMatch(sql,/create or replace function public\.import_shared_observations/i);
+});
+test('preflight script is read-only and never reveals owner IDs',()=>{
+  const preflight=readFileSync(new URL('../supabase/review-only/20261108_shared_import_readonly_preflight.sql',import.meta.url),'utf8');
+  const active=preflight.replace(/--[^\n]*/g,'');
+  assert.doesNotMatch(active,/\b(insert|update|delete|drop|alter|create|truncate|grant|revoke)\b/i);
+  assert.match(active,/configured_owner_count/);
+  assert.doesNotMatch(active,/select\s+user_id/i);
+});
