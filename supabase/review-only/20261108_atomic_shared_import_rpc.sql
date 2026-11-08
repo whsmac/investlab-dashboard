@@ -2,7 +2,14 @@
 -- Atomic owner-only import: one function call, one PostgreSQL transaction.
 -- Does not touch ledger_transactions, auth.users or any production project.
 begin;
-create or replace function public.import_shared_observations(
+-- Fail closed if an object with the same signature already exists. Do not overwrite it.
+do $
+begin
+  if to_regprocedure('public.import_shared_observations(text,jsonb,text,text,text)') is not null then
+    raise exception 'Import RPC already exists: stop and review before applying';
+  end if;
+end $;
+create function public.import_shared_observations(
   p_kind text,
   p_rows jsonb,
   p_source_name text default null,
@@ -28,6 +35,9 @@ begin
   if jsonb_typeof(p_rows) is distinct from 'array'
      or jsonb_array_length(p_rows) not between 1 and 5000 then
     raise exception 'Expected JSON array with 1 to 5000 observations';
+  end if;
+  if length(coalesce(p_source_name,''))>300 or length(coalesce(p_file_name,''))>300 then
+    raise exception 'Import metadata exceeds 300 characters';
   end if;
   if p_source_url is not null and p_source_url !~ '^https://' then
     raise exception 'Source URL must be HTTPS';
