@@ -90,7 +90,12 @@
       ["quarterly_financial_observations", "id,company_id,fiscal_period,revision_number,is_current,revenue_usd_bn,capex_usd_bn,capex_definition"]
     ];
     try {
-      const results = await Promise.all(specs.map(([name, columns]) => client.from(name).select(columns, { count: "exact" }).limit(100)));
+      const results = await Promise.all(specs.map(([name, columns]) => {
+        let query = client.from(name).select(columns, { count: "exact" });
+        if (name === "market_price_observations") query = query.order("trading_date", { ascending: false });
+        if (name === "quarterly_financial_observations") query = query.order("fiscal_period", { ascending: false });
+        return query.limit(100);
+      }));
       const failed = results.find(x => x.error);
       if (failed) throw failed.error;
       const [companies, prices, financials] = results.map(x => x.data || []);
