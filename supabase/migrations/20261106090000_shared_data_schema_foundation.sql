@@ -30,6 +30,7 @@ create table app_private.data_owners (
   created_at timestamptz not null default now()
 );
 revoke all on table app_private.data_owners from public, anon, authenticated;
+alter table app_private.data_owners enable row level security;
 
 create function app_private.is_data_owner()
 returns boolean
