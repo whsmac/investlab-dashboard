@@ -43,7 +43,7 @@ test('large CSV preflight checks duplicates in bounded chunks',async()=>{
     const d=new Date(Date.UTC(2026,0,1+i)).toISOString().slice(0,10);
     return d+',TSLA,'+(100+i);
   });
-  const result=await prepareSharedImport(client,'date,ticker,close\\n'.replace('\\n','\n')+rows.join('\n'),'price');
+  const result=await prepareSharedImport(client,'date,ticker,close\n'.replace('\n','\n')+rows.join('\n'),'price');
   assert.equal(result.rows,205);
   assert.equal(calls.filter(x=>x==='market_price_observations').length,3);
 });
