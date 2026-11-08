@@ -36,3 +36,14 @@ test('anonymous sessions cannot import',async()=>{
   const {client}=mock({signedIn:false});
   await assert.rejects(()=>prepareSharedImport(client,csv,'price'),/Sign in/);
 });
+
+test('large CSV preflight checks duplicates in bounded chunks',async()=>{
+  const {client,calls}=mock();
+  const rows=Array.from({length:205},(_,i)=>{
+    const d=new Date(Date.UTC(2026,0,1+i)).toISOString().slice(0,10);
+    return d+',TSLA,'+(100+i);
+  });
+  const result=await prepareSharedImport(client,'date,ticker,close\\n'.replace('\\n','\n')+rows.join('\n'),'price');
+  assert.equal(result.rows,205);
+  assert.equal(calls.filter(x=>x==='market_price_observations').length,3);
+});
