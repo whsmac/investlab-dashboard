@@ -10,7 +10,7 @@ test("shared data view is linked from the existing dashboard", () => {
 });
 
 test("shared data uses a separate, fixed test-project connection", () => {
-  assert.match(page, /https:\/\/gopofxyezhwpfxbecrxd\.supabase\.co/);
+  assert.match(page, /https:\/\/gopofxyezhwpfbxebcrxd\.supabase\.co/);
   assert.match(page, /investlab_shared_data_connection_v1/);
   assert.match(page, /investlab_shared_data_auth_v1/);
   assert.match(page, /url !== TARGET_URL/);
