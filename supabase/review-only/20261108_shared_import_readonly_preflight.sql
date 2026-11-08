@@ -22,3 +22,14 @@ order by ticker;
 
 -- Do not output owner UUIDs or any secrets.
 select count(*) as configured_owner_count from app_private.data_owners;
+
+-- Verify row-level security is enabled on every writable shared table.
+select n.nspname as schema_name, c.relname as table_name,
+       c.relrowsecurity as rls_enabled,
+       c.relforcerowsecurity as force_rls
+from pg_catalog.pg_class c
+join pg_catalog.pg_namespace n on n.oid=c.relnamespace
+where n.nspname='public'
+  and c.relname in ('companies','import_batches','market_price_observations','quarterly_financial_observations')
+  and c.relkind in ('r','p')
+order by c.relname;
