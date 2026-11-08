@@ -38,13 +38,13 @@ try{
   await page.locator('#authState').getByText('로그인 확인됨').waitFor();
   await page.locator('#file').setInputFiles({name:'prices.csv',mimeType:'text/csv',buffer:Buffer.from('date,ticker,close\n2026-11-06,TSLA,299.12\n')});
   await page.locator('#validate').click();
-  await page.locator('#result').getByText(/사전 검증 성공/).waitFor();
+  await page.waitForFunction(() => document.getElementById('result').textContent.includes('사전 검증 성공'));
   assert.equal(await page.evaluate(()=>window.__writes.length),0,'dry-run must not write');
   assert.equal(await page.locator('#commit').isDisabled(),true);
   await page.locator('#confirm').check();
   assert.equal(await page.locator('#commit').isEnabled(),true);
   await page.locator('#commit').click();
-  await page.locator('#result').getByText(/저장 완료: 1행/).waitFor();
+  await page.waitForFunction(() => document.getElementById('result').textContent.includes('저장 완료: 1행'));
   const writes=await page.evaluate(()=>window.__writes);
   assert.equal(writes.length,1);
   assert.equal(writes[0].name,'import_shared_observations');
