@@ -93,7 +93,8 @@
       const results = await Promise.all(specs.map(([name, columns]) => client.from(name).select(columns, { count: "exact" }).limit(100)));
       const failed = results.find(x => x.error);
       if (failed) throw failed.error;
-      const [companies, prices, financials] = results.map(x => x.data || []);\n      const [companyTotal, priceTotal, financialTotal] = results.map(x => x.count ?? 0);
+      const [companies, prices, financials] = results.map(x => x.data || []);
+      const [companyTotal, priceTotal, financialTotal] = results.map(x => x.count ?? 0);
       $("companyCount").textContent = companyTotal.toLocaleString("ko-KR");
       $("priceCount").textContent = priceTotal.toLocaleString("ko-KR");
       $("financialCount").textContent = financialTotal.toLocaleString("ko-KR");
