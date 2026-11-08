@@ -3,8 +3,17 @@
 // No writes occur unless commit:true is explicitly passed.
 import {validateSharedCsv} from './csv-import-validator.mjs';
 const TABLE = {price:'market_price_observations',financial:'quarterly_financial_observations'};
+const TEST_URL = 'https://gopofxyezhwpfbxebcrxd.supabase.co';
+function assertTestClient(client) {
+  if (client?.supabaseUrl !== TEST_URL) throw new Error('Refusing import outside isolated TEST Supabase project');
+  const key = client.supabaseKey;
+  if (typeof key !== 'string' || !key || key.startsWith('sb_secret_') || key.toLowerCase().includes('service_role')) {
+    throw new Error('Only a public publishable/anon key is allowed');
+  }
+}
 function fail(error, step) { if (error) throw new Error(step+': '+error.message); }
 export async function prepareSharedImport(client, csvText, kind) {
+  assertTestClient(client);
   const checked = validateSharedCsv(csvText,kind);
   if (checked.rows > 5000) throw new Error('Maximum 5000 rows per atomic import');
   const {data:{user},error:authError} = await client.auth.getUser();
