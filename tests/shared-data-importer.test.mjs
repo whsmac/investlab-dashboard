@@ -60,3 +60,16 @@ test('more than 5000 rows are rejected before network requests',async()=>{
   );
   assert.deepEqual(calls,[]);
 });
+
+
+test('atomic RPC rejection is surfaced as failure rather than a committed import',async()=>{
+  const {client}=mock();
+  client.rpc=async()=>({data:null,error:{message:'duplicate key value violates unique constraint'}});
+  await assert.rejects(()=>importSharedCsv(client,csv,'price',{commit:true}),/atomic import RPC: duplicate key/);
+});
+
+test('mismatched RPC accepted count is rejected',async()=>{
+  const {client}=mock();
+  client.rpc=async()=>({data:{status:'committed',accepted_count:0,batch_id:7},error:null});
+  await assert.rejects(()=>importSharedCsv(client,csv,'price',{commit:true}),/Import response count mismatch/);
+});
