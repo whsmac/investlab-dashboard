@@ -108,4 +108,6 @@ jobs:
       - name: Exercise the six-company preview in Chromium
         run: node tests/six-company-browser-smoke.mjs
       - name: Exercise the shared data view in Chromium
-        run: node tests/shared-data-browser-smoke.mjs\n      - name: Exercise the TEST CSV import screen in Chromium\n        run: node tests/shared-data-import-browser-smoke.mjs\n      - name: Exercise authenticated import flow with mocked Supabase\n        run: node tests/shared-data-import-browser-flow.mjs
+        run: node tests/shared-data-browser-smoke.mjs
+      - name: Exercise the TEST CSV import screen in Chromium\n        run: node tests/shared-data-import-browser-smoke.mjs
+      - name: Exercise authenticated import flow with mocked Supabase\n        run: node tests/shared-data-import-browser-flow.mjs
