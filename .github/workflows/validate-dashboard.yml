@@ -55,6 +55,12 @@ jobs:
           preview.feed(Path("ai-investment-cycle-preview.html").read_text(encoding="utf-8"))
           six_company = InlineScripts()
           six_company.feed(Path("six-company-price-preview.html").read_text(encoding="utf-8"))
+          import_ui = InlineScripts()
+          import_ui.feed(Path("shared-data-import.html").read_text(encoding="utf-8"))
+          if not import_ui.scripts:
+              raise SystemExit("No CSV import UI script found")
+          for i, code in enumerate(import_ui.scripts, 1):
+              Path(f"/tmp/investlab-import-ui-{i}.mjs").write_text(code, encoding="utf-8")
           shared_data = InlineScripts()
           shared_data.feed(Path("shared-data.html").read_text(encoding="utf-8"))
           if not preview.scripts:
@@ -71,7 +77,7 @@ jobs:
               Path(f"/tmp/investlab-shared-data-{i}.js").write_text(code, encoding="utf-8")
           print(f"Extracted {len(parser.scripts)} production inline blocks, {len(preview.scripts)} preview blocks, {len(shared_data.scripts)} shared-data blocks")
           PY
-          for file in /tmp/investlab-inline-*.js /tmp/investlab-preview-*.mjs /tmp/investlab-six-company-*.mjs /tmp/investlab-shared-data-*.js; do
+          for file in /tmp/investlab-inline-*.js /tmp/investlab-preview-*.mjs /tmp/investlab-six-company-*.mjs /tmp/investlab-shared-data-*.js /tmp/investlab-import-ui-*.mjs; do
             echo "Checking $file"
             node --check "$file"
           done
