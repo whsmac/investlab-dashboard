@@ -14,3 +14,8 @@ test('CSV import UI requires separate validation and explicit confirmation',()=>
   assert.match(html,/window\.confirm/);
   assert.match(html,/commit:true/);
 });
+
+test('validated file identity is checked again before saving',()=>{
+  assert.match(html,/prepared=\{csv,kind,fileName:file\.name,file\}/);
+  assert.match(html,/current!==prepared\.file/);
+});
