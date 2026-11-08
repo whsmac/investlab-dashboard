@@ -34,6 +34,7 @@ test('owner helper is private, hardened, and has no seeded owner', () => {
   assert.match(migration, /create table app_private\.data_owners/);
   assert.match(migration, /security definer[\s\S]*set search_path = ''/i);
   assert.match(migration, /revoke all on table app_private\.data_owners from public, anon, authenticated/);
+  assert.match(migration, /alter table app_private\\.data_owners enable row level security/i);
   assert.match(migration, /grant execute on function app_private\.is_data_owner\(\) to authenticated/);
   assert.doesNotMatch(migration, /insert into app_private\.data_owners/i);
 });
