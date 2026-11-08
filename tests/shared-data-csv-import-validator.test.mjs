@@ -7,7 +7,7 @@ test('price adjusted close accepted',()=>assert.equal(validateSharedCsv(price,'p
 test('financial CSV quoted field accepted',()=>assert.equal(validateSharedCsv(financial,'financial').observations[0].capex_usd_bn,4.732));
 test('duplicate price date rejected',()=>assert.throws(()=>validateSharedCsv(price+'2026-11-06,TSLA,300\n','price'),/Duplicate/));
 test('invalid calendar date rejected',()=>assert.throws(()=>validateSharedCsv(price.replace('2026-11-06','2026-02-30'),'price'),/Invalid trading date/));
-test('SPCX prelisting date rejected',()=>assert.throws(()=>validateSharedCsv(price.replace('TSLA','SPCX').replace('2026-11-06','2026-06-11'),'price'),/listing/));
+test('SPCX is not rejected based on an unverified listing date',()=>assert.equal(validateSharedCsv(price.replace('TSLA','SPCX'),'price').rows,1));
 test('invalid negative close rejected',()=>assert.throws(()=>validateSharedCsv(price.replace('299.12','-1'),'price'),/nonnegative/));
 test('missing CAPEX definition rejected',()=>assert.throws(()=>validateSharedCsv(financial.replace('Net of sales, excludes finance leases',''),'financial'),/CAPEX definition/));
 test('non-HTTPS financial source rejected',()=>assert.throws(()=>validateSharedCsv(financial.replace('https://','http://'),'financial'),/HTTPS/));
