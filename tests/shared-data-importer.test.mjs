@@ -47,3 +47,16 @@ test('large CSV preflight checks duplicates in bounded chunks',async()=>{
   assert.equal(result.rows,205);
   assert.equal(calls.filter(x=>x==='market_price_observations').length,3);
 });
+
+test('more than 5000 rows are rejected before network requests',async()=>{
+  const {client,calls}=mock();
+  const rows=Array.from({length:5001},(_,i)=>{
+    const d=new Date(Date.UTC(2020,0,1+i)).toISOString().slice(0,10);
+    return d+',TSLA,100';
+  });
+  await assert.rejects(
+    ()=>importSharedCsv(client,'date,ticker,close\n'+rows.join('\n'),'price',{commit:true}),
+    /Maximum 5000 rows/
+  );
+  assert.deepEqual(calls,[]);
+});
