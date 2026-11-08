@@ -25,6 +25,8 @@ await page.addInitScript(()=>{
 await page.route('https://cdn.jsdelivr.net/**',route=>route.fulfill({status:200,contentType:'text/javascript',body:`
 window.__writes=[];
 window.supabase={createClient:()=>({
+  supabaseUrl:'https://gopofxyezhwpfbxebcrxd.supabase.co',
+  supabaseKey:'sb_publishable_mock',
   auth:{getUser:async()=>({data:{user:{id:'owner-test'}},error:null})},
   from:(name)=>({
     select:()=>name==='companies'
