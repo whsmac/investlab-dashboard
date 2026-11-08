@@ -44,3 +44,11 @@ test('RPC validates JSON array type before accessing its length and limits ticke
   assert.match(sql,/where c\.id is null or r\.ticker not in \('MSFT','GOOGL','AMZN','META','TSLA','SPCX'\)/);
   assert.equal((sql.match(/r\.ticker not in \('MSFT','GOOGL','AMZN','META','TSLA','SPCX'\)/g)||[]).length,2);
 });
+
+test('RPC SQL has one complete transaction and a valid financial period pattern',()=>{
+  const active=sql.replace(/--[^\n]*/g,'');
+  assert.equal((active.match(/\bcommit;/gi)||[]).length,1);
+  assert.equal((active.match(/\bcreate function public\.import_shared_observations\(/gi)||[]).length,1);
+  assert.match(active,/r\.fiscal_period !~ '\^\[0-9\]\{4\}-Q\[1-4\]\$'/);
+  assert.equal((active.match(/insert into public\.import_batches/gi)||[]).length,1);
+});
