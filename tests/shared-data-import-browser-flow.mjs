@@ -35,7 +35,7 @@ window.supabase={createClient:()=>({
 })};`}));
 try{
   await page.goto('http://127.0.0.1:'+server.address().port+'/shared-data-import.html');
-  await page.locator('#authState').getByText('로그인 확인됨').waitFor();
+  await page.waitForFunction(() => document.getElementById('authState').textContent.includes('로그인 확인됨'));
   await page.locator('#file').setInputFiles({name:'prices.csv',mimeType:'text/csv',buffer:Buffer.from('date,ticker,close\n2026-11-06,TSLA,299.12\n')});
   await page.locator('#validate').click();
   await page.waitForFunction(() => document.getElementById('result').textContent.includes('사전 검증 성공'));
