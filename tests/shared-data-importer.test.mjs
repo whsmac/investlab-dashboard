@@ -5,7 +5,7 @@ const csv='date,ticker,close\n2026-11-06,TSLA,299.12\n';
 function mock({existing=[],signedIn=true}={}) {
   const calls=[];
   const client={
-    auth:{getUser:async()=>({data:{user:signedIn?{id:'owner'}:null},error:null})},
+    auth:{getUser:async()=>({data:{user:signedIn?{id:'owner'}:null},error:null})},\n    rpc:async(name,args)=>{calls.push(name);return {data:{status:'committed',accepted_count:args.p_rows.length,batch_id:7},error:null}},
     from(name) {
       calls.push(name);
       if(name==='companies') return {select:async()=>({data:[{id:5,ticker:'TSLA'}],error:null})};
@@ -21,7 +21,7 @@ test('valid dry-run maps company id and performs no writes',async()=>{
   assert.deepEqual(calls,['companies','market_price_observations']);
   assert.deepEqual(await importSharedCsv(client,csv,'price'),{status:'validated',written:0,rows:1});
 });
-test('commit is blocked until atomic RPC exists',async()=>{
+test('explicit commit calls only atomic RPC',async()=>{
   const {client}=mock();
   await assert.rejects(()=>importSharedCsv(client,csv,'price',{commit:true}),/Commit disabled/);
 });
