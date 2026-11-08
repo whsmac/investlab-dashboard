@@ -6,6 +6,7 @@ const TABLE = {price:'market_price_observations',financial:'quarterly_financial_
 function fail(error, step) { if (error) throw new Error(step+': '+error.message); }
 export async function prepareSharedImport(client, csvText, kind) {
   const checked = validateSharedCsv(csvText,kind);
+  if (checked.rows > 5000) throw new Error('Maximum 5000 rows per atomic import');
   const {data:{user},error:authError} = await client.auth.getUser();
   fail(authError,'auth');
   if (!user?.id) throw new Error('Sign in before preparing import');
