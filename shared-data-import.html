@@ -64,8 +64,11 @@ $('validate').onclick=async()=>{
   busy=true;$('validate').disabled=true;
   try{
     if(file.size>5*1024*1024)throw Error('CSV 파일은 5MB 이하만 허용합니다.');
-    const csv=await file.text(),kind=$('kind').value;
-    const result=await importSharedCsv(client,csv,kind);
+    const csv=await file.text(),kind=$('kind').value,validationClient=client;
+    const result=await importSharedCsv(validationClient,csv,kind);
+    if($('file').files?.[0]!==file||$('kind').value!==kind||client!==validationClient){
+      throw Error('검증 중 파일·데이터 종류·연결이 변경되었습니다. 다시 검증하세요.');
+    }
     prepared={csv,kind,fileName:file.name,file};
     status('사전 검증 성공: '+result.rows+'행. 데이터베이스에는 저장하지 않았습니다.');
   }catch(e){status('검증 실패: '+e.message);}
