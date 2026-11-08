@@ -22,16 +22,20 @@ export async function prepareSharedImport(client, csvText, kind) {
   for (const ticker of new Set(checked.observations.map(x=>x.ticker))) {
     const companyId = ids.get(ticker);
     const dates = records.filter(r=>r.company_id===companyId).map(r=>r[dateColumn]);
-    const {data:existing,error} = await client.from(TABLE[kind])
-      .select(dateColumn).eq('company_id',companyId).in(dateColumn,dates);
-    fail(error,'existing observation check');
-    if (existing?.length) throw new Error('Existing '+ticker+' '+dateColumn+': '+existing.map(x=>x[dateColumn]).join(', '));
+    // Keep PostgREST URL size bounded for multi-year CSV files.
+    for (let start=0;start<dates.length;start+=100) {
+      const {data:existing,error} = await client.from(TABLE[kind])
+        .select(dateColumn).eq('company_id',companyId).in(dateColumn,dates.slice(start,start+100));
+      fail(error,'existing observation check');
+      if (existing?.length) throw new Error('Existing '+ticker+' '+dateColumn+': '+existing.map(x=>x[dateColumn]).join(', '));
+    }
   }
   return {kind,rows:records.length,records,userId:user.id};
 }
 export async function importSharedCsv(client,csvText,kind,{commit=false,sourceName=null,sourceUrl=null,fileName=null}={}) {
   const prepared = await prepareSharedImport(client,csvText,kind);
   if (!commit) return {status:'validated',written:0,rows:prepared.rows};
+  if (prepared.rows>5000) throw new Error('Maximum 5000 rows per atomic import');
   if (sourceUrl && !/^https:\/\//.test(sourceUrl)) throw new Error('sourceUrl must be HTTPS');
   const rows = prepared.records.map(({company_id,...row})=>row);
   const {data,error} = await client.rpc('import_shared_observations',{
