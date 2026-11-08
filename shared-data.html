@@ -90,17 +90,26 @@
       ["quarterly_financial_observations", "id,company_id,fiscal_period,revision_number,is_current,revenue_usd_bn,capex_usd_bn,capex_definition"]
     ];
     try {
-      const results = await Promise.all(specs.map(([name, columns]) => client.from(name).select(columns).limit(100)));
-      const failed = results.find(x => x.error);
+      // Count all visible rows independently of the limited display queries.
+      const counts = await Promise.all(specs.map(([name]) =>
+        client.from(name).select("id", { count: "exact", head: true })
+      ));
+      const queries = [
+        client.from("companies").select(specs[0][1]).order("ticker", { ascending: true }).limit(100),
+        client.from("market_price_observations").select(specs[1][1]).order("trading_date", { ascending: false }).limit(20),
+        client.from("quarterly_financial_observations").select(specs[2][1]).order("fiscal_period", { ascending: false }).limit(20)
+      ];
+      const results = await Promise.all(queries);
+      const failed = [...counts, ...results].find(x => x.error);
       if (failed) throw failed.error;
       const [companies, prices, financials] = results.map(x => x.data || []);
-      $("companyCount").textContent = companies.length;
-      $("priceCount").textContent = prices.length;
-      $("financialCount").textContent = financials.length;
+      $("companyCount").textContent = counts[0].count ?? "—";
+      $("priceCount").textContent = counts[1].count ?? "—";
+      $("financialCount").textContent = counts[2].count ?? "—";
       $("companies").innerHTML = table(["Ticker","기업명","거래소","상태"], companies.map(x => [x.ticker,x.company_name,x.exchange,x.is_active ? "활성" : "비활성"]));
-      $("prices").innerHTML = table(["기업 ID","거래일","조정종가","통화"], prices.slice().sort((a,b)=>b.trading_date.localeCompare(a.trading_date)).slice(0,20).map(x => [x.company_id,x.trading_date,x.close_price,x.currency]));
-      $("financials").innerHTML = table(["기업 ID","회계분기","매출(USD bn)","CAPEX(USD bn)","CAPEX 정의"], financials.slice().sort((a,b)=>b.fiscal_period.localeCompare(a.fiscal_period)).slice(0,20).map(x => [x.company_id,x.fiscal_period,x.revenue_usd_bn,x.capex_usd_bn,x.capex_definition]));
-      authStatus("조회 완료 · 읽기 전용 · 최대 100행씩 확인했습니다.");
+      $("prices").innerHTML = table(["기업 ID","거래일","조정종가","통화"], prices.map(x => [x.company_id,x.trading_date,x.close_price,x.currency]));
+      $("financials").innerHTML = table(["기업 ID","회계분기","매출(USD bn)","CAPEX(USD bn)","CAPEX 정의"], financials.map(x => [x.company_id,x.fiscal_period,x.revenue_usd_bn,x.capex_usd_bn,x.capex_definition]));
+      authStatus("조회 완료 · 읽기 전용 · 전체 건수 확인, 최근 관측값 20행 표시");
     } catch (error) {
       $("companyCount").textContent = $("priceCount").textContent = $("financialCount").textContent = "—";
       $("companies").innerHTML = '<div class="empty">공유 데이터 테이블을 조회할 수 없습니다.</div>';
