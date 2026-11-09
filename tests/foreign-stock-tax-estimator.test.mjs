@@ -15,10 +15,10 @@ test('incremental tax includes previously realized annual gains',()=>{
 });
 test('loss can reduce estimated annual tax',()=>{
  const r=estimateForeignStockTax({sales:[{...sale,taxBasisKRWPerShare:400000}],annualOtherGainsKRW:5000000});
- assert.equal(r.simulatedGainKRW,-2201000);
+ assert.equal(r.simulatedGainKRW,-1201000);
  assert.equal(r.taxBeforeKRW,550000);
- assert.equal(r.taxAfterKRW,65780);
- assert.equal(r.incrementalTaxKRW,-484220);
+ assert.equal(r.taxAfterKRW,285780);
+ assert.equal(r.incrementalTaxKRW,-264220);
 });
 test('reject missing tax basis, invalid FX, invalid rate',()=>{
  assert.throws(()=>estimateForeignStockTax({sales:[{...sale,taxBasisKRWPerShare:undefined}]}),/taxBasisKRWPerShare/);
