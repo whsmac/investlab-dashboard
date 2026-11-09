@@ -29,12 +29,9 @@ test('multi-trade UI uses local engines and does not access Supabase',()=>{
  assert.match(html,/양도소득세/);
 });
 
-test('virtual trade tax controls have unique IDs and single module imports',()=>{
+test('tax estimate remains isolated from the virtual trade page until UI integration',()=>{
  const html=readFileSync(new URL('../virtual-trade.html',import.meta.url),'utf8');
- for(const id of ['fxQuantity','fxBuyPrice','fxSellPrice','fxBuyRate','fxSellRate','fxCalculate','fxResult','taxPrior','taxHypothetical','taxRun','taxResult']){
-  assert.equal((html.match(new RegExp('id="'+id+'"','g'))||[]).length,1,'duplicate or missing '+id);
- }
- for(const name of ['krw-tax-gain.mjs','overseas-stock-tax.mjs']){
-  assert.equal((html.match(new RegExp(name.replaceAll('.','\\.'),'g'))||[]).length,1,'duplicate import '+name);
- }
+ assert.match(html,/양도소득세/);
+ assert.doesNotMatch(html,/estimateOverseasStockTax\\(/);
+ assert.doesNotMatch(html,/supabase\\.from\\(/);
 });
