@@ -8,11 +8,12 @@
 <section class="panel"><h2>가상 거래</h2><p class="hint">배열 순서대로 체결을 가정합니다. buy/sell, ticker, quantity, price, fee(선택)를 입력하세요.</p><label for="trades">가상 거래 목록 (JSON)</label><textarea id="trades" spellcheck="false" style="min-height:245px">[
  {"side":"sell","ticker":"TSLA","quantity":5,"price":200},
  {"side":"buy","ticker":"TSLA","quantity":10,"price":100}
-]</textarea><button id="calculate" type="button">시나리오 계산</button><p class="hint">여러 전략 비교(선택): 아래에 시나리오 배열을 입력하면 위 거래 목록 대신 전략별로 독립 계산합니다.</p><label for="alternatives">비교 전략 목록 (JSON 배열, 비우면 기존 거래 사용)</label><textarea id="alternatives" spellcheck="false" placeholder="여러 시나리오를 JSON 배열로 입력하세요."></textarea><p class="notice">세금 및 환율 미반영 · 동일 통화 가정 · 미래 가격은 사용자 가정</p></section>
-<section class="panel wide"><h2>결과 비교</h2><p id="status" role="status" aria-live="polite">계산 버튼을 누르세요.</p><div id="summary"></div><h3>전략별 비교</h3><div id="strategies"></div><h3>거래 단계별 변화 (첫 번째 전략)</h3><div id="steps"></div><h3>최종 종목별 보유수량</h3><div id="holdings"></div></section>
+]</textarea><button id="calculate" type="button">시나리오 계산</button><p class="hint">여러 전략 비교(선택): 아래에 시나리오 배열을 입력하면 위 거래 목록 대신 전략별로 독립 계산합니다.</p><label for="alternatives">비교 전략 목록 (JSON 배열, 비우면 기존 거래 사용)</label><textarea id="alternatives" spellcheck="false" placeholder="여러 시나리오를 JSON 배열로 입력하세요."></textarea><p class="notice">USD 매매 평가와 KRW 세금 추정은 별도 · 미래 가격은 사용자 가정</p></section>
+<section class="panel wide"><h2>해외주식 양도세 추정 (선택)</h2><p class="hint">세금용 원화 실현손익을 전략별로 별도 입력합니다. USD 손익을 단순 환산하지 않습니다. 일반 과세계좌 예시이며 실제 세법·환율·취득원가 확인이 필요합니다.</p><label>기존 연간 실현손익 (KRW)</label><input id="priorTax" type="number" value="0"><label>기본공제 가정 (KRW)</label><input id="deduction" type="number" value="2500000"><label>세율 가정</label><input id="taxRate" type="number" step="0.01" value="0.22"><label>전략별 세금용 실현손익 (JSON, 전략명: 손익 배열)</label><textarea id="taxGains" placeholder='{"상승장 단계별 매도":[500000,800000]}'></textarea><p class="notice">예상 세금은 현금에서 즉시 차감하지 않으며 USD 평가금액과 합산하지 않습니다.</p></section><section class="panel wide"><h2>결과 비교</h2><p id="status" role="status" aria-live="polite">계산 버튼을 누르세요.</p><div id="summary"></div><h3>전략별 비교</h3><div id="strategies"></div><h3>거래 단계별 변화 (첫 번째 전략)</h3><div id="steps"></div><h3>최종 종목별 보유수량</h3><div id="holdings"></div></section>
 </div>
 <script type="module">
 import {compareScenarios} from './src/simulator/scenario-comparison.mjs';
+import {estimateOverseasStockTax} from './src/simulator/overseas-stock-tax.mjs';
 const byId=id=>document.getElementById(id);
 const fmt=v=>Number(v).toLocaleString('ko-KR',{maximumFractionDigits:8});
 const table=(headers,rows)=>{const t=document.createElement('table'),thead=t.createTHead(),tr=thead.insertRow();for(const h of headers){const th=document.createElement('th');th.textContent=h;tr.append(th);}const body=t.createTBody();for(const row of rows){const r=body.insertRow();for(const value of row){const cell=r.insertCell();cell.textContent=String(value);}}return t;};
@@ -23,14 +24,18 @@ function calculate(){
   if(!byId('cash').value.trim())throw new Error('시작 현금을 입력하세요.');
   const positions=JSON.parse(byId('positions').value),trades=JSON.parse(byId('trades').value),prices=JSON.parse(byId('terminal').value);
   const alternatives=byId('alternatives').value.trim();const scenarios=alternatives?JSON.parse(alternatives):[{name:'가상 거래',trades}];const result=compareScenarios({cash,positions},scenarios,prices),scenario=result.scenarios[0];
+  const taxText=byId('taxGains').value.trim(),taxMap=taxText?JSON.parse(taxText):{};
+  if(!taxMap||typeof taxMap!=='object'||Array.isArray(taxMap))throw Error('세금용 손익은 JSON 객체여야 합니다.');
+  const taxOpts={priorRealizedKrw:Number(byId('priorTax').value),annualDeductionKrw:Number(byId('deduction').value),taxRate:Number(byId('taxRate').value)};
+  const taxResults=result.scenarios.map(s=>Object.prototype.hasOwnProperty.call(taxMap,s.name)?estimateOverseasStockTax({...taxOpts,hypotheticalGainsKrw:taxMap[s.name]}):null);
   byId('summary').append(table(['항목','계속 보유',scenario.name],[
    ['최종 현금 (USD)',fmt(result.baseline.final.cash),fmt(scenario.final.cash)],
    ['최종 평가총액 (USD)',fmt(result.baseline.terminalValue),fmt(scenario.terminalValue)],
    ['보유 대비 평가 차이 (USD)','—',fmt(scenario.deltaVsHold)],
    ['누적 실현손익 (USD)','0',fmt(scenario.final.realizedPnL)],
-   ['예상 양도세','미계산','미계산']
+   ['추가 예상 양도세 (KRW)','—',taxResults[0]?fmt(taxResults[0].incrementalTaxKrw):'미입력']
   ]));
-  byId('strategies').append(table(['전략','최종 현금','최종 평가총액','보유 대비 차이','실현손익'],result.scenarios.map(s=>[s.name,fmt(s.final.cash),fmt(s.terminalValue),fmt(s.deltaVsHold),fmt(s.final.realizedPnL)])));
+  byId('strategies').append(table(['전략','최종 현금 USD','최종 평가총액 USD','보유 대비 차이 USD','실현손익 USD','추가 예상 세금 KRW'],result.scenarios.map((s,i)=>[s.name,fmt(s.final.cash),fmt(s.terminalValue),fmt(s.deltaVsHold),fmt(s.final.realizedPnL),taxResults[i]?fmt(taxResults[i].incrementalTaxKrw):'미입력'])));
   byId('steps').append(table(['순서','거래','종목','수량','체결가','거래 후 현금','누적 실현손익'],scenario.steps.map(s=>[s.index+1,s.side==='buy'?'매수':'매도',s.ticker,fmt(s.quantity),fmt(s.price),fmt(s.cash),fmt(s.cumulativeRealizedPnL)])));
   const tickers=new Set([...Object.keys(result.baseline.final.positions),...Object.keys(scenario.final.positions)]);
   byId('holdings').append(table(['종목','계속 보유 주식 수','가상 거래 후 주식 수'],[...tickers].map(t=>[t,fmt(result.baseline.final.positions[t]?.quantity??0),fmt(scenario.final.positions[t]?.quantity??0)])));
