@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>INVESTLAB | 가상 매매 시뮬레이터</title>
+<style>
+:root{font-family:system-ui,-apple-system,sans-serif;color-scheme:dark;background:#101724;color:#edf3ff}body{max-width:1100px;margin:32px auto;padding:0 20px}h1{font-size:26px}p,.hint{color:#b4c1d6}.layout{display:grid;grid-template-columns:1fr 1fr;gap:18px}.panel{border:1px solid #34425c;border-radius:12px;padding:20px;background:#1a2435}label{display:block;margin:10px 0 4px;font-size:14px}input,textarea,button{box-sizing:border-box;width:100%;border-radius:7px;border:1px solid #52637e;background:#111a29;color:white;padding:10px;font:inherit}textarea{min-height:140px;font-family:ui-monospace,monospace;font-size:13px}button{margin-top:15px;background:#285ca3;cursor:pointer;font-weight:600}table{width:100%;border-collapse:collapse}td,th{text-align:right;padding:9px;border-bottom:1px solid #34425c}td:first-child,th:first-child{text-align:left}.wide{grid-column:1/-1}.error{color:#ffb0b0;white-space:pre-wrap}.notice{color:#f4c97c}@media(max-width:740px){.layout{grid-template-columns:1fr}}</style></head>
+<body><h1>INVESTLAB · 가상 매매 시뮬레이터</h1><p>하락장 재매수·종목 전환과 상승장 단계별 매도를 시험합니다. 이 화면은 예시 데이터만 사용하며 실제 원장을 읽거나 변경하지 않습니다.</p>
+<div class="layout">
+<section class="panel"><h2>기준 보유정보</h2><label for="cash">시작 현금 (USD)</label><input id="cash" type="number" min="0" step="any" value="1000"><label for="positions">보유종목 (JSON: 수량·평균 취득단가)</label><textarea id="positions" spellcheck="false">{"TSLA":{"quantity":10,"averageCost":100}}</textarea><label for="terminal">최종 가정 주가 (JSON)</label><textarea id="terminal" spellcheck="false">{"TSLA":150,"SOXL":40}</textarea></section>
+<section class="panel"><h2>가상 거래</h2><p class="hint">배열 순서대로 체결을 가정합니다. buy/sell, ticker, quantity, price, fee(선택)를 입력하세요.</p><label for="trades">가상 거래 목록 (JSON)</label><textarea id="trades" spellcheck="false" style="min-height:245px">[
+ {"side":"sell","ticker":"TSLA","quantity":5,"price":200},
+ {"side":"buy","ticker":"TSLA","quantity":10,"price":100}
+]</textarea><button id="calculate" type="button">시나리오 계산</button><p class="notice">세금 및 환율 미반영 · 동일 통화 가정 · 미래 가격은 사용자 가정</p></section>
+<section class="panel wide"><h2>결과 비교</h2><p id="status" role="status" aria-live="polite">계산 버튼을 누르세요.</p><div id="summary"></div><h3>거래 단계별 변화</h3><div id="steps"></div><h3>최종 종목별 보유수량</h3><div id="holdings"></div></section>
+</div>
+<script type="module">
+import {compareScenarios} from './src/simulator/scenario-comparison.mjs';
+const byId=id=>document.getElementById(id);
+const fmt=v=>Number(v).toLocaleString('ko-KR',{maximumFractionDigits:8});
+const table=(headers,rows)=>{const t=document.createElement('table'),thead=t.createTHead(),tr=thead.insertRow();for(const h of headers){const th=document.createElement('th');th.textContent=h;tr.append(th);}const body=t.createTBody();for(const row of rows){const r=body.insertRow();for(const value of row){const cell=r.insertCell();cell.textContent=String(value);}}return t;};
+function calculate(){
+ for(const id of ['summary','steps','holdings'])byId(id).replaceChildren();
+ try{
+  const cash=Number(byId('cash').value);
+  if(!byId('cash').value.trim())throw new Error('시작 현금을 입력하세요.');
+  const positions=JSON.parse(byId('positions').value),trades=JSON.parse(byId('trades').value),prices=JSON.parse(byId('terminal').value);
+  const result=compareScenarios({cash,positions},[{name:'가상 거래',trades}],prices),scenario=result.scenarios[0];
+  byId('summary').append(table(['항목','계속 보유','가상 거래'],[
+   ['최종 현금 (USD)',fmt(result.baseline.final.cash),fmt(scenario.final.cash)],
+   ['최종 평가총액 (USD)',fmt(result.baseline.terminalValue),fmt(scenario.terminalValue)],
+   ['보유 대비 평가 차이 (USD)','—',fmt(scenario.deltaVsHold)],
+   ['누적 실현손익 (USD)','0',fmt(scenario.final.realizedPnL)],
+   ['예상 양도세','미계산','미계산']
+  ]));
+  byId('steps').append(table(['순서','거래','종목','수량','체결가','거래 후 현금','누적 실현손익'],scenario.steps.map(s=>[s.index+1,s.side==='buy'?'매수':'매도',s.ticker,fmt(s.quantity),fmt(s.price),fmt(s.cash),fmt(s.cumulativeRealizedPnL)])));
+  const tickers=new Set([...Object.keys(result.baseline.final.positions),...Object.keys(scenario.final.positions)]);
+  byId('holdings').append(table(['종목','계속 보유 주식 수','가상 거래 후 주식 수'],[...tickers].map(t=>[t,fmt(result.baseline.final.positions[t]?.quantity??0),fmt(scenario.final.positions[t]?.quantity??0)])));
+  byId('status').textContent='계산 완료 · 실제 거래 및 데이터베이스 저장 없음';
+  byId('status').className='hint';
+ }catch(e){byId('status').textContent='입력 오류: '+e.message;byId('status').className='error';}
+}
+byId('calculate').addEventListener('click',calculate);
+calculate();
+</script></body></html>
