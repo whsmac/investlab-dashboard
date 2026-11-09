@@ -26,6 +26,17 @@ body{font:15px/1.5 system-ui,sans-serif;background:#f5f7fb;color:#172235;margin:
 <button id="run" type="button">시뮬레이션 계산</button>
 <section id="output" hidden><h2>계산 결과</h2><p id="summary"></p><div class="scroll"><table><thead><tr><th>단계</th><th>거래</th><th>종목</th><th>거래 수량</th><th>현금 ($)</th><th>실현손익 ($)</th></tr></thead><tbody id="results"></tbody></table></div><p id="hold"></p><p class="muted">양도소득세·세금용 환율·레버리지 상품 경로 의존성은 계산하지 않습니다. 세전 가상 결과입니다.</p></section><p id="error" class="error" role="alert"></p>
 <section><h2>해외주식 양도소득세 별도 추정 (원화)</h2><p class="muted">달러 실현손익을 세금 계산에 자동 사용하지 않습니다. 세금용 취득가액·환율·수수료를 반영해 계산한 <strong>원화 과세대상 손익</strong>을 입력하세요. 연간 다른 손익과 공제 적용 여부에 따라 결과가 달라집니다.</p>
+<fieldset><legend>가상 매도 원화 손익 계산 (세금용 입력)</legend>
+<label>매도 주식 수<input id="fxQuantity" type="number" step="any" value="10"></label>
+<label>취득단가 (USD)<input id="fxBuyPrice" type="number" step="any" value="100"></label>
+<label>매도가 (USD)<input id="fxSellPrice" type="number" step="any" value="150"></label>
+<label>취득 환율 (KRW/USD)<input id="fxBuyRate" type="number" step="any" value="1300"></label>
+<label>양도 환율 (KRW/USD)<input id="fxSellRate" type="number" step="any" value="1400"></label>
+<label>취득 수수료 (KRW)<input id="fxBuyFee" type="number" step="any" value="0"></label>
+<label>양도 수수료 (KRW)<input id="fxSellFee" type="number" step="any" value="0"></label>
+<button id="fxCalculate" type="button">원화 양도손익 계산 후 세금 입력에 반영</button><p id="fxResult" aria-live="polite"></p>
+<p class="muted">입력한 취득단가와 환율은 해당 매도 주식의 세법상 취득기록을 기준으로 직접 확인해야 합니다. 여러 취득분은 별도 계산해 합산하세요.</p>
+</fieldset>
 <label>올해 기존 실현손익 (KRW)<input id="taxPrior" type="number" step="any" value="0"></label>
 <label>가상 거래 과세 손익 합계 (KRW)<input id="taxHypothetical" type="number" step="any" value="0"></label>
 <label>연간 기본공제 가정 (KRW)<input id="taxDeduction" type="number" step="any" value="2500000"></label>
@@ -37,6 +48,7 @@ import {simulateTrades} from './src/simulator/virtual-trade-engine.mjs';
 import {compareScenarios} from './src/simulator/scenario-comparison.mjs';
 import {planStagedSales} from './src/simulator/staged-sale-planner.mjs';
 import {estimateOverseasStockTax} from './src/simulator/overseas-stock-tax.mjs';
+import {calculateKrwDisposalGain} from './src/simulator/krw-tax-gain.mjs';
 const $=id=>document.getElementById(id);
 const fmt=n=>Number(n).toLocaleString('ko-KR',{maximumFractionDigits:6});
 const number=id=>{const s=$(id).value.trim();if(!s)throw new Error('필수 입력값이 비어 있습니다: '+id);return Number(s)};
@@ -89,5 +101,6 @@ function calculate(){
  }catch(e){$('error').textContent='계산 불가: '+e.message}
 }
 $('add').addEventListener('click',()=>addTrade());for(const name of ['dip','staged','rotate'])$(name).addEventListener('click',()=>example(name));$('run').addEventListener('click',calculate);example('dip');
+$('fxCalculate').addEventListener('click',()=>{try{const r=calculateKrwDisposalGain({quantity:number('fxQuantity'),acquisitionPrice:number('fxBuyPrice'),disposalPrice:number('fxSellPrice'),acquisitionFx:number('fxBuyRate'),disposalFx:number('fxSellRate'),acquisitionFeeKrw:number('fxBuyFee'),disposalFeeKrw:number('fxSellFee')});$('taxHypothetical').value=String(r.gainKrw);$('fxResult').textContent='취득원가 '+fmt(r.acquisitionCostKrw)+'원 / 양도대금 '+fmt(r.disposalProceedsKrw)+'원 / 과세손익 '+fmt(r.gainKrw)+'원. 아래 세금 계산 버튼을 눌러 연간 손익과 합산하세요.';}catch(e){$('fxResult').textContent='계산 불가: '+e.message}});
 $('taxRun').addEventListener('click',()=>{try{const r=estimateOverseasStockTax({priorRealizedKrw:number('taxPrior'),hypotheticalGainsKrw:[number('taxHypothetical')],annualDeductionKrw:number('taxDeduction'),deductionUsedElsewhereKrw:number('taxUsed'),taxRate:number('taxRate')});$('taxResult').textContent='기존 추정세액: '+fmt(r.baselineTaxKrw)+'원 / 가상 거래 포함: '+fmt(r.projectedTaxKrw)+'원 / 세액 변화: '+fmt(r.incrementalTaxKrw)+'원 (별도 추정)'}catch(e){$('taxResult').textContent='계산 불가: '+e.message}});
 </script></body></html>
