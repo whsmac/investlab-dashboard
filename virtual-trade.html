@@ -63,7 +63,7 @@ function calculate(){
   const portfolio={cash:number('cash'),positions:{[ticker]:{quantity:number('shares'),averageCost:number('basis')}}};
   const trades=[...$('trades').children].map(tr=>tr.readTrade());
   const result=simulateTrades(portfolio,trades);
-  const terminalPrices={[ticker]:number('terminal'),SOXL:number('soxlTerminal')};
+  const terminalPrices={SOXL:number('soxlTerminal'),[ticker]:number('terminal')};
   const comparison=compareScenarios(portfolio,[{name:'현재 전략',trades}],terminalPrices);
   const strategy=comparison.scenarios[0];
   const reserve=number('reserve');
