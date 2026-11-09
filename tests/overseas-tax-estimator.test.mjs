@@ -1,27 +1,31 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {estimateOverseasStockTax} from '../src/simulator/overseas-tax-estimator.mjs';
-test('below deduction produces no estimated tax',()=>{
- const r=estimateOverseasStockTax({disposals:[{proceedsKrw:4000000,acquisitionCostKrw:2000000}]});
- assert.equal(r.hypotheticalGainKrw,2000000);assert.equal(r.incrementalTaxKrw,0);
+import {estimateOverseasCapitalGainsTax,taxBasisSaleGainKrw} from '../src/simulator/overseas-tax-estimator.mjs';
+test('annual deduction and tax rate are editable assumptions',()=>{
+ const r=estimateOverseasCapitalGainsTax({hypotheticalGainsKrw:5000000});
+ assert.equal(r.taxableKrw,2500000);
+ assert.equal(r.estimatedTaxKrw,550000);
+ assert.equal(r.incrementalTaxKrw,550000);
+ assert.equal(r.taxStatus,'estimate_assumptions_only');
 });
-test('hypothetical gains cross deduction threshold',()=>{
- const r=estimateOverseasStockTax({annualRealizedGainKrw:2000000,disposals:[{proceedsKrw:2000000,acquisitionCostKrw:1000000,deductibleExpensesKrw:100000}]});
- assert.equal(r.hypotheticalGainKrw,900000);assert.equal(r.incrementalTaxKrw,88000);
-});
-test('prior gain and existing deduction usage change incremental tax',()=>{
- const r=estimateOverseasStockTax({annualRealizedGainKrw:3000000,deductionAlreadyUsedKrw:2500000,disposals:[{proceedsKrw:2000000,acquisitionCostKrw:1000000}]});
+test('previously realized gains reduce unused deduction',()=>{
+ const r=estimateOverseasCapitalGainsTax({realizedGainsKrw:3000000,hypotheticalGainsKrw:1000000});
+ assert.equal(r.beforeTaxKrw,110000);
+ assert.equal(r.estimatedTaxKrw,330000);
  assert.equal(r.incrementalTaxKrw,220000);
 });
-test('loss scenario can reduce estimated tax, but not below zero',()=>{
- const r=estimateOverseasStockTax({annualRealizedGainKrw:4000000,disposals:[{proceedsKrw:1000000,acquisitionCostKrw:3000000}]});
- assert.equal(r.incrementalTaxKrw,-330000);
- assert.equal(r.estimatedTaxAfterKrw,0);
+test('loss offset can decrease estimated annual tax',()=>{
+ const r=estimateOverseasCapitalGainsTax({realizedGainsKrw:6000000,hypotheticalLossesKrw:2000000});
+ assert.equal(r.beforeTaxKrw,770000);
+ assert.equal(r.estimatedTaxKrw,330000);
+ assert.equal(r.incrementalTaxKrw,-440000);
 });
-test('does not mutate inputs and rejects malformed data',()=>{
- const d=[{proceedsKrw:3000000,acquisitionCostKrw:2000000}];const before=structuredClone(d);
- estimateOverseasStockTax({disposals:d});assert.deepEqual(d,before);
- assert.throws(()=>estimateOverseasStockTax({disposals:[{proceedsKrw:-1,acquisitionCostKrw:0}]}),/nonnegative/);
- assert.throws(()=>estimateOverseasStockTax({deductionAlreadyUsedKrw:3000000}),/exceeds/);
- assert.throws(()=>estimateOverseasStockTax({taxRate:2}),/rate/);
+test('tax-basis KRW proceeds are independent of USD ledger average cost',()=>{
+ assert.equal(taxBasisSaleGainKrw({proceedsKrw:4000000,acquisitionCostKrw:2900000,sellingFeesKrw:10000}),1090000);
+ assert.equal(taxBasisSaleGainKrw({proceedsKrw:1000000,acquisitionCostKrw:1500000}),-500000);
+});
+test('invalid inputs fail closed',()=>{
+ assert.throws(()=>estimateOverseasCapitalGainsTax({taxRate:2}),/tax rate/);
+ assert.throws(()=>estimateOverseasCapitalGainsTax({hypotheticalLossesKrw:-1}),/nonnegative/);
+ assert.throws(()=>taxBasisSaleGainKrw({proceedsKrw:100,sellingFeesKrw:101,acquisitionCostKrw:0}),/exceed/);
 });
