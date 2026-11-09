@@ -24,7 +24,7 @@ body{font:15px/1.5 system-ui,sans-serif;background:#f5f7fb;color:#172235;margin:
 <p class="muted">최종 가격은 사용자가 입력한 가정이며, 실제 예측이 아닙니다.</p>
 </section>
 <button id="run" type="button">시뮬레이션 계산</button>
-<section id="output" hidden><h2>계산 결과</h2><p id="summary"></p><div class="scroll"><table><thead><tr><th>단계</th><th>거래</th><th>종목</th><th>거래 수량</th><th>현금 ($)</th><th>실현손익 ($)</th></tr></thead><tbody id="results"></tbody></table></div><p id="hold"></p><p class="muted">양도소득세·세금용 환율·레버리지 상품 경로 의존성은 계산하지 않습니다. 세전 가상 결과입니다.</p></section><p id="error" class="error" role="alert"></p>
+<section id="output" hidden><h2>계산 결과</h2><p id="summary"></p><div class="scroll"><table><thead><tr><th>단계</th><th>거래</th><th>종목</th><th>거래 수량</th><th>현금 ($)</th><th>실현손익 ($)</th></tr></thead><tbody id="results"></tbody></table></div><p id="hold"></p><p id="taxResult"></p><p class="muted">양도소득세·세금용 환율·레버리지 상품 경로 의존성은 계산하지 않습니다. 세전 가상 결과입니다.</p></section><p id="error" class="error" role="alert"></p>
 <section><h2>해외주식 양도소득세 별도 추정 (원화)</h2><p class="muted">달러 실현손익을 세금 계산에 자동 사용하지 않습니다. 세금용 취득가액·환율·수수료를 반영해 계산한 <strong>원화 과세대상 손익</strong>을 입력하세요. 연간 다른 손익과 공제 적용 여부에 따라 결과가 달라집니다.</p>
 <fieldset><legend>가상 매도 원화 손익 계산 (세금용 입력)</legend>
 <label>매도 주식 수<input id="fxQuantity" type="number" step="any" value="10"></label>
@@ -49,6 +49,8 @@ import {calculateKrwDisposalGain} from './src/simulator/krw-tax-gain.mjs';
 import {estimateOverseasStockTax} from './src/simulator/overseas-stock-tax.mjs';
 import {compareScenarios} from './src/simulator/scenario-comparison.mjs';
 import {planStagedSales} from './src/simulator/staged-sale-planner.mjs';
+import {estimateOverseasStockTax} from './src/simulator/overseas-stock-tax.mjs';
+import {calculateKrwDisposalGain} from './src/simulator/krw-tax-gain.mjs';
 const $=id=>document.getElementById(id);
 const fmt=n=>Number(n).toLocaleString('ko-KR',{maximumFractionDigits:6});
 const number=id=>{const s=$(id).value.trim();if(!s)throw new Error('필수 입력값이 비어 있습니다: '+id);return Number(s)};
@@ -92,6 +94,17 @@ function calculate(){
   const shares=Object.entries(result.final.positions).map(([symbol,p])=>symbol+' '+fmt(p.quantity)+'주').join(' / ');
   $('summary').textContent='최종 보유: '+shares+' | 최종 현금: $'+fmt(result.final.cash)+' | 목표 현금: '+(result.final.cash>=reserve?'달성':'미달')+' | 실현손익: $'+fmt(result.final.realizedPnL);
   $('hold').textContent='동일 최종 가격 가정: 보유 유지 $'+fmt(comparison.baseline.terminalValue)+' / 전략 실행 $'+fmt(strategy.terminalValue)+' / 차이 $'+fmt(strategy.deltaVsHold)+' (세전)';
+  $('taxResult').textContent='예상 양도세: 미계산 (선택 입력 필요)';
+  if($('taxEnabled').checked){
+    if(trades.some(t=>t.side==='sell'&&t.ticker!==ticker))throw new Error('다른 종목 매도 세금 계산에는 해당 종목의 별도 취득원가·환율이 필요합니다');
+    const taxGains=trades.filter(t=>t.side==='sell').map(t=>calculateKrwDisposalGain({
+      quantity:t.quantity,acquisitionPrice:number('taxBuyPrice'),disposalPrice:t.price,
+      acquisitionFx:number('fxBuyRate'),disposalFx:number('fxSellRate'),
+      disposalFeeKrw:t.fee*number('fxSellRate')
+    }).gainKrw);
+    const tax=estimateOverseasStockTax({priorRealizedKrw:number('taxPrior'),hypotheticalGainsKrw:taxGains,deductionUsedElsewhereKrw:number('taxDeductionUsed')});
+    $('taxResult').textContent='가상 거래에 따른 연간 추가 예상 양도세: '+fmt(tax.incrementalTaxKrw)+'원 / 연간 예상 총 양도세: '+fmt(tax.projectedTaxKrw)+'원 (가정값, 실제 신고용 아님)';
+  }
   const body=$('results');body.replaceChildren();
   for(const s of result.steps){const tr=document.createElement('tr');for(const value of [s.index+1,s.side==='buy'?'매수':'매도',s.ticker,fmt(s.quantity),'$'+fmt(s.cash),'$'+fmt(s.tradePnL)]){const td=document.createElement('td');td.textContent=String(value);tr.append(td)}body.append(tr)}
   // Dedicated staged-sale planner supplies stage-specific cash weights.
