@@ -120,3 +120,5 @@ jobs:
         run: node tests/shared-data-import-browser-smoke.mjs
       - name: Exercise authenticated import flow with mocked Supabase
         run: node tests/shared-data-import-browser-flow.mjs
+      - name: Exercise virtual trading UI in Chromium
+        run: node tests/virtual-trade-browser-smoke.mjs
