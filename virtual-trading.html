@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>INVESTLAB | 가상 매매 전략</title>
+<style>
+:root{color-scheme:dark;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}*{box-sizing:border-box}
+body{margin:0;background:#0b1020;color:#e9f0ff;line-height:1.5}main{max-width:1050px;margin:auto;padding:26px 18px}
+h1{margin:0 0 8px}h2{font-size:18px;margin:0 0 12px}.muted{color:#a8b9d6}.panel{background:#151d30;border:1px solid #2d3a57;border-radius:14px;padding:18px;margin:16px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px}label{display:grid;gap:4px;font-size:13px;color:#b7c7e4}
+input,select,button{font:inherit;border:1px solid #445577;background:#10182b;color:#f2f6ff;border-radius:8px;padding:9px;min-width:0;width:100%}
+button{cursor:pointer;width:auto;margin:10px 6px 0 0}button.primary{background:#79a9ff;color:#091224;font-weight:700}button:disabled{opacity:.5}
+table{border-collapse:collapse;width:100%;font-size:14px}th,td{text-align:right;border-bottom:1px solid #35415c;padding:9px 6px}th:first-child,td:first-child{text-align:left}
+.scroll{overflow-x:auto}.error{color:#ffaaaa}.notice{color:#f4d58d}strong{color:#fff}a{color:#a9c7ff}
+</style></head><body><main>
+<a href="./shared-data.html">공유 데이터 화면</a>
+<h1>가상 매매 전략 시뮬레이터</h1>
+<p class="muted">하락장 주식 수 증대 · 상승장 분할 매도 및 현금 확보 · 종목 전환. 입력한 가격은 가정이며 실제 거래가 아닙니다.</p>
+<p class="notice">현재 독립형 시험 화면입니다. 실제 원장과 연결되지 않으며, 양도세는 계산하지 않습니다. 모든 금액은 선택한 동일 통화 기준입니다.</p>
+<section class="panel"><h2>1. 현재 보유 상태 (직접 입력)</h2>
+<div class="grid"><label>기준 종목<input id="ticker" value="TSLA" maxlength="15"></label><label>보유 주식 수<input id="shares" type="number" min="0" step="any" value="100"></label><label>평균 취득단가<input id="basis" type="number" min="0" step="any" value="200"></label><label>현재 현금<input id="cash" type="number" min="0" step="any" value="0"></label><label>최종 평가 기준가격<input id="terminal" type="number" min="0" step="any" value="200"></label></div></section>
+<section class="panel"><h2>2. 가상 거래 계획</h2><p class="muted">순서대로 체결한다고 가정합니다. 다른 종목으로 전환하려면 매도 거래 다음에 매수 거래를 추가하세요.</p>
+<div class="scroll"><table><thead><tr><th>단계</th><th>구분</th><th>종목</th><th>수량</th><th>가상 가격</th><th>수수료</th><th></th></tr></thead><tbody id="trades"></tbody></table></div>
+<button id="add">+ 거래 추가</button><button id="bull">상승장 분할 매도 예시</button><button id="bear">하락장 재매수 예시</button></section>
+<section class="panel"><h2>3. 종목별 최종 평가가격</h2><p class="muted">전환 종목의 최종 평가가격도 지정해야 동일 시점의 전략 성과를 비교할 수 있습니다.</p><div class="grid"><label>전환 종목<input id="altTicker" value="SOXL"></label><label>전환 종목 최종 가격<input id="altTerminal" type="number" min="0" step="any" value="50"></label></div><button class="primary" id="run">가상 거래 계산</button><p id="error" class="error" role="alert"></p></section>
+<section class="panel" id="output" hidden><h2>4. 결과 — 보유 유지 대비</h2><div id="summary"></div><h2>거래 단계별 현금 및 보유량</h2><div class="scroll"><table><thead><tr><th>단계</th><th>거래</th><th>현금</th><th>누적 실현손익</th><th>종목별 보유량</th></tr></thead><tbody id="results"></tbody></table></div><p class="notice">양도세·환전비용·슬리피지·레버리지 ETF의 경로 의존성은 미반영. 예상 세후 자산이 아닙니다.</p></section>
+</main><script type="module">
+import {compareScenarios} from './src/simulator/scenario-comparison.mjs';
+const $=id=>document.getElementById(id);
+const number=id=>{const value=Number($(id).value);if(!$(id).value.trim()||!Number.isFinite(value))throw Error(id+' 숫자를 입력하세요');return value};
+const ticker=value=>{const t=value.trim().toUpperCase();if(!/^[A-Z0-9][A-Z0-9.-]{0,14}$/.test(t))throw Error('종목 코드를 확인하세요');return t};
+const fmt=n=>Number(n).toLocaleString('ko-KR',{maximumFractionDigits:6});
+const cell=(row,value)=>{const td=document.createElement('td');td.textContent=String(value);row.append(td)};
+function addTrade(side='sell',tickerValue='',quantity='',price='',fee='0'){
+ const tr=document.createElement('tr');
+ const idx=document.createElement('td');idx.textContent=String($('trades').children.length+1);tr.append(idx);
+ const values=[['select','side',side],['input','ticker',tickerValue],['input','quantity',quantity],['input','price',price],['input','fee',fee]];
+ for(const [tag,name,val] of values){const td=document.createElement('td');const el=document.createElement(tag);el.dataset.field=name;
+ if(tag==='select'){for(const [v,label] of [['sell','매도'],['buy','매수']]){const o=document.createElement('option');o.value=v;o.textContent=label;el.append(o)}}else if(name!=='ticker'){el.type='number';el.min='0';el.step='any'}el.value=val;td.append(el);tr.append(td)}
+ const td=document.createElement('td'),remove=document.createElement('button');remove.type='button';remove.textContent='삭제';remove.addEventListener('click',()=>{tr.remove();renumber()});td.append(remove);tr.append(td);$('trades').append(tr)
+}
+function renumber(){[...$('trades').children].forEach((r,i)=>r.firstChild.textContent=String(i+1))}
+function preset(kind){$('trades').replaceChildren();const t=ticker($('ticker').value),q=number('shares'),p=number('terminal');if(q<=0||p<=0)throw Error('보유수량과 가격은 양수여야 합니다');
+ if(kind==='bull'){addTrade('sell',t,q*.2,p*1.1);addTrade('sell',t,q*.2,p*1.2);addTrade('sell',t,q*.2,p*1.3)}
+ else {addTrade('sell',t,q*.3,p*1.1);addTrade('buy',t,q*.4,p*.8)}
+}
+$('add').addEventListener('click',()=>addTrade('sell',$('ticker').value));
+for(const kind of ['bull','bear'])$(kind).addEventListener('click',()=>{try{preset(kind);$('error').textContent=''}catch(e){$('error').textContent=e.message}});
+$('run').addEventListener('click',()=>{
+ try{
+  const t=ticker($('ticker').value),alt=ticker($('altTicker').value),cash=number('cash'),quantity=number('shares'),averageCost=number('basis');
+  if(alt===t)throw Error('전환 종목은 기준 종목과 달라야 합니다');
+  const trades=[...$('trades').children].map(tr=>{const field=name=>tr.querySelector('[data-field="'+name+'"]');const n=name=>{const v=field(name).value;if(!v.trim())throw Error('거래 '+name+' 입력이 필요합니다');return Number(v)};return {side:field('side').value,ticker:ticker(field('ticker').value),quantity:n('quantity'),price:n('price'),fee:n('fee')}});
+  const prices={[t]:number('terminal'),[alt]:number('altTerminal')};
+  const data=compareScenarios({cash,positions:{[t]:{quantity,averageCost}}},[{name:'계획',trades}],prices);
+  const r=data.scenarios[0],baseline=data.baseline;
+  $('summary').replaceChildren();
+  const summary=document.createElement('p');summary.textContent='보유 유지 평가액 '+fmt(baseline.terminalValue)+' / 전략 평가액 '+fmt(r.terminalValue)+' / 차이 '+fmt(r.deltaVsHold)+' / 최종 현금 '+fmt(r.final.cash)+' / 최종 보유 '+Object.entries(r.final.positions).map(([k,v])=>k+' '+fmt(v.quantity)+'주').join(', ');$('summary').append(summary);
+  $('results').replaceChildren();
+  for(const step of r.steps){const tr=document.createElement('tr');for(const v of [step.index+1,step.ticker+' '+(step.side==='sell'?'매도':'매수')+' '+fmt(step.quantity)+'주',fmt(step.cash),fmt(step.cumulativeRealizedPnL),Object.entries(step.positions).map(([k,p])=>k+' '+fmt(p.quantity)+'주').join(', ')])cell(tr,v);$('results').append(tr)}
+  $('error').textContent='';$('output').hidden=false;
+ }catch(e){$('output').hidden=true;$('error').textContent=e.message}
+});
+preset('bull');
+</script></body></html>
