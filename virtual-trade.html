@@ -23,13 +23,7 @@ body{font:15px/1.5 system-ui,sans-serif;background:#f5f7fb;color:#172235;margin:
 <label>SOXL 최종 비교 가격 ($)<input id="soxlTerminal" type="number" value="50" step="any"></label>
 <p class="muted">최종 가격은 사용자가 입력한 가정이며, 실제 예측이 아닙니다.</p>
 </section>
-<section><h2>해외주식 양도세 별도 추정 (원화 기준)</h2>
-<p class="muted">매매 계산의 USD 실현손익을 자동 환산하지 않습니다. 증권사 세금용 원화 실현손익 자료를 입력해야 합니다.</p>
-<label>기존 연간 실현손익 (원)<input id="priorTaxKrw" type="number" value="0" step="1"></label>
-<label>가상 거래 과세용 손익 (원)<input id="scenarioTaxKrw" type="number" value="0" step="1"></label>
-<label>다른 곳에서 사용한 기본공제 (원)<input id="usedDeduction" type="number" value="0" step="1"></label>
-<p id="taxResult" aria-live="polite"></p>
-</section><button id="run" type="button">시뮬레이션 계산</button>
+<button id="run" type="button">시뮬레이션 계산</button>
 <section id="output" hidden><h2>계산 결과</h2><p id="summary"></p><div class="scroll"><table><thead><tr><th>단계</th><th>거래</th><th>종목</th><th>거래 수량</th><th>현금 ($)</th><th>실현손익 ($)</th></tr></thead><tbody id="results"></tbody></table></div><p id="hold"></p><p class="muted">양도소득세·세금용 환율·레버리지 상품 경로 의존성은 계산하지 않습니다. 세전 가상 결과입니다.</p></section><p id="error" class="error" role="alert"></p>
 <section><h2>해외주식 양도소득세 별도 추정 (원화)</h2><p class="muted">달러 실현손익을 세금 계산에 자동 사용하지 않습니다. 세금용 취득가액·환율·수수료를 반영해 계산한 <strong>원화 과세대상 손익</strong>을 입력하세요. 연간 다른 손익과 공제 적용 여부에 따라 결과가 달라집니다.</p>
 <label>올해 기존 실현손익 (KRW)<input id="taxPrior" type="number" step="any" value="0"></label>
@@ -40,7 +34,6 @@ body{font:15px/1.5 system-ui,sans-serif;background:#f5f7fb;color:#172235;margin:
 <button id="taxRun" type="button">세금 별도 계산</button><p id="taxResult" aria-live="polite"></p><p class="muted">예상 세액은 가상 현금에서 즉시 차감하지 않습니다. 신고·납부액 확정용이 아니며 과세연도별 규정 검증이 필요합니다.</p></section>
 </main><script type="module">
 import {simulateTrades} from './src/simulator/virtual-trade-engine.mjs';
-import {estimateOverseasStockTax} from './src/simulator/overseas-stock-tax.mjs';
 import {compareScenarios} from './src/simulator/scenario-comparison.mjs';
 import {planStagedSales} from './src/simulator/staged-sale-planner.mjs';
 import {estimateOverseasStockTax} from './src/simulator/overseas-stock-tax.mjs';
@@ -92,8 +85,6 @@ function calculate(){
   // Dedicated staged-sale planner supplies stage-specific cash weights.
   const staged=trades.length>0&&trades.every(t=>t.side==='sell'&&t.ticker===ticker)&&trades.every((t,i)=>i===0||t.price>trades[i-1].price);
   if(staged){const plan=planStagedSales(portfolio,{ticker,targets:trades.map(t=>({price:t.price,quantity:t.quantity,fee:t.fee})),terminalPrices,reserveCash:reserve});const p=document.createElement('p');p.textContent='단계별 현금 비중: '+plan.steps.map(s=>s.stage+'차 '+fmt(s.cashWeightPct)+'%').join(' / ');$('hold').append(p)}
-  const tax=estimateOverseasStockTax({priorRealizedKrw:number('priorTaxKrw'),hypotheticalGainsKrw:[number('scenarioTaxKrw')],deductionUsedElsewhereKrw:number('usedDeduction')});
-  $('taxResult').textContent='예상 연간 양도세: '+fmt(tax.projectedTaxKrw)+'원 / 가상 거래에 따른 예상 세액 변화: '+fmt(tax.incrementalTaxKrw)+'원 (과세용 원화 손익 직접 입력 기준)';
   $('output').hidden=false;
  }catch(e){$('error').textContent='계산 불가: '+e.message}
 }
