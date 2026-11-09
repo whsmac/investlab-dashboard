@@ -11,6 +11,24 @@ const signed=(value,name)=>{
  return value;
 };
 const roundWon=value=>Math.round(value);
+/** Convert a hypothetical USD sale to tax-purpose KRW values.
+ * The tax-specific KRW acquisition cost must be supplied independently.
+ * Multiple purchase lots require an externally determined aggregate tax basis.
+ */
+export function convertDisposalToKRW({quantity,priceUSD,disposalFxKRW,acquisitionCostKRW,sellingFeeUSD=0}){
+ for(const [name,v] of Object.entries({quantity,priceUSD,disposalFxKRW})){
+  if(typeof v!=='number'||!Number.isFinite(v)||v<=0)throw new Error(name+' must be positive');
+ }
+ nonnegative(acquisitionCostKRW,'acquisitionCostKRW');
+ nonnegative(sellingFeeUSD,'sellingFeeUSD');
+ const gross=quantity*priceUSD;
+ if(!Number.isFinite(gross)||sellingFeeUSD>gross)throw new Error('selling fee exceeds proceeds or value overflow');
+ const proceedsKRW=roundWon(gross*disposalFxKRW);
+ const sellingFeesKRW=roundWon(sellingFeeUSD*disposalFxKRW);
+ if(!Number.isSafeInteger(proceedsKRW)||!Number.isSafeInteger(sellingFeesKRW))throw new Error('KRW amount overflow');
+ return {proceedsKRW,costBasisKRW:roundWon(acquisitionCostKRW),sellingFeesKRW};
+}
+
 /** Trades use KRW proceeds and tax-basis costs, not USD ledger average cost.
  * @param {{sales:Array<{proceedsKRW:number,costBasisKRW:number,sellingFeesKRW?:number}>,
  * priorRealizedGainKRW?:number,otherAnnualGainKRW?:number,
