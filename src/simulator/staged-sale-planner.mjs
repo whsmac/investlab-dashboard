@@ -35,13 +35,30 @@ export function planStagedSales(portfolio,{ticker,targets,terminalPrices}) {
   const baseline=simulateTrades(portfolio,[]);
   const baselineValue=value(baseline.final), terminalValue=value(simulation.final);
   const initialCash=baseline.initial.cash;
-  const steps=simulation.steps.map((s,i)=>({
-    stage:i+1,targetPrice:targets[i].price,soldShares:s.quantity,
-    cumulativeSoldShares:Math.round((initialShares-s.positions[ticker].quantity)*1e8)/1e8,
-    remainingShares:s.positions[ticker].quantity,
-    cash:s.cash,raisedCash:Math.round((s.cash-initialCash)*1e8)/1e8,
-    realizedPnL:s.tradePnL,cumulativeRealizedPnL:s.cumulativeRealizedPnL
-  }));
+  const steps=simulation.steps.map((s,i)=>{
+    // At each target, value the sold ticker at that stage's price; use explicit
+    // reference prices for other positions. This is not a historical valuation.
+    let holdingsValue=0;
+    for (const [symbol,p] of Object.entries(s.positions)) {
+      if (!p.quantity) continue;
+      const price=symbol===ticker ? targets[i].price : terminalPrices[symbol];
+      if (typeof price!=='number' || !Number.isFinite(price) || price<0)
+        throw new Error('missing or invalid reference price: '+symbol);
+      holdingsValue+=p.quantity*price;
+    }
+    const stageTotalValue=s.cash+holdingsValue;
+    if (!Number.isFinite(stageTotalValue) || stageTotalValue<=0) throw new Error('invalid stage valuation');
+    return {
+      stage:i+1,targetPrice:targets[i].price,soldShares:s.quantity,
+      cumulativeSoldShares:Math.round((initialShares-s.positions[ticker].quantity)*1e8)/1e8,
+      remainingShares:s.positions[ticker].quantity,
+      cash:s.cash,raisedCash:Math.round((s.cash-initialCash)*1e8)/1e8,
+      holdingsValue:Math.round(holdingsValue*1e8)/1e8,
+      stageTotalValue:Math.round(stageTotalValue*1e8)/1e8,
+      cashWeightPct:Math.round(s.cash/stageTotalValue*10000)/100,
+      realizedPnL:s.tradePnL,cumulativeRealizedPnL:s.cumulativeRealizedPnL
+    };
+  });
   return {ticker,initialShares,initialCash,steps,final:simulation.final,
     totalRaisedCash:Math.round((simulation.final.cash-initialCash)*1e8)/1e8,
     baselineValue,terminalValue,deltaVsHold:Math.round((terminalValue-baselineValue+Number.EPSILON)*1e8)/1e8,
