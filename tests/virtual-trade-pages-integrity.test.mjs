@@ -29,9 +29,12 @@ test('multi-trade UI uses local engines and does not access Supabase',()=>{
  assert.match(html,/양도소득세/);
 });
 
-test('tax estimate remains isolated from the virtual trade page until UI integration',()=>{
+test('tax estimate uses explicit separate KRW inputs without Supabase writes',()=>{
  const html=readFileSync(new URL('../virtual-trade.html',import.meta.url),'utf8');
  assert.match(html,/양도소득세/);
- assert.doesNotMatch(html,/estimateOverseasStockTax\\(/);
+ assert.match(html,/estimateOverseasStockTax\\(/);
+ assert.match(html,/calculateKrwDisposalGain\\(/);
+ assert.match(html,/id="taxPrior"/);
+ assert.match(html,/id="fxBuyRate"/);
  assert.doesNotMatch(html,/supabase\\.from\\(/);
 });
