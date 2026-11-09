@@ -34,7 +34,8 @@ export function estimateForeignStockTax(input){
  });
  const simulatedGainKRW=saleDetails.reduce((sum,s)=>sum+s.gainKRW,0);
  const beforeGain=prior+other,afterGain=beforeGain+simulatedGainKRW;
- const taxFor=gain=>roundWon(Math.max(0,gain-deduction)*rate);
+ if(!Number.isFinite(beforeGain)||!Number.isFinite(afterGain))throw new Error('annual gains overflow');
+ const taxFor=gain=>{const tax=Math.max(0,gain-deduction)*rate;if(!Number.isFinite(tax))throw new Error('estimated tax overflow');return roundWon(tax)};
  const beforeTaxKRW=taxFor(beforeGain),afterTaxKRW=taxFor(afterGain);
  return {saleDetails,simulatedGainKRW,annualGainBeforeKRW:beforeGain,annualGainAfterKRW:afterGain,
   annualDeductionKRW:deduction,taxRate:rate,estimatedAnnualTaxBeforeKRW:beforeTaxKRW,
