@@ -53,19 +53,7 @@ $('run').addEventListener('click',()=>{
    const initialValue=number('cash')+number('shares')*terminalPrice;
    const finalValue=staged.final.cash+(staged.final.positions[ticker]?.quantity??0)*terminalPrice;
    const targetMessage=staged.firstTargetReached===null?'목표 현금 미달':'목표 현금 '+staged.firstTargetReached+'단계 달성';
-   $('summary').textContent+=' | '+targetMessage+' | 보유 유지 평가액: 
- }catch(e){$('error').textContent='계산 불가: '+e.message}
-});
-example('dip');
-</script></body></html>+fmt(initialValue)+' | 분할 매도 후 평가액: 
- }catch(e){$('error').textContent='계산 불가: '+e.message}
-});
-example('dip');
-</script></body></html>+fmt(finalValue)+' | 차이: 
- }catch(e){$('error').textContent='계산 불가: '+e.message}
-});
-example('dip');
-</script></body></html>+fmt(finalValue-initialValue);
+   $('summary').textContent+=' | '+targetMessage+' | 보유 유지 평가액: $'+fmt(initialValue)+' | 분할 매도 후 평가액: $'+fmt(finalValue)+' | 차이: $'+fmt(finalValue-initialValue);
   }
   $('output').hidden=false;
  }catch(e){$('error').textContent='계산 불가: '+e.message}
