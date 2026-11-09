@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>INVESTLAB · 가상 분할매도 시뮬레이터</title>
+<style>body{font-family:system-ui,-apple-system,sans-serif;background:#101827;color:#e9eef8;max-width:940px;margin:32px auto;padding:0 18px}h1{font-size:1.65rem}p,small{color:#aebcd2}.panel{background:#1c2940;border:1px solid #33435e;border-radius:12px;padding:18px;margin:18px 0}label{display:block;font-size:.85rem;margin:8px 0}input{background:#101827;border:1px solid #586a86;border-radius:6px;color:white;padding:9px;max-width:150px;width:90%}table{border-collapse:collapse;width:100%;margin:10px 0}td,th{padding:10px;border-bottom:1px solid #34435b;text-align:right}td:first-child,th:first-child{text-align:left}button{padding:11px 20px;background:#67a6f6;color:#0b1a30;border:0;border-radius:7px;font-weight:700;cursor:pointer}.fields{display:flex;flex-wrap:wrap;gap:12px}.error{color:#ffb0a6}.ok{color:#91e2bd}.scroll{overflow-x:auto}</style></head>
+<body><h1>INVESTLAB · 상승장 분할매도 시뮬레이터</h1>
+<p>실제 거래원장과 연결되지 않는 독립형 시제품입니다. 입력값은 가정이며 세금은 아직 계산하지 않습니다.</p>
+<section class="panel"><h2>현재 보유 상태</h2><div class="fields">
+<label>종목코드<br><input id="ticker" value="TSLA"></label>
+<label>보유 주식 수<br><input id="shares" type="number" min="0" step="any" value="100"></label>
+<label>평균 취득단가 (USD)<br><input id="cost" type="number" min="0" step="any" value="200"></label>
+<label>현재 현금 (USD)<br><input id="cash" type="number" min="0" step="any" value="0"></label>
+<label>최종 평가 가정가 (USD)<br><input id="terminal" type="number" min="0" step="any" value="400"></label>
+<label>목표 현금 비중 (%)<br><input id="target" type="number" min="0" max="100" value="30"></label></div></section>
+<section class="panel"><h2>상승장 분할 매도 계획</h2><div class="scroll"><table><thead><tr><th>매도 단계</th><th>목표가 (USD)</th><th>매도 주식 수</th><th>수수료 (USD)</th></tr></thead><tbody id="stages">
+<tr><td>1차</td><td><input type="number" min="0.01" step="any" value="300"></td><td><input type="number" min="0.00000001" step="any" value="10"></td><td><input type="number" min="0" step="any" value="0"></td></tr>
+<tr><td>2차</td><td><input type="number" min="0.01" step="any" value="350"></td><td><input type="number" min="0.00000001" step="any" value="10"></td><td><input type="number" min="0" step="any" value="0"></td></tr>
+<tr><td>3차</td><td><input type="number" min="0.01" step="any" value="400"></td><td><input type="number" min="0.00000001" step="any" value="10"></td><td><input type="number" min="0" step="any" value="0"></td></tr>
+</tbody></table></div><button id="calculate">가상 거래 계산</button><p id="message" role="status" aria-live="polite"></p></section>
+<section class="panel"><h2>시뮬레이션 결과</h2><div id="summary"></div><div class="scroll"><table><thead><tr><th>단계</th><th>확보 현금</th><th>잔여 주식 수</th><th>총 현금</th><th>현금 비중</th><th>누적 실현손익</th></tr></thead><tbody id="results"></tbody></table></div><small>양도세 미반영 · 환율 미반영 · 미래 주가를 예측하지 않습니다. 실제 원장 데이터는 변경하지 않습니다.</small></section>
+<script type="module">
+import {simulateStagedSales} from './src/simulator/staged-sales.mjs';
+const el=id=>document.getElementById(id);
+const num=id=>Number(el(id).value);
+const fmt=n=>new Intl.NumberFormat('ko-KR',{maximumFractionDigits:4}).format(n);
+function calculate(){
+ el('message').textContent='';el('summary').replaceChildren();el('results').replaceChildren();
+ try{
+  const ticker=el('ticker').value.trim().toUpperCase(),cash=num('cash');
+  const portfolio={cash,positions:{[ticker]:{quantity:num('shares'),averageCost:num('cost')}}};
+  const stages=[...el('stages').rows].map(row=>{const cells=row.querySelectorAll('input');return {price:Number(cells[0].value),quantity:Number(cells[1].value),fee:Number(cells[2].value)}});
+  const r=simulateStagedSales(portfolio,{ticker,stages,valuationPrices:{[ticker]:num('terminal')},targetCashWeight:num('target')/100});
+  const baselineValue=cash+num('shares')*num('terminal');
+  const finalValue=r.final.cash+r.final.positions[ticker].quantity*num('terminal');
+  el('summary').textContent=`최종 보유량 ${fmt(r.final.positions[ticker].quantity)}주 · 확보 후 현금 ${fmt(r.final.cash)} USD · 보유 유지 대비 평가액 차이 ${fmt(finalValue-baselineValue)} USD · 목표 현금 비중 도달: ${r.firstCashWeightReached===null?'미도달':r.firstCashWeightReached+'차 매도'}`;
+  for(const row of r.rows){const tr=document.createElement('tr');for(const value of [row.stage+'차',fmt(row.accumulatedSaleCash),fmt(row.remainingShares),fmt(row.cash),fmt(row.cashWeight*100)+'%',fmt(row.cumulativeRealizedPnL)]){const td=document.createElement('td');td.textContent=value;tr.append(td)}el('results').append(tr)}
+  el('message').className='ok';el('message').textContent='가상 계산 완료 (원장 저장 없음)';
+ }catch(error){el('message').className='error';el('message').textContent='입력 확인: '+error.message}
+}
+el('calculate').addEventListener('click',calculate);calculate();
+</script></body></html>
