@@ -43,24 +43,8 @@ body{font:15px/1.5 system-ui,sans-serif;background:#f5f7fb;color:#172235;margin:
 <label>다른 양도소득에 사용한 공제 (KRW)<input id="taxUsed" type="number" step="any" value="0"></label>
 <label>합산 세율 가정<input id="taxRate" type="number" step="any" value="0.22"></label>
 <button id="taxRun" type="button">세금 별도 계산</button><p id="taxResult" aria-live="polite"></p><p class="muted">예상 세액은 가상 현금에서 즉시 차감하지 않습니다. 신고·납부액 확정용이 아니며 과세연도별 규정 검증이 필요합니다.</p></section>
-<section><h2>해외주식 양도세용 원화 손익 계산 (별도 가정)</h2><p class="muted">실제 세무상 취득원가·적용 환율을 별도로 입력해야 합니다. USD 거래손익을 자동 환산하지 않습니다.</p>
-<label>매도 주식 수<input id="fxQuantity" type="number" value="10" step="any"></label>
-<label>세무상 취득단가 (USD)<input id="fxBuyPrice" type="number" value="100" step="any"></label>
-<label>가상 매도단가 (USD)<input id="fxSellPrice" type="number" value="150" step="any"></label>
-<label>취득 적용 환율 (KRW/USD)<input id="fxBuyRate" type="number" value="1300" step="any"></label>
-<label>양도 적용 환율 (KRW/USD)<input id="fxSellRate" type="number" value="1400" step="any"></label>
-<button id="fxCalculate" type="button">원화 과세손익 계산</button><p id="fxResult" aria-live="polite"></p></section>
-<section><h2>연간 해외주식 양도세 변화 추정</h2>
-<label>해당 연도 기존 과세손익 (KRW)<input id="taxPrior" type="number" value="0" step="any"></label>
-<label>추가 가상 과세손익 (KRW)<input id="taxHypothetical" type="number" value="0" step="any"></label>
-<label>연간 기본공제 가정 (KRW)<input id="taxDeduction" type="number" value="2500000" step="any"></label>
-<label>세율 가정 (%)<input id="taxRate" type="number" value="22" step="any"></label>
-<button id="taxRun" type="button">예상 양도세 계산</button><p id="taxResult" aria-live="polite"></p>
-<p class="muted">세금 추정은 실제 현금잔고에서 차감되지 않습니다. 과세연도·거주자 요건·다른 양도손익·공제 적용 여부를 확인해야 합니다.</p></section>
 </main><script type="module">
 import {simulateTrades} from './src/simulator/virtual-trade-engine.mjs';
-import {calculateKrwDisposalGain} from './src/simulator/krw-tax-gain.mjs';
-import {estimateOverseasStockTax} from './src/simulator/overseas-stock-tax.mjs';
 import {calculateKrwDisposalGain} from './src/simulator/krw-tax-gain.mjs';
 import {estimateOverseasStockTax} from './src/simulator/overseas-stock-tax.mjs';
 import {compareScenarios} from './src/simulator/scenario-comparison.mjs';
