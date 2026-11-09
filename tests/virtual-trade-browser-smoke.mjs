@@ -43,8 +43,28 @@ try{
  await page.locator('#run').click();
  assert.match(await page.locator('#error').innerText(),/insufficient cash/);
  assert.equal(await page.locator('#output').isHidden(),true);
- // Tax UI is not implemented yet; do not assert imaginary controls.
- assert.match(await page.locator('body').innerText(),/양도소득세/);
+ // Tax is a separate KRW-basis estimate and must never alter virtual cash.
+ await page.locator('#dip').click();
+ await page.locator('#run').click();
+ const cashBeforeTax=await page.locator('#summary').innerText();
+ await page.locator('#fxQuantity').fill('10');
+ await page.locator('#fxBuyPrice').fill('100');
+ await page.locator('#fxSellPrice').fill('150');
+ await page.locator('#fxBuyRate').fill('1300');
+ await page.locator('#fxSellRate').fill('1400');
+ await page.locator('#fxCalculate').click();
+ assert.match(await page.locator('#fxResult').innerText(),/과세손익 800,000원/);
+ assert.equal(await page.locator('#taxHypothetical').inputValue(),'800000');
+ await page.locator('#taxPrior').fill('3000000');
+ await page.locator('#taxRun').click();
+ assert.match(await page.locator('#taxResult').innerText(),/기존 추정세액: 110,000원/);
+ assert.match(await page.locator('#taxResult').innerText(),/가상 거래 포함: 286,000원/);
+ assert.match(await page.locator('#taxResult').innerText(),/세액 변화: 176,000원/);
+ assert.equal(await page.locator('#summary').innerText(),cashBeforeTax);
+ await page.locator('#fxBuyRate').fill('0');
+ await page.locator('#fxCalculate').click();
+ assert.match(await page.locator('#fxResult').innerText(),/계산 불가/);
+ await page.locator('#fxBuyRate').fill('1300');
  // Standalone staged-sale screen: three levels and cash reserve status.
  await page.goto(url+'/virtual-staged-sale.html');
  await page.locator('#run').click();
