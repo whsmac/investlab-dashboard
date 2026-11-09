@@ -22,3 +22,15 @@ test('reject nonfinite gains and invalid deductions',()=>{
  assert.throws(()=>estimateOverseasStockTax({taxRate:1.2}),/exceed/);
  assert.throws(()=>estimateOverseasStockTax({deductionUsedElsewhereKrw:3000000}),/exceeds/);
 });
+
+test('stage-by-stage tax impact reconciles with total incremental estimate',()=>{
+ const r=estimateOverseasStockTax({priorRealizedKrw:3000000,hypotheticalGainsKrw:[2000000,-1000000,500000]});
+ assert.deepEqual(r.stages.map(s=>s.stageIncrementalTaxKrw),[440000,-220000,110000]);
+ assert.equal(r.stages.at(-1).cumulativeIncrementalTaxKrw,r.incrementalTaxKrw);
+ assert.equal(r.stages.reduce((sum,s)=>sum+s.stageIncrementalTaxKrw,0),r.incrementalTaxKrw);
+});
+test('no hypothetical trades returns empty stage list and unchanged tax',()=>{
+ const r=estimateOverseasStockTax({priorRealizedKrw:3000000});
+ assert.deepEqual(r.stages,[]);
+ assert.equal(r.incrementalTaxKrw,0);
+});
