@@ -43,6 +43,18 @@ try{
  await page.locator('#run').click();
  assert.match(await page.locator('#error').innerText(),/insufficient cash/);
  assert.equal(await page.locator('#output').isHidden(),true);
+ // Standalone staged-sale screen: three levels and cash reserve status.
+ await page.goto(url+'/virtual-staged-sale.html');
+ await page.locator('#run').click();
+ assert.match(await page.locator('#output').innerText(),/최종 보유/);
+ assert.match(await page.locator('#output').innerText(),/현금 비중/);
+ assert.equal(await page.locator('#output table tbody tr').count(),3);
+ await page.locator('#reserve').fill('999999');
+ await page.locator('#run').click();
+ assert.match(await page.locator('#output').innerText(),/목표 미달/);
+ await page.locator('#quantity').fill('-1');
+ await page.locator('#run').click();
+ assert.match(await page.locator('#error').innerText(),/입력 오류/);
  assert.deepEqual(errors,[]);
  console.log('Virtual trade browser smoke passed: dip, staged, rotation, unfunded trade; no JS errors.');
 }finally{
