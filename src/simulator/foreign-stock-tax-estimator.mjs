@@ -1,35 +1,30 @@
-/** Tax estimate only: explicit KRW tax basis, no inference from USD average cost.
- * annualOtherGainsKRW: net realized taxable gains/losses for the same tax year
- * excluding these simulated sales. Assumes one shared annual deduction pool.
- * No brokerage or ledger writes. Rates/deduction must be verified by tax year.
+/** Indicative Korean foreign-stock capital-gains tax calculator.
+ * All gains are already converted to KRW using independently verified tax FX and tax-basis rules.
+ * This module does NOT infer taxable gains from USD average-cost ledger values.
+ * Default deduction/rate are editable assumptions, NOT a tax filing determination.
  */
-const amount=(value,name,{allowNegative=false}={})=>{
- if(typeof value!=='number'||!Number.isFinite(value)||(!allowNegative&&value<0))throw new Error('invalid '+name);
- return value;
-};
-const won=n=>Math.round(n);
-export function estimateForeignStockTax({sales,annualOtherGainsKRW=0,deductionKRW=2500000,taxRate=0.22}){
- if(!Array.isArray(sales))throw new Error('sales must be an array');
- amount(annualOtherGainsKRW,'annualOtherGainsKRW',{allowNegative:true});
- amount(deductionKRW,'deductionKRW');amount(taxRate,'taxRate');
- if(taxRate>1)throw new Error('taxRate cannot exceed 1');
- let simulatedGainKRW=0;
- const details=sales.map((s,index)=>{
-  if(!s||typeof s!=='object')throw new Error('invalid sale '+index);
-  for(const field of ['quantity','salePrice','saleFxKRW','taxBasisKRWPerShare','saleFeeKRW'])amount(s[field]??(field==='saleFeeKRW'?0:undefined),field);
-  if(s.quantity<=0||s.saleFxKRW<=0||s.salePrice<=0)throw new Error('quantity, sale price and FX must be positive');
-  // taxBasisKRWPerShare is the already-determined tax acquisition cost per share,
-  // not the investment-ledger average price converted at sale FX.
-  const proceedsKRW=won(s.quantity*s.salePrice*s.saleFxKRW);
-  const basisKRW=won(s.quantity*s.taxBasisKRWPerShare);
-  const feeKRW=won(s.saleFeeKRW??0);
-  const gainKRW=proceedsKRW-basisKRW-feeKRW;
-  simulatedGainKRW+=gainKRW;
-  return {index:index+1,proceedsKRW,basisKRW,feeKRW,gainKRW};
- });
- const beforeTaxableKRW=Math.max(0,won(annualOtherGainsKRW)-deductionKRW);
- const afterTaxableKRW=Math.max(0,won(annualOtherGainsKRW)+simulatedGainKRW-deductionKRW);
- const taxBeforeKRW=won(beforeTaxableKRW*taxRate);
- const taxAfterKRW=won(afterTaxableKRW*taxRate);
- return {details,simulatedGainKRW,annualOtherGainsKRW,deductionKRW,taxRate,taxBeforeKRW,taxAfterKRW,incrementalTaxKRW:taxAfterKRW-taxBeforeKRW,assumptions:'Tax-year rules, acquisition method, FX, other gains, deduction eligibility and actual fees must be verified. Estimate only.'};
+const amount=(n,name)=>{if(typeof n!=='number'||!Number.isFinite(n))throw new Error(name+' must be a finite number');return n};
+const nonnegative=(n,name)=>{amount(n,name);if(n<0)throw new Error(name+' must be nonnegative');return n};
+export function estimateForeignStockTax({
+ priorRealizedGainKrw=0,scenarioRealizedGainKrw=0,
+ annualDeductionKrw=2500000,combinedTaxRate=0.22,
+ otherDeductionUsedKrw=0
+}={}){
+ amount(priorRealizedGainKrw,'prior gain');amount(scenarioRealizedGainKrw,'scenario gain');
+ nonnegative(annualDeductionKrw,'deduction');nonnegative(otherDeductionUsedKrw,'deduction used');
+ const rate=nonnegative(combinedTaxRate,'tax rate');if(rate>1)throw new Error('tax rate cannot exceed 1');
+ const availableDeduction=Math.max(0,annualDeductionKrw-otherDeductionUsedKrw);
+ const taxable=gain=>Math.max(0,gain-availableDeduction);
+ const baselineTax=taxable(priorRealizedGainKrw)*rate;
+ const combinedGain=priorRealizedGainKrw+scenarioRealizedGainKrw;
+ const scenarioTax=taxable(combinedGain)*rate;
+ return {
+  priorRealizedGainKrw,scenarioRealizedGainKrw,combinedGainKrw:combinedGain,
+  availableDeductionKrw:availableDeduction,baselineEstimatedTaxKrw:Math.round(baselineTax),
+  totalEstimatedTaxKrw:Math.round(scenarioTax),
+  incrementalEstimatedTaxKrw:Math.round(scenarioTax)-Math.round(baselineTax),
+  taxAssumption:{annualDeductionKrw,combinedTaxRate,otherDeductionUsedKrw},
+  status:'illustrative_only',
+  warning:'KRW tax gains must be independently computed from tax-basis records, tax FX, and eligible annual gains/losses. Confirm tax-year law and individual eligibility; this is not a tax filing figure.'
+ };
 }
