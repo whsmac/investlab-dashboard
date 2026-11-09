@@ -25,3 +25,13 @@ test('rejects missing terminal price and invalid quantity',()=>{
  assert.throws(()=>planStagedSales(portfolio,{ticker:'TSLA',targets:[{price:150,quantity:1}],terminalPrices:{}}),/terminal price/);
  assert.throws(()=>planStagedSales(portfolio,{ticker:'TSLA',targets:[{price:150,quantity:0}],terminalPrices:{TSLA:200}}),/sale quantity/);
 });
+
+test('cash allocation rises after staged sales using each stage target price',()=>{
+ const r=planStagedSales(portfolio,{ticker:'TSLA',targets:[
+  {price:150,quantity:2,fee:1},{price:200,quantity:3,fee:2},{price:250,quantity:1,fee:1}
+ ],terminalPrices:{TSLA:300}});
+ assert.deepEqual(r.steps.map(s=>s.holdingsValue),[1200,1000,1000]);
+ assert.deepEqual(r.steps.map(s=>s.cashWeightPct),[24.95,49.92,55.48]);
+ assert.equal(r.steps[0].stageTotalValue,1599);
+ assert.equal(r.steps[2].cash,1246);
+});
