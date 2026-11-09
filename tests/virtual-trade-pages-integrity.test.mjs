@@ -36,7 +36,7 @@ test('tax estimate uses explicit separate KRW inputs without Supabase writes',()
  assert.match(html,/calculateKrwDisposalGain\(/);
  assert.match(html,/id="taxPrior"/);
  assert.match(html,/id="fxBuyRate"/);
- assert.doesNotMatch(html,/supabase\\.from\\(/);
+ assert.ok(!html.includes('supabase.from('));
 });
 
 test('optional tax UI requires explicit KRW tax-basis inputs and rejects other ticker sales',()=>{
