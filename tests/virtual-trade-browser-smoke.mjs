@@ -43,6 +43,18 @@ try{
  await page.locator('#run').click();
  assert.match(await page.locator('#error').innerText(),/insufficient cash/);
  assert.equal(await page.locator('#output').isHidden(),true);
+ // Separate KRW tax-basis flow must not use USD ledger PnL implicitly.
+ await page.goto(url+'/virtual-trade.html');
+ await page.locator('#fxCalculate').click();
+ assert.match(await page.locator('#fxResult').innerText(),/과세손익/);
+ assert.equal(await page.locator('#taxHypothetical').inputValue(),'800000');
+ await page.locator('#taxPrior').fill('3000000');
+ await page.locator('#taxRun').click();
+ assert.match(await page.locator('#taxResult').innerText(),/세액 변화/);
+ assert.match(await page.locator('#taxResult').innerText(),/176,000/);
+ await page.locator('#fxBuyRate').fill('0');
+ await page.locator('#fxCalculate').click();
+ assert.match(await page.locator('#fxResult').innerText(),/계산 불가/);
  // Standalone staged-sale screen: three levels and cash reserve status.
  await page.goto(url+'/virtual-staged-sale.html');
  await page.locator('#run').click();
