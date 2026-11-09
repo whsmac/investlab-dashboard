@@ -31,8 +31,16 @@ body{font:15px/1.5 system-ui,sans-serif;background:#f5f7fb;color:#172235;margin:
 <p id="taxResult" aria-live="polite"></p>
 </section><button id="run" type="button">시뮬레이션 계산</button>
 <section id="output" hidden><h2>계산 결과</h2><p id="summary"></p><div class="scroll"><table><thead><tr><th>단계</th><th>거래</th><th>종목</th><th>거래 수량</th><th>현금 ($)</th><th>실현손익 ($)</th></tr></thead><tbody id="results"></tbody></table></div><p id="hold"></p><p class="muted">양도소득세·세금용 환율·레버리지 상품 경로 의존성은 계산하지 않습니다. 세전 가상 결과입니다.</p></section><p id="error" class="error" role="alert"></p>
+<section><h2>해외주식 양도소득세 별도 추정 (원화)</h2><p class="muted">달러 실현손익을 세금 계산에 자동 사용하지 않습니다. 세금용 취득가액·환율·수수료를 반영해 계산한 <strong>원화 과세대상 손익</strong>을 입력하세요. 연간 다른 손익과 공제 적용 여부에 따라 결과가 달라집니다.</p>
+<label>올해 기존 실현손익 (KRW)<input id="taxPrior" type="number" step="any" value="0"></label>
+<label>가상 거래 과세 손익 합계 (KRW)<input id="taxHypothetical" type="number" step="any" value="0"></label>
+<label>연간 기본공제 가정 (KRW)<input id="taxDeduction" type="number" step="any" value="2500000"></label>
+<label>다른 양도소득에 사용한 공제 (KRW)<input id="taxUsed" type="number" step="any" value="0"></label>
+<label>합산 세율 가정<input id="taxRate" type="number" step="any" value="0.22"></label>
+<button id="taxRun" type="button">세금 별도 계산</button><p id="taxResult" aria-live="polite"></p><p class="muted">예상 세액은 가상 현금에서 즉시 차감하지 않습니다. 신고·납부액 확정용이 아니며 과세연도별 규정 검증이 필요합니다.</p></section>
 </main><script type="module">
 import {simulateTrades} from './src/simulator/virtual-trade-engine.mjs';
+import {estimateOverseasStockTax} from './src/simulator/overseas-stock-tax.mjs';
 import {compareScenarios} from './src/simulator/scenario-comparison.mjs';
 import {planStagedSales} from './src/simulator/staged-sale-planner.mjs';
 import {estimateOverseasStockTax} from './src/simulator/overseas-stock-tax.mjs';
@@ -90,4 +98,5 @@ function calculate(){
  }catch(e){$('error').textContent='계산 불가: '+e.message}
 }
 $('add').addEventListener('click',()=>addTrade());for(const name of ['dip','staged','rotate'])$(name).addEventListener('click',()=>example(name));$('run').addEventListener('click',calculate);example('dip');
+$('taxRun').addEventListener('click',()=>{try{const r=estimateOverseasStockTax({priorRealizedKrw:number('taxPrior'),hypotheticalGainsKrw:[number('taxHypothetical')],annualDeductionKrw:number('taxDeduction'),deductionUsedElsewhereKrw:number('taxUsed'),taxRate:number('taxRate')});$('taxResult').textContent='기존 추정세액: '+fmt(r.baselineTaxKrw)+'원 / 가상 거래 포함: '+fmt(r.projectedTaxKrw)+'원 / 세액 변화: '+fmt(r.incrementalTaxKrw)+'원 (별도 추정)'}catch(e){$('taxResult').textContent='계산 불가: '+e.message}});
 </script></body></html>
