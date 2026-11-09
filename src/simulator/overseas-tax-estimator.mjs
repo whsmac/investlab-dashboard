@@ -1,49 +1,43 @@
 /**
- * Scenario-only KRW capital-gains tax estimator for a Korean-resident individual.
- * Does NOT derive tax basis from portfolio averageCost: supply separately verified
- * KRW taxable proceeds and cost for each hypothetical disposal.
- * All rates/deductions are caller-configurable, not a tax-law determination.
- * No database access or writes.
+ * KR overseas-stock capital-gains tax scenario estimator (illustrative).
+ * Inputs MUST be KRW tax-basis gains/losses, not USD trading-engine P&L.
+ * Annual aggregation, tax-basis FX, taxable classification and exemptions
+ * are caller responsibilities. Defaults are editable assumptions, not tax advice.
  */
-const amount=(value,label)=>{
- if(typeof value!=='number'||!Number.isFinite(value)||value<0)throw new Error(label+' must be a finite nonnegative number');
- return value;
-};
-const signed=(value,label)=>{
- if(typeof value!=='number'||!Number.isFinite(value))throw new Error(label+' must be a finite number');
- return value;
-};
-const round=n=>Math.round((n+Number.EPSILON)*100)/100;
-export function estimateOverseasStockTax({
- disposals=[],annualRealizedGainKrw=0,otherAnnualGainKrw=0,
- annualDeductionKrw=2500000,deductionAlreadyUsedKrw=0,
- taxRate=0.22
+const check=(v,name)=>{if(typeof v!=='number'||!Number.isFinite(v))throw new Error(name+' must be a finite number');return v};
+const nonnegative=(v,name)=>{check(v,name);if(v<0)throw new Error(name+' must be nonnegative');return v};
+const won=v=>Math.round(v);
+export function estimateOverseasCapitalGainsTax({
+  realizedGainsKrw=0,realizedLossesKrw=0,
+  hypotheticalGainsKrw=0,hypotheticalLossesKrw=0,
+  annualDeductionKrw=2500000,taxRate=0.22,
+  otherEligibleGainsKrw=0,otherEligibleLossesKrw=0
 }={}){
- if(!Array.isArray(disposals))throw new Error('disposals must be an array');
- signed(annualRealizedGainKrw,'annual realized gain');
- signed(otherAnnualGainKrw,'other annual gain');
- amount(annualDeductionKrw,'annual deduction');
- amount(deductionAlreadyUsedKrw,'deduction already used');
- if(deductionAlreadyUsedKrw>annualDeductionKrw)throw new Error('deduction already used exceeds annual deduction');
- if(typeof taxRate!=='number'||!Number.isFinite(taxRate)||taxRate<0||taxRate>1)throw new Error('invalid tax rate');
- const detail=disposals.map((d,index)=>{
-  if(!d||typeof d!=='object')throw new Error('invalid disposal at '+(index+1));
-  const proceeds=amount(d.proceedsKrw,'taxable proceeds');
-  const acquisition=amount(d.acquisitionCostKrw,'tax acquisition cost');
-  const expenses=amount(d.deductibleExpensesKrw??0,'deductible expenses');
-  return {index:index+1,gainKrw:round(proceeds-acquisition-expenses)};
- });
- const hypotheticalGainKrw=round(detail.reduce((sum,d)=>sum+d.gainKrw,0));
- const priorGainKrw=round(annualRealizedGainKrw+otherAnnualGainKrw);
- const remainingDeductionKrw=round(annualDeductionKrw-deductionAlreadyUsedKrw);
- const taxableBeforeKrw=round(Math.max(0,priorGainKrw-remainingDeductionKrw));
- const taxableAfterKrw=round(Math.max(0,priorGainKrw+hypotheticalGainKrw-remainingDeductionKrw));
- const estimatedTaxBeforeKrw=round(taxableBeforeKrw*taxRate);
- const estimatedTaxAfterKrw=round(taxableAfterKrw*taxRate);
- return {detail,hypotheticalGainKrw,priorGainKrw,remainingDeductionKrw,
-  taxableBeforeKrw,taxableAfterKrw,estimatedTaxBeforeKrw,estimatedTaxAfterKrw,
-  incrementalTaxKrw:round(estimatedTaxAfterKrw-estimatedTaxBeforeKrw),
-  taxRate,annualDeductionKrw,
-  status:'illustrative_only',
-  assumptions:'Taxable proceeds, acquisition costs and deductible expenses must already be determined in KRW using applicable tax rules and verified broker records. Annual gains and deduction usage must be complete. This is not a filing calculation.'};
+  const gains=nonnegative(realizedGainsKrw,'realized gains')+nonnegative(hypotheticalGainsKrw,'hypothetical gains')+nonnegative(otherEligibleGainsKrw,'other eligible gains');
+  const losses=nonnegative(realizedLossesKrw,'realized losses')+nonnegative(hypotheticalLossesKrw,'hypothetical losses')+nonnegative(otherEligibleLossesKrw,'other eligible losses');
+  const deduction=nonnegative(annualDeductionKrw,'annual deduction');
+  const rate=nonnegative(taxRate,'tax rate');
+  if(rate>1)throw new Error('tax rate must not exceed 1');
+  const netKrw=won(gains-losses);
+  const taxableKrw=Math.max(0,netKrw-deduction);
+  const estimatedTaxKrw=won(taxableKrw*rate);
+  const beforeNet=won(realizedGainsKrw+otherEligibleGainsKrw-realizedLossesKrw-otherEligibleLossesKrw);
+  const beforeTaxable=Math.max(0,beforeNet-deduction);
+  const beforeTaxKrw=won(beforeTaxable*rate);
+  return {netKrw,taxableKrw,estimatedTaxKrw,beforeTaxKrw,
+    incrementalTaxKrw:estimatedTaxKrw-beforeTaxKrw,
+    annualDeductionKrw:deduction,taxRate:rate,
+    taxStatus:'estimate_assumptions_only',
+    notice:'Tax-basis KRW figures, eligibility, tax year and applicable law must be verified. Not a tax filing calculation.'};
+}
+/** Estimate one disposal's KRW tax-basis gain from explicitly supplied
+ * KRW acquisition cost allocated to sold shares and KRW proceeds/fees.
+ * No FX is inferred; tax basis must be determined externally.
+ */
+export function taxBasisSaleGainKrw({proceedsKrw,acquisitionCostKrw,sellingFeesKrw=0}){
+ const proceeds=nonnegative(proceedsKrw,'proceeds');
+ const cost=nonnegative(acquisitionCostKrw,'acquisition cost');
+ const fee=nonnegative(sellingFeesKrw,'selling fees');
+ if(fee>proceeds)throw new Error('selling fees exceed proceeds');
+ return won(proceeds-cost-fee);
 }
