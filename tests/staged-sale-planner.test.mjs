@@ -35,3 +35,17 @@ test('cash allocation rises after staged sales using each stage target price',()
  assert.equal(r.steps[0].stageTotalValue,1599);
  assert.equal(r.steps[2].cash,1246);
 });
+
+test('cash reserve target shows first stage reaching the goal and remaining shortfall',()=>{
+ const r=planStagedSales(portfolio,{ticker:'TSLA',targets:[
+  {price:150,quantity:2,fee:1},{price:200,quantity:3,fee:2},{price:250,quantity:1,fee:1}
+ ],terminalPrices:{TSLA:300},reserveCash:1000});
+ assert.deepEqual(r.steps.map(s=>s.meetsReserveTarget),[false,false,true]);
+ assert.deepEqual(r.steps.map(s=>s.reserveCashShortfall),[601,3,0]);
+ assert.equal(r.meetsReserveTarget,true);
+ assert.equal(r.reserveCashTarget,1000);
+});
+test('reject invalid cash reserve target',()=>{
+ assert.throws(()=>planStagedSales(portfolio,{ticker:'TSLA',targets:[{price:150,quantity:1}],terminalPrices:{TSLA:200},reserveCash:-1}),/reserve cash/);
+ assert.throws(()=>planStagedSales(portfolio,{ticker:'TSLA',targets:[{price:150,quantity:1}],terminalPrices:{TSLA:200},reserveCash:NaN}),/reserve cash/);
+});
