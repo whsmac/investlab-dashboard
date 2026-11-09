@@ -25,10 +25,22 @@ export function estimateOverseasStockTax({
  const baselineTaxKrw=taxFor(priorRealizedKrw);
  const projectedAnnualNetKrw=priorRealizedKrw+hypotheticalNetKrw;
  const projectedTaxKrw=taxFor(projectedAnnualNetKrw);
+ // Track tax impact after each hypothetical disposal; a negative increment
+ // represents a lower annual tax estimate, NOT an immediate cash refund.
+ let cumulativeNet=0,previousTax=baselineTaxKrw;
+ const stages=hypotheticalGainsKrw.map((gainKrw,index)=>{
+  cumulativeNet+=gainKrw;
+  const cumulativeProjectedTaxKrw=taxFor(priorRealizedKrw+cumulativeNet);
+  const stageIncrementalTaxKrw=cumulativeProjectedTaxKrw-previousTax;
+  previousTax=cumulativeProjectedTaxKrw;
+  return {stage:index+1,gainKrw,cumulativeHypotheticalNetKrw:cumulativeNet,
+   cumulativeProjectedTaxKrw,stageIncrementalTaxKrw,
+   cumulativeIncrementalTaxKrw:cumulativeProjectedTaxKrw-baselineTaxKrw};
+ });
  return {
   priorRealizedKrw,hypotheticalNetKrw,projectedAnnualNetKrw,
   availableDeductionKrw:availableDeduction,baselineTaxKrw,projectedTaxKrw,
-  incrementalTaxKrw:projectedTaxKrw-baselineTaxKrw,
+  incrementalTaxKrw:projectedTaxKrw-baselineTaxKrw,stages,
   taxRate,calculationBasis:'user_supplied_tax_basis_KRW',
   status:'estimate_only',
   warning:'Only tax-basis KRW realized gains/losses are accepted. Verify tax year, taxpayer eligibility, FX, acquisition basis, other gains and losses, and applicable rules before filing.'
