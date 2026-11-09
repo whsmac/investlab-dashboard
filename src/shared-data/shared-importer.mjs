@@ -3,7 +3,7 @@
 // No writes occur unless commit:true is explicitly passed.
 import {validateSharedCsv} from './csv-import-validator.mjs';
 const TABLE = {price:'market_price_observations',financial:'quarterly_financial_observations'};
-const TEST_URL = 'https://gopofxyezhwpfbxebcrxd.supabase.co';
+const TEST_URL = 'https://gopofxyezhwpfxbecrxd.supabase.co';
 function assertTestClient(client) {
   if (client?.supabaseUrl !== TEST_URL) throw new Error('Refusing import outside isolated TEST Supabase project');
   const key = client.supabaseKey;
