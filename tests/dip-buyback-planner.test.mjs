@@ -6,7 +6,7 @@ test('two-stage dip buyback increases shares and compares with holding',()=>{
  const original=structuredClone(p);
  const r=planDipBuyback(p,{ticker:'TSLA',sellStages:[{price:200,quantity:3},{price:180,quantity:2}],buyStages:[{price:120,quantity:4},{price:100,quantity:4}],terminalPrices:{TSLA:150}});
  assert.equal(r.initialShares,10);assert.equal(r.finalShares,13);assert.equal(r.shareChange,3);
- assert.equal(r.final.cash,60);assert.equal(r.baselineValue,1500);assert.equal(r.terminalValue,2010);assert.equal(r.deltaVsHold,510);
+ assert.equal(r.final.cash,80);assert.equal(r.baselineValue,1500);assert.equal(r.terminalValue,2030);assert.equal(r.deltaVsHold,530);
  assert.deepEqual(r.steps.map(s=>s.shares),[7,5,9,13]);assert.deepEqual(p,original);
  assert.equal(r.taxStatus,'not_calculated');
 });
