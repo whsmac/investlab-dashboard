@@ -3,10 +3,11 @@ import {simulateTrades} from './virtual-trade-engine.mjs';
 /** Model sequential bull-market target-price sales. All amounts share one currency.
  * Tax and FX are deliberately NOT calculated by this module.
  */
-export function planStagedSales(portfolio,{ticker,targets,terminalPrices}) {
+export function planStagedSales(portfolio,{ticker,targets,terminalPrices,reserveCash=0}) {
   if (!portfolio || !portfolio.positions || !Object.hasOwn(portfolio.positions,ticker)) throw new Error('ticker must be held');
   if (!Array.isArray(targets) || targets.length===0) throw new Error('at least one sale target required');
   if (!terminalPrices || typeof terminalPrices!=='object') throw new Error('terminal prices required');
+  if (typeof reserveCash!=='number' || !Number.isFinite(reserveCash) || reserveCash<0) throw new Error('invalid reserve cash target');
   const initialShares=portfolio.positions[ticker].quantity;
   if (typeof initialShares!=='number' || !Number.isFinite(initialShares) || initialShares<=0) throw new Error('positive initial shares required');
   const trades=[];
@@ -56,11 +57,14 @@ export function planStagedSales(portfolio,{ticker,targets,terminalPrices}) {
       holdingsValue:Math.round(holdingsValue*1e8)/1e8,
       stageTotalValue:Math.round(stageTotalValue*1e8)/1e8,
       cashWeightPct:Math.round(s.cash/stageTotalValue*10000)/100,
+      reserveCashTarget:reserveCash,meetsReserveTarget:s.cash>=reserveCash,
+      reserveCashShortfall:Math.max(0,Math.round((reserveCash-s.cash)*1e8)/1e8),
       realizedPnL:s.tradePnL,cumulativeRealizedPnL:s.cumulativeRealizedPnL
     };
   });
   return {ticker,initialShares,initialCash,steps,final:simulation.final,
     totalRaisedCash:Math.round((simulation.final.cash-initialCash)*1e8)/1e8,
+    reserveCashTarget:reserveCash,meetsReserveTarget:simulation.final.cash>=reserveCash,
     baselineValue,terminalValue,deltaVsHold:Math.round((terminalValue-baselineValue+Number.EPSILON)*1e8)/1e8,
     taxStatus:'not_calculated',currencyStatus:'single_currency_assumed'};
 }
