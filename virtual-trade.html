@@ -43,8 +43,11 @@ body{font:15px/1.5 system-ui,sans-serif;background:#f5f7fb;color:#172235;margin:
 <label>다른 양도소득에 사용한 공제 (KRW)<input id="taxUsed" type="number" step="any" value="0"></label>
 <label>합산 세율 가정<input id="taxRate" type="number" step="any" value="0.22"></label>
 <button id="taxRun" type="button">세금 별도 계산</button><p id="taxResult" aria-live="polite"></p><p class="muted">예상 세액은 가상 현금에서 즉시 차감하지 않습니다. 신고·납부액 확정용이 아니며 과세연도별 규정 검증이 필요합니다.</p></section>
-</main><script type="module">
+<section><h2>해외주식 원화 과세손익 예시</h2><p class="muted">세금용 취득단가와 환율은 별도 입력합니다.</p><label>수량<input id="fxQuantity" type="number" value="10"></label><label>취득단가 ($)<input id="fxBuyPrice" type="number" value="100"></label><label>매도가 ($)<input id="fxSellPrice" type="number" value="150"></label><label>취득 환율<input id="fxBuyRate" type="number" value="1300"></label><label>매도 환율<input id="fxSellRate" type="number" value="1400"></label><button id="fxCalculate" type="button">원화 과세손익 계산</button><p id="fxResult"></p></section>
+<section><h2>연간 해외주식 양도세 추정</h2><p class="muted">연간 과세손익은 원화 기준입니다. 공제·세율은 검증이 필요한 기본 가정입니다.</p><label>기존 실현손익 (원)<input id="taxPrior" type="number" value="3000000"></label><label>가상 과세손익 (원)<input id="taxHypothetical" type="number" value="800000"></label><button id="taxRun" type="button">예상 세액 변화</button><p id="taxResult"></p></section></main><script type="module">
 import {simulateTrades} from './src/simulator/virtual-trade-engine.mjs';
+import {calculateKrwDisposalGain} from './src/simulator/krw-tax-gain.mjs';
+import {estimateOverseasStockTax} from './src/simulator/overseas-stock-tax.mjs';
 import {compareScenarios} from './src/simulator/scenario-comparison.mjs';
 import {planStagedSales} from './src/simulator/staged-sale-planner.mjs';
 import {estimateOverseasStockTax} from './src/simulator/overseas-stock-tax.mjs';
