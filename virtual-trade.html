@@ -18,6 +18,7 @@ body{font:15px/1.55 system-ui,-apple-system,sans-serif;background:#f5f7fb;color:
 </main><script type="module">
 import {simulateTrades} from './src/simulator/virtual-trade-engine.mjs';
 import {simulateStagedSales} from './src/simulator/staged-sales.mjs';
+import {planStagedSales} from './src/simulator/staged-sale-planner.mjs';
 const $=id=>document.getElementById(id);
 function addRow(side='sell',ticker='TSLA',quantity=1,price=150,fee=0){
  const tr=document.createElement('tr');
@@ -52,10 +53,40 @@ $('run').addEventListener('click',()=>{
    const targetCash=number('targetCash'),terminalPrice=number('terminalPrice');
    if(!Number.isFinite(terminalPrice) || terminalPrice<0) throw new Error('비교 가격은 0 이상이어야 합니다');
    const staged=simulateStagedSales({cash:number('cash'),positions:{[ticker]:{quantity:number('shares'),averageCost:number('basis')}}},{ticker,stages:trades.map(t=>({price:t.price,quantity:t.quantity,fee:t.fee})),targetCash});
+   const stagePlan=planStagedSales({cash:number('cash'),positions:{[ticker]:{quantity:number('shares'),averageCost:number('basis')}}},{ticker,targets:trades.map(t=>({price:t.price,quantity:t.quantity,fee:t.fee})),terminalPrices:{[ticker]:terminalPrice},reserveCash:targetCash});
    const initialValue=number('cash')+number('shares')*terminalPrice;
    const finalValue=staged.final.cash+(staged.final.positions[ticker]?.quantity??0)*terminalPrice;
    const targetMessage=staged.firstTargetReached===null?'목표 현금 미달':'목표 현금 '+staged.firstTargetReached+'단계 달성';
-   $('summary').textContent+=' | '+targetMessage+' | 보유 유지 평가액: $'+fmt(initialValue)+' | 분할 매도 후 평가액: $'+fmt(finalValue)+' | 차이: $'+fmt(finalValue-initialValue);
+   $('summary').textContent+=' | '+targetMessage+' | 보유 유지 평가액: 
+  }
+  $('output').hidden=false;
+ }catch(e){$('error').textContent='계산 불가: '+e.message}
+});
+example('dip');
+</script></body></html>
++fmt(initialValue)+' | 분할 매도 후 평가액: 
+  }
+  $('output').hidden=false;
+ }catch(e){$('error').textContent='계산 불가: '+e.message}
+});
+example('dip');
+</script></body></html>
++fmt(finalValue)+' | 차이: 
+  }
+  $('output').hidden=false;
+ }catch(e){$('error').textContent='계산 불가: '+e.message}
+});
+example('dip');
+</script></body></html>
++fmt(finalValue-initialValue);
+   const detail=document.createElement('p');detail.textContent='단계별 현금 비중: '+stagePlan.steps.map(s=>s.stage+'차 '+fmt(s.cashWeightPct)+'% (목표 부족 
+  }
+  $('output').hidden=false;
+ }catch(e){$('error').textContent='계산 불가: '+e.message}
+});
+example('dip');
+</script></body></html>
++fmt(s.reserveCashShortfall)+')').join(' / ');$('summary').append(detail);
   }
   $('output').hidden=false;
  }catch(e){$('error').textContent='계산 불가: '+e.message}
