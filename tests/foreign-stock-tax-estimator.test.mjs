@@ -1,27 +1,27 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {estimateForeignStockTax} from '../src/simulator/foreign-stock-tax-estimator.mjs';
-const sale={quantity:10,salePrice:200,saleFxKRW:1400,taxBasisKRWPerShare:100000,saleFeeKRW:1000};
-test('KRW tax basis and sale FX, annual deduction applied',()=>{
- const r=estimateForeignStockTax({sales:[sale]});
- assert.equal(r.simulatedGainKRW,1799000);
- assert.equal(r.incrementalTaxKRW,0);
+test('default assumptions: taxable amount above annual deduction',()=>{
+ const r=estimateForeignStockTax({scenarioRealizedGainKrw:5000000});
+ assert.equal(r.totalEstimatedTaxKrw,550000);assert.equal(r.incrementalEstimatedTaxKrw,550000);
+ assert.equal(r.status,'illustrative_only');
 });
-test('incremental tax includes previously realized annual gains',()=>{
- const r=estimateForeignStockTax({sales:[sale],annualOtherGainsKRW:2000000});
- assert.equal(r.taxBeforeKRW,0);
- assert.equal(r.taxAfterKRW,285780);
- assert.equal(r.incrementalTaxKRW,285780);
+test('prior gains already use deduction',()=>{
+ const r=estimateForeignStockTax({priorRealizedGainKrw:4000000,scenarioRealizedGainKrw:1000000});
+ assert.equal(r.baselineEstimatedTaxKrw,330000);
+ assert.equal(r.totalEstimatedTaxKrw,550000);
+ assert.equal(r.incrementalEstimatedTaxKrw,220000);
 });
-test('loss can reduce estimated annual tax',()=>{
- const r=estimateForeignStockTax({sales:[{...sale,taxBasisKRWPerShare:400000}],annualOtherGainsKRW:5000000});
- assert.equal(r.simulatedGainKRW,-1201000);
- assert.equal(r.taxBeforeKRW,550000);
- assert.equal(r.taxAfterKRW,285780);
- assert.equal(r.incrementalTaxKRW,-264220);
+test('scenario losses can lower indicative annual tax',()=>{
+ const r=estimateForeignStockTax({priorRealizedGainKrw:6000000,scenarioRealizedGainKrw:-3000000});
+ assert.equal(r.incrementalEstimatedTaxKrw,-660000);
 });
-test('reject missing tax basis, invalid FX, invalid rate',()=>{
- assert.throws(()=>estimateForeignStockTax({sales:[{...sale,taxBasisKRWPerShare:undefined}]}),/taxBasisKRWPerShare/);
- assert.throws(()=>estimateForeignStockTax({sales:[{...sale,saleFxKRW:0}]}),/positive/);
- assert.throws(()=>estimateForeignStockTax({sales:[],taxRate:2}),/cannot exceed/);
+test('deduction already used by other eligible assets is configurable',()=>{
+ const r=estimateForeignStockTax({scenarioRealizedGainKrw:1000000,otherDeductionUsedKrw:2500000});
+ assert.equal(r.totalEstimatedTaxKrw,220000);
+});
+test('rejects nonfinite and invalid assumptions',()=>{
+ assert.throws(()=>estimateForeignStockTax({scenarioRealizedGainKrw:NaN}),/finite/);
+ assert.throws(()=>estimateForeignStockTax({combinedTaxRate:1.1}),/exceed/);
+ assert.throws(()=>estimateForeignStockTax({annualDeductionKrw:-1}),/nonnegative/);
 });
