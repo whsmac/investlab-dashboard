@@ -1,17 +1,22 @@
-// Read-only symbol selector for the existing INVESTLAB pilot ledger.
-// No registration, storage writes, Supabase calls or portfolio mutations.
+// Read-only symbol selector using the original INVESTLAB portfolio's symbol management.
+// The original index.html owns these three keys. No registration or storage writes.
 const KEYS = Object.freeze({
-  portfolio: 'investlab-pilot-portfolio-symbols-v1',
-  watch: 'investlab-pilot-watchlist-v1',
-  trades: 'investlab-pilot-trades-v1'
+  holdings: 'investlab_holdings',
+  watchlist: 'investlab_watchlist',
+  past: 'investlab_past_symbols'
 });
-const symbol = item => (typeof item === 'string' ? item : item?.symbol ?? item?.ticker ?? '').trim().toUpperCase();
+const symbol = item => {
+  const value=typeof item==='string'?item:item?.symbol??item?.ticker??'';
+  return typeof value==='string'?value.trim().toUpperCase():'';
+};
 const valid = value => /^[A-Z0-9.^_-]{1,20}$/.test(value);
-export function collectManagedSymbols({portfolio={},watchlist=[],trades=[]}={}) {
+export function collectManagedSymbols({holdings=[],watchlist=[],past=[]}={}) {
   const found=new Map();
-  for(const [items,category] of [[portfolio.holdings,'보유'],[portfolio.watchlist,'관심'],[portfolio.past,'거래이력'],[watchlist,'관심'],[trades,'거래이력']]){
+  for(const [items,category] of [[holdings,'보유'],[watchlist,'관심'],[past,'거래이력']]){
     if(!Array.isArray(items))continue;
-    for(const item of items){const code=symbol(item);if(!valid(code))continue;
+    for(const item of items){
+      const code=symbol(item);
+      if(!valid(code)||code==='USD'||code==='USD-CASH')continue;
       if(!found.has(code))found.set(code,new Set());
       found.get(code).add(category);
     }
@@ -20,6 +25,6 @@ export function collectManagedSymbols({portfolio={},watchlist=[],trades=[]}={}) 
 }
 export function readManagedSymbols(storage) {
   if(!storage)return [];
-  const read=(key,fallback)=>{try{return JSON.parse(storage.getItem(key)||'null')??fallback;}catch{return fallback;}};
-  return collectManagedSymbols({portfolio:read(KEYS.portfolio,{}),watchlist:read(KEYS.watch,[]),trades:read(KEYS.trades,[])});
+  const read=(key)=>{try{const parsed=JSON.parse(storage.getItem(key)||'[]');return Array.isArray(parsed)?parsed:[];}catch{return [];}};
+  return collectManagedSymbols({holdings:read(KEYS.holdings),watchlist:read(KEYS.watchlist),past:read(KEYS.past)});
 }
