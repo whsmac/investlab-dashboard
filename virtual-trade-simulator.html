@@ -9,7 +9,7 @@
  {"side":"sell","ticker":"TSLA","quantity":5,"price":200},
  {"side":"buy","ticker":"TSLA","quantity":10,"price":100}
 ]</textarea><p class="hint">여러 전략 비교(선택): 아래에 시나리오 배열을 입력하면 위 거래 목록 대신 전략별로 독립 계산합니다.</p><label for="alternatives">비교 전략 목록 (JSON 배열, 비우면 기존 거래 사용)</label><textarea id="alternatives" spellcheck="false" placeholder="여러 시나리오를 JSON 배열로 입력하세요."></textarea></details><p class="notice">USD 매매 평가와 KRW 세금 추정은 별도 · 미래 가격은 사용자 가정</p></section>
-<section class="panel wide"><h2>해외주식 양도세 추정 (선택)</h2><p class="hint">세금용 원화 실현손익을 전략별로 별도 입력합니다. USD 손익을 단순 환산하지 않습니다. 일반 과세계좌 예시이며 실제 세법·환율·취득원가 확인이 필요합니다.</p><button id="taxExample" type="button" style="max-width:290px;background:#38547c">세금 계산 예시 입력</button><p class="hint">예시를 입력한 뒤 시나리오 계산을 누르세요. 실제 세무자료가 아닌 시험값입니다.</p><label>기존 연간 실현손익 (KRW)</label><input id="priorTax" type="number" value="0"><label>기본공제 가정 (KRW)</label><input id="deduction" type="number" value="2500000"><label>세율 가정</label><input id="taxRate" type="number" step="0.01" value="0.22"><h3>전략별 매도 손익 (KRW)</h3><p class="simple-caption">매도 거래마다 세금 계산용 원화 실현손익을 직접 입력하세요. 미입력 전략은 세액을 계산하지 않습니다.</p><div id="taxGainEditor"></div><details><summary>고급 입력: 세금용 손익 JSON</summary><label for="taxGains">전략명: 매도 손익 배열</label><textarea id="taxGains" placeholder='{"상승장 단계별 매도":[500000,800000]}'></textarea><button id="applyTaxJson" type="button">JSON 입력 반영</button></details><p class="notice">세금용 손익 배열은 해당 전략의 매도 거래 건수와 순서가 같아야 합니다. 예상 세금은 현금에서 즉시 차감하지 않으며 USD 평가금액과 합산하지 않습니다.</p></section><section class="panel wide"><h2>결과 비교</h2><p id="status" role="status" aria-live="polite">계산 버튼을 누르세요.</p><div id="summary"></div><h3>전략별 비교</h3><div id="strategies"></div><h3>세금 계산 기준 및 환율</h3><div id="taxBasis"></div><h3>세금 단계별 추정 (입력된 전략)</h3><div id="taxStages"></div><h3>거래 단계별 변화 (첫 번째 전략)</h3><div id="steps"></div><h3>최종 종목별 보유수량</h3><div id="holdings"></div></section>
+<section class="panel wide"><h2>해외주식 양도세 추정 (선택)</h2><p class="hint">세금용 원화 실현손익을 전략별로 별도 입력합니다. USD 손익을 단순 환산하지 않습니다. 일반 과세계좌 예시이며 실제 세법·환율·취득원가 확인이 필요합니다.</p><button id="taxExample" type="button" style="max-width:290px;background:#38547c">세금 계산 예시 입력</button><p class="hint">예시를 입력한 뒤 시나리오 계산을 누르세요. 실제 세무자료가 아닌 시험값입니다.</p><label>기존 연간 실현손익 (KRW)</label><input id="priorTax" type="number" value="0"><label>기본공제 가정 (KRW)</label><input id="deduction" type="number" value="2500000"><label>세율 가정</label><input id="taxRate" type="number" step="0.01" value="0.22"><label>전략별 세금용 실현손익 (JSON, 전략명: 손익 배열)</label><textarea id="taxGains" placeholder='{"상승장 단계별 매도":[500000,800000]}'></textarea><p class="notice">세금용 손익 배열은 해당 전략의 매도 거래 건수와 순서가 같아야 합니다. 예상 세금은 현금에서 즉시 차감하지 않으며 USD 평가금액과 합산하지 않습니다.</p></section><section class="panel wide"><h2>결과 비교</h2><p id="status" role="status" aria-live="polite">계산 버튼을 누르세요.</p><div id="summary"></div><h3>전략별 비교</h3><div id="strategies"></div><h3>세금 계산 기준 및 환율</h3><div id="taxBasis"></div><h3>세금 단계별 추정 (입력된 전략)</h3><div id="taxStages"></div><h3>거래 단계별 변화 (첫 번째 전략)</h3><div id="steps"></div><h3>최종 종목별 보유수량</h3><div id="holdings"></div></section>
 </div>
 <script type="module">
 import {compareScenarios} from './src/simulator/scenario-comparison.mjs';
@@ -24,7 +24,7 @@ function calculate(){
   if(!byId('cash').value.trim())throw new Error('시작 현금을 입력하세요.');
   const {positions,prices}=syncPortfolioJson();
   const scenarios=readStrategies();const result=compareScenarios({cash,positions},scenarios,prices),scenario=result.scenarios[0];
-  const taxMap=readTaxGains();
+  const taxText=byId('taxGains').value.trim(),taxMap=taxText?JSON.parse(taxText):{};
   if(!taxMap||typeof taxMap!=='object'||Array.isArray(taxMap))throw Error('세금용 손익은 JSON 객체여야 합니다.');
   const taxOpts={priorRealizedKrw:Number(byId('priorTax').value),annualDeductionKrw:Number(byId('deduction').value),taxRate:Number(byId('taxRate').value)};
   const names=result.scenarios.map(s=>s.name);
@@ -176,7 +176,7 @@ function renderEditor(){
   const add=document.createElement('button');add.type='button';add.textContent='+ 거래 추가';add.addEventListener('click',()=>{strategy.trades.push({side:'buy',ticker:'TSLA',quantity:1,price:100,fee:0});renderEditor();});
   card.append(add);editor.append(card);
  });
- syncAdvanced();renderTaxGainEditor();
+ syncAdvanced();
 }
 function syncAdvanced(){
  const scenarios=clone(strategyState);
@@ -191,72 +191,6 @@ byId('alternatives').addEventListener('change',()=>{
  try{const value=JSON.parse(byId('alternatives').value);if(!Array.isArray(value)||!value.every(s=>s&&typeof s.name==='string'&&Array.isArray(s.trades)))throw Error('전략 배열 형식이 아닙니다.');strategyState=clone(value);renderEditor();byId('editorStatus').textContent='JSON을 전략 편집기에 반영했습니다.';}
  catch(e){byId('editorStatus').textContent='JSON 입력 오류: '+e.message;}
 });
-const taxGainState={};
-function renderTaxGainEditor(){
- const root=byId('taxGainEditor');root.replaceChildren();
- for(const strategy of strategyState){
-  const sells=strategy.trades.map((trade,index)=>({trade,index})).filter(x=>x.trade.side==='sell');
-  const key=strategy.name;const prev=taxGainState[key]||[];
-  const section=document.createElement('div');section.className='strategy-card';
-  const title=document.createElement('strong');title.textContent=key+' · 매도 '+sells.length+'건';section.append(title);
-  if(!sells.length){const note=document.createElement('p');note.className='hint';note.textContent='매도 거래 없음 · 세금용 손익 입력 불필요';section.append(note);}
-  sells.forEach(({trade,index},i)=>{
-   const label=document.createElement('label');label.textContent=(i+1)+'번 매도: '+trade.ticker+' '+trade.quantity+'주 × 
-
-byId('taxExample').addEventListener('click',()=>{
- let scenarios;
- try{scenarios=readStrategies();
- if(!Array.isArray(scenarios))throw Error('비교 전략 목록은 배열이어야 합니다.');
- const example={};
- for(const s of scenarios){if(typeof s.name!=='string'||!Array.isArray(s.trades))throw Error('전략 이름 또는 거래 배열을 확인하세요.');
-  const sells=s.trades.filter(t=>t.side==='sell').length;
-  if(sells)example[s.name]=Array.from({length:sells},(_,i)=>500000+i*300000);
- }
- byId('priorTax').value='3000000';
- for(const [name,values] of Object.entries(example))taxGainState[name]=values.map(String);
- renderTaxGainEditor();byId('taxGains').value=JSON.stringify(example,null,2);
- byId('status').textContent='세금 계산 시험값을 입력했습니다. 시나리오 계산을 누르세요.';
- byId('status').className='hint';
- }catch(e){byId('status').textContent='예시 입력 실패: '+e.message;byId('status').className='error';}
-});
-byId('calculate').addEventListener('click',()=>{syncAdvanced();calculate();});
-calculate();
-</script></body></html>+trade.price+' · 원화 실현손익';
-   const input=document.createElement('input');input.type='number';input.step='1';input.placeholder='예: 500000 (손실이면 음수)';
-   input.value=prev[i]??'';input.setAttribute('aria-label',key+' '+(i+1)+'번 매도 원화 실현손익');
-   input.addEventListener('input',()=>{if(!taxGainState[key])taxGainState[key]=[];taxGainState[key][i]=input.value;});
-   section.append(label,input);
-  });
-  root.append(section);
- }
-}
-function readTaxGains(){
- const result={};
- for(const strategy of strategyState){
-  const count=strategy.trades.filter(t=>t.side==='sell').length;
-  if(!count)continue;
-  const fields=[...byId('taxGainEditor').querySelectorAll('.strategy-card')].find(card=>card.querySelector('strong')?.textContent.startsWith(strategy.name+' ·'))?.querySelectorAll('input')||[];
-  const values=[...fields].map(x=>x.value.trim());
-  if(values.every(v=>v===''))continue;
-  if(values.some(v=>v===''||!Number.isFinite(Number(v))))throw Error(strategy.name+'의 모든 매도 손익(KRW)을 입력하세요.');
-  result[strategy.name]=values.map(Number);
- }
- byId('taxGains').value=JSON.stringify(result,null,2);
- return result;
-}
-byId('applyTaxJson').addEventListener('click',()=>{
- try{
-  const value=JSON.parse(byId('taxGains').value||'{}');
-  if(!value||typeof value!=='object'||Array.isArray(value))throw Error('JSON 객체가 아닙니다.');
-  for(const [name,values] of Object.entries(value)){
-   if(!Array.isArray(values)||values.some(v=>!Number.isFinite(v)))throw Error(name+' 손익 배열이 잘못되었습니다.');
-   taxGainState[name]=values.map(String);
-  }
-  renderTaxGainEditor();byId('status').textContent='세금 JSON을 일반 입력창에 반영했습니다.';
- }catch(e){byId('status').textContent='세금 JSON 입력 오류: '+e.message;byId('status').className='error';}
-});
-strategyState=[clone(presets.rise),clone(presets.dip)];renderEditor();
-
 byId('taxExample').addEventListener('click',()=>{
  let scenarios;
  try{scenarios=readStrategies();
@@ -274,4 +208,4 @@ byId('taxExample').addEventListener('click',()=>{
 });
 byId('calculate').addEventListener('click',()=>{syncAdvanced();calculate();});
 calculate();
-</script></body></html>
+</script></body></html
