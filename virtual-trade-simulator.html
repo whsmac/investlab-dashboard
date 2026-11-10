@@ -5,7 +5,7 @@
 <body><nav style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:18px"><a style="color:#8dc0ff" href="./index.html">대시보드</a><a style="color:#8dc0ff" href="./shared-data.html">공유 데이터 조회</a><a style="color:#8dc0ff" href="./shared-data-import.html">TEST CSV 가져오기</a></nav><h1>INVESTLAB · 가상 매매 시뮬레이터</h1><p>하락장 재매수·종목 전환과 상승장 단계별 매도를 시험합니다. 기존 포트폴리오 보유정보를 읽기 전용으로 불러와 가상 거래에 사용합니다. 실제 포트폴리오와 매매원장은 변경하지 않습니다.</p>
 <section class="panel" style="margin-bottom:16px"><strong>기존 포트폴리오 종목 선택</strong><p class="hint" id="managedSymbolStatus">종목 목록 확인 중…</p><button type="button" id="refreshManagedSymbols" style="max-width:240px">종목 목록 새로고침</button><datalist id="managedSymbolOptions"></datalist><p class="hint">이 화면은 기존 종목관리 정보를 읽기만 합니다. 종목 등록·수정은 기존 종목관리에서 수행하세요. 다른 도메인이나 기기의 목록은 자동 연결되지 않습니다.</p></section>
 <div class="layout">
-<section class="panel"><h2>기준 보유정보</h2><label for="cash">시작 현금 (USD)</label><input id="cash" type="number" min="0" step="any" value="1000"><h3>보유종목</h3><p class="simple-caption">종목 · 수량 · 평균 취득단가(USD)</p><div id="positionEditor"></div><button type="button" id="loadPortfolioPositions">현재 포트폴리오 보유정보 다시 불러오기</button><p id="positionLoadStatus" class="hint" role="status"></p><button class="small-add" type="button" id="addPosition">+ 보유종목 추가</button><h3>기준 포트폴리오 합계</h3><div id="initialValuation"></div><p class="hint">기준 평가액은 아래 최종 가정 주가와 동일한 가격을 적용한 비교용 금액입니다. 실시간 현재가가 아닙니다. 취득원가 합계도 별도로 표시합니다.</p><h3>최종 가정 주가</h3><p class="simple-caption">종목별 가상 최종가격(USD)</p><div id="priceEditor"></div><button class="small-add" type="button" id="addPrice">+ 종목 가격 추가</button><details><summary>고급 입력: 보유정보·최종가격 JSON</summary><label for="positions">보유종목 JSON</label><textarea id="positions" spellcheck="false">{"TSLA":{"quantity":10,"averageCost":100}}</textarea><label for="terminal">최종 가정 주가 JSON</label><textarea id="terminal" spellcheck="false">{"TSLA":150,"SOXL":40}</textarea><button id="applyPortfolioJson" type="button">JSON 입력 반영</button></details><p id="portfolioStatus" class="hint" role="status"></p></section>
+<section class="panel"><h2>기준 보유정보</h2><label for="cash">시작 현금 (USD)</label><input id="cash" type="number" min="0" step="any" placeholder="실제 USD 현금잔액 입력" value=""><p class="hint">현금은 원본 주식 종목관리와 별개입니다. 확인된 현금잔액을 직접 입력하세요. 임의의 예시 현금을 자동 적용하지 않습니다.</p><h3>보유종목</h3><p class="simple-caption">종목 · 수량 · 평균 취득단가(USD)</p><div id="positionEditor"></div><button type="button" id="loadPortfolioPositions">현재 포트폴리오 보유정보 다시 불러오기</button><p id="positionLoadStatus" class="hint" role="status"></p><button class="small-add" type="button" id="addPosition">+ 보유종목 추가</button><h3>기준 포트폴리오 합계</h3><div id="initialValuation"></div><p class="hint">기준 평가액은 아래 최종 가정 주가와 동일한 가격을 적용한 비교용 금액입니다. 실시간 현재가가 아닙니다. 취득원가 합계도 별도로 표시합니다.</p><h3>최종 가정 주가</h3><p class="simple-caption">종목별 가상 최종가격(USD)</p><div id="priceEditor"></div><button class="small-add" type="button" id="addPrice">+ 종목 가격 추가</button><details><summary>고급 입력: 보유정보·최종가격 JSON</summary><label for="positions">보유종목 JSON</label><textarea id="positions" spellcheck="false">{"TSLA":{"quantity":10,"averageCost":100}}</textarea><label for="terminal">최종 가정 주가 JSON</label><textarea id="terminal" spellcheck="false">{"TSLA":150,"SOXL":40}</textarea><button id="applyPortfolioJson" type="button">JSON 입력 반영</button></details><p id="portfolioStatus" class="hint" role="status"></p></section>
 <section class="panel"><h2>가상 거래</h2><p class="hint">아래 전략 편집기에서 거래를 추가·삭제하고 가격과 수량을 직접 수정하세요.</p><div id="strategyEditor"></div><div class="editor-actions"><button id="addStrategy" type="button">+ 전략 추가</button><button id="presetRise" type="button">상승장 부분 매도</button><button id="presetDip" type="button">하락장 재매수</button></div><p id="editorStatus" class="hint"></p><button id="calculate" type="button">시나리오 계산</button><details><summary>고급 입력: JSON 직접 편집</summary><p class="hint">배열 순서대로 체결을 가정합니다. buy/sell, ticker, quantity, price, fee(선택)를 입력하세요.</p><label for="trades">가상 거래 목록 (JSON)</label><textarea id="trades" spellcheck="false" style="min-height:245px">[
  {"side":"sell","ticker":"TSLA","quantity":5,"price":200},
  {"side":"buy","ticker":"TSLA","quantity":10,"price":100}
@@ -181,16 +181,19 @@ function loadPortfolioPositions(){
   return;
  }
  portfolioState.positions=positions.map(p=>({...p}));
- // Keep user-defined terminal price assumptions. Add missing tickers at their
- // acquisition cost as an explicit neutral placeholder, not a market quote.
- const existing=new Set(portfolioState.prices.map(p=>String(p.ticker).toUpperCase()));
- for(const p of positions)if(!existing.has(p.ticker)){
-  portfolioState.prices.push({ticker:p.ticker,price:p.averageCost});
-  existing.add(p.ticker);
- }
- renderPortfolio();
+ // Reset the example terminal-price rows on initial import. Prices in the
+ // holdings record are only used when explicitly present and valid.
+ let sourceHoldings=[];
+ try{sourceHoldings=JSON.parse(window.localStorage.getItem('investlab_holdings')||'[]');}catch{}
+ const sourcePrices=new Map(Array.isArray(sourceHoldings)?sourceHoldings.filter(x=>x&&typeof x==='object').map(x=>[String(x.symbol||'').toUpperCase(),x.price]):[]);
+ portfolioState.prices=positions.map(p=>{
+  const raw=sourcePrices.get(p.ticker);
+  const valid=raw!==null&&raw!==undefined&&raw!==''&&Number.isFinite(Number(raw))&&Number(raw)>0;
+  return {ticker:p.ticker,price:valid?Number(raw):p.averageCost};
+ });
+  renderPortfolio();
  syncPortfolioJson();
- byId('positionLoadStatus').textContent='현재 보유 '+positions.length+'개 종목의 수량과 평균 취득단가를 읽기 전용으로 불러왔습니다. 새로 추가된 종목의 최종 가정 주가는 평균 취득단가로 임시 설정했습니다. 가정 주가와 전략 거래를 확인한 뒤 계산하세요.';
+ byId('positionLoadStatus').textContent='현재 보유 '+positions.length+'개 종목의 수량과 평균 취득단가를 읽기 전용으로 불러왔습니다. 종목관리의 유효한 가격이 없으면 최종 가정 주가를 평균 취득단가로 임시 설정했습니다. 실제 현재가 여부를 확인하세요. 가정 주가와 전략 거래를 확인한 뒤 계산하세요.';
 }
 byId('loadPortfolioPositions').addEventListener('click',loadPortfolioPositions);
 loadPortfolioPositions();
