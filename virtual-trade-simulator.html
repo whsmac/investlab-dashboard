@@ -5,12 +5,12 @@
 <body><nav style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:18px"><a style="color:#8dc0ff" href="./index.html">대시보드</a><a style="color:#8dc0ff" href="./shared-data.html">공유 데이터 조회</a><a style="color:#8dc0ff" href="./shared-data-import.html">TEST CSV 가져오기</a></nav><h1>INVESTLAB · 가상 매매 시뮬레이터</h1><p>하락장 재매수·종목 전환과 상승장 단계별 매도를 시험합니다. 기존 포트폴리오 보유정보를 읽기 전용으로 불러와 가상 거래에 사용합니다. 실제 포트폴리오와 매매원장은 변경하지 않습니다.</p>
 <section class="panel" style="margin-bottom:16px"><strong>기존 포트폴리오 종목 선택</strong><p class="hint" id="managedSymbolStatus">종목 목록 확인 중…</p><button type="button" id="refreshManagedSymbols" style="max-width:240px">종목 목록 새로고침</button><datalist id="managedSymbolOptions"></datalist><p class="hint">이 화면은 기존 종목관리 정보를 읽기만 합니다. 종목 등록·수정은 기존 종목관리에서 수행하세요. 다른 도메인이나 기기의 목록은 자동 연결되지 않습니다.</p></section>
 <div class="layout">
-<section class="panel"><h2>기준 보유정보</h2><label for="cash">시작 현금 (USD)</label><input id="cash" type="number" min="0" step="any" value="1000"><h3>보유종목</h3><p class="simple-caption">종목 · 수량 · 평균 취득단가(USD)</p><div id="positionEditor"></div><button type="button" id="loadPortfolioPositions">현재 포트폴리오 보유정보 다시 불러오기</button><p id="positionLoadStatus" class="hint" role="status"></p><button class="small-add" type="button" id="addPosition">+ 보유종목 추가</button><h3>최종 가정 주가</h3><p class="simple-caption">종목별 가상 최종가격(USD)</p><div id="priceEditor"></div><button class="small-add" type="button" id="addPrice">+ 종목 가격 추가</button><details><summary>고급 입력: 보유정보·최종가격 JSON</summary><label for="positions">보유종목 JSON</label><textarea id="positions" spellcheck="false">{"TSLA":{"quantity":10,"averageCost":100}}</textarea><label for="terminal">최종 가정 주가 JSON</label><textarea id="terminal" spellcheck="false">{"TSLA":150,"SOXL":40}</textarea><button id="applyPortfolioJson" type="button">JSON 입력 반영</button></details><p id="portfolioStatus" class="hint" role="status"></p></section>
+<section class="panel"><h2>기준 보유정보</h2><label for="cash">시작 현금 (USD)</label><input id="cash" type="number" min="0" step="any" value="1000"><h3>보유종목</h3><p class="simple-caption">종목 · 수량 · 평균 취득단가(USD)</p><div id="positionEditor"></div><button type="button" id="loadPortfolioPositions">현재 포트폴리오 보유정보 다시 불러오기</button><p id="positionLoadStatus" class="hint" role="status"></p><button class="small-add" type="button" id="addPosition">+ 보유종목 추가</button><h3>기준 포트폴리오 합계</h3><div id="initialValuation"></div><p class="hint">기준 평가액은 아래 최종 가정 주가와 동일한 가격을 적용한 비교용 금액입니다. 실시간 현재가가 아닙니다. 취득원가 합계도 별도로 표시합니다.</p><h3>최종 가정 주가</h3><p class="simple-caption">종목별 가상 최종가격(USD)</p><div id="priceEditor"></div><button class="small-add" type="button" id="addPrice">+ 종목 가격 추가</button><details><summary>고급 입력: 보유정보·최종가격 JSON</summary><label for="positions">보유종목 JSON</label><textarea id="positions" spellcheck="false">{"TSLA":{"quantity":10,"averageCost":100}}</textarea><label for="terminal">최종 가정 주가 JSON</label><textarea id="terminal" spellcheck="false">{"TSLA":150,"SOXL":40}</textarea><button id="applyPortfolioJson" type="button">JSON 입력 반영</button></details><p id="portfolioStatus" class="hint" role="status"></p></section>
 <section class="panel"><h2>가상 거래</h2><p class="hint">아래 전략 편집기에서 거래를 추가·삭제하고 가격과 수량을 직접 수정하세요.</p><div id="strategyEditor"></div><div class="editor-actions"><button id="addStrategy" type="button">+ 전략 추가</button><button id="presetRise" type="button">상승장 부분 매도</button><button id="presetDip" type="button">하락장 재매수</button></div><p id="editorStatus" class="hint"></p><button id="calculate" type="button">시나리오 계산</button><details><summary>고급 입력: JSON 직접 편집</summary><p class="hint">배열 순서대로 체결을 가정합니다. buy/sell, ticker, quantity, price, fee(선택)를 입력하세요.</p><label for="trades">가상 거래 목록 (JSON)</label><textarea id="trades" spellcheck="false" style="min-height:245px">[
  {"side":"sell","ticker":"TSLA","quantity":5,"price":200},
  {"side":"buy","ticker":"TSLA","quantity":10,"price":100}
 ]</textarea><p class="hint">여러 전략 비교(선택): 아래에 시나리오 배열을 입력하면 위 거래 목록 대신 전략별로 독립 계산합니다.</p><label for="alternatives">비교 전략 목록 (JSON 배열, 비우면 기존 거래 사용)</label><textarea id="alternatives" spellcheck="false" placeholder="여러 시나리오를 JSON 배열로 입력하세요."></textarea></details><p class="notice">USD 매매 평가와 KRW 세금 추정은 별도 · 미래 가격은 사용자 가정</p></section>
-<section class="panel wide"><h2>해외주식 양도세 추정 (선택)</h2><p class="hint">세금용 원화 실현손익을 전략별로 별도 입력합니다. USD 손익을 단순 환산하지 않습니다. 일반 과세계좌 예시이며 실제 세법·환율·취득원가 확인이 필요합니다.</p><button id="taxExample" type="button" style="max-width:290px;background:#38547c">세금 계산 예시 입력</button><p class="hint">예시를 입력한 뒤 시나리오 계산을 누르세요. 실제 세무자료가 아닌 시험값입니다.</p><label>기존 연간 실현손익 (KRW)</label><input id="priorTax" type="number" value="0"><label>기본공제 가정 (KRW)</label><input id="deduction" type="number" value="2500000"><label>세율 가정</label><input id="taxRate" type="number" step="0.01" value="0.22"><h3>전략별 매도 손익 직접 입력 (KRW)</h3><p class="simple-caption">매도 거래마다 원화 기준 손익을 입력합니다. 모든 칸이 비어 있으면 세금을 계산하지 않습니다.</p><div id="taxGainEditor"></div><details><summary>고급 입력: 세금용 JSON</summary><label for="taxGains">전략명별 원화 손익 배열</label><textarea id="taxGains" placeholder='{"상승장 단계별 매도":[500000,800000]}'></textarea><button type="button" id="applyTaxJson">JSON 입력 반영</button></details><p class="notice">세금용 손익 배열은 해당 전략의 매도 거래 건수와 순서가 같아야 합니다. 예상 세금은 현금에서 즉시 차감하지 않으며 USD 평가금액과 합산하지 않습니다.</p></section><section class="panel wide"><h2>결과 비교</h2><p id="status" role="status" aria-live="polite">계산 버튼을 누르세요.</p><div id="summary"></div><h3>전략별 비교</h3><div id="strategies"></div><h3>세금 계산 기준 및 환율</h3><div id="taxBasis"></div><h3>세금 단계별 추정 (입력된 전략)</h3><div id="taxStages"></div><h3>거래 단계별 변화 (첫 번째 전략)</h3><div id="steps"></div><h3>최종 종목별 보유수량</h3><div id="holdings"></div></section>
+<section class="panel wide"><h2>해외주식 양도세 추정 (선택)</h2><p class="hint">세금용 원화 실현손익을 전략별로 별도 입력합니다. USD 손익을 단순 환산하지 않습니다. 일반 과세계좌 예시이며 실제 세법·환율·취득원가 확인이 필요합니다.</p><button id="taxExample" type="button" style="max-width:290px;background:#38547c">세금 계산 예시 입력</button><p class="hint">예시를 입력한 뒤 시나리오 계산을 누르세요. 실제 세무자료가 아닌 시험값입니다.</p><label>기존 연간 실현손익 (KRW)</label><input id="priorTax" type="number" value="0"><label>기본공제 가정 (KRW)</label><input id="deduction" type="number" value="2500000"><label>세율 가정</label><input id="taxRate" type="number" step="0.01" value="0.22"><h3>전략별 매도 손익 직접 입력 (KRW)</h3><p class="simple-caption">매도 거래마다 원화 기준 손익을 입력합니다. 모든 칸이 비어 있으면 세금을 계산하지 않습니다.</p><div id="taxGainEditor"></div><details><summary>고급 입력: 세금용 JSON</summary><label for="taxGains">전략명별 원화 손익 배열</label><textarea id="taxGains" placeholder='{"상승장 단계별 매도":[500000,800000]}'></textarea><button type="button" id="applyTaxJson">JSON 입력 반영</button></details><p class="notice">세금용 손익 배열은 해당 전략의 매도 거래 건수와 순서가 같아야 합니다. 예상 세금은 현금에서 즉시 차감하지 않으며 USD 평가금액과 합산하지 않습니다.</p></section><section class="panel wide"><h2>결과 비교</h2><p id="status" role="status" aria-live="polite">계산 버튼을 누르세요.</p><div id="summary"></div><h3>최종 가상 포트폴리오 상세 (첫 번째 전략)</h3><div id="finalValuation"></div><h3>전략별 비교</h3><div id="strategies"></div><h3>세금 계산 기준 및 환율</h3><div id="taxBasis"></div><h3>세금 단계별 추정 (입력된 전략)</h3><div id="taxStages"></div><h3>거래 단계별 변화 (첫 번째 전략)</h3><div id="steps"></div><h3>최종 종목별 보유수량</h3><div id="holdings"></div></section>
 </div>
 <script type="module">
 import {compareScenarios} from './src/simulator/scenario-comparison.mjs';
@@ -35,7 +35,7 @@ refreshManagedSymbols();
 const fmt=v=>Number(v).toLocaleString('ko-KR',{maximumFractionDigits:8});
 const table=(headers,rows)=>{const t=document.createElement('table'),thead=t.createTHead(),tr=thead.insertRow();for(const h of headers){const th=document.createElement('th');th.textContent=h;tr.append(th);}const body=t.createTBody();for(const row of rows){const r=body.insertRow();for(const value of row){const cell=r.insertCell();cell.textContent=String(value);}}return t;};
 function calculate(){
- for(const id of ['summary','strategies','taxBasis','taxStages','steps','holdings'])byId(id).replaceChildren();
+ for(const id of ['summary','strategies','taxBasis','taxStages','steps','holdings','finalValuation'])byId(id).replaceChildren();
  try{
   const cash=Number(byId('cash').value);
   if(!byId('cash').value.trim()||!Number.isFinite(cash)||cash<0)throw new Error('시작 현금은 0 이상의 숫자여야 합니다.');
@@ -62,6 +62,20 @@ function calculate(){
    ['보유 대비 평가 차이 (USD)','—',fmt(scenario.deltaVsHold)],
    ['누적 실현손익 (USD)','0',fmt(scenario.final.realizedPnL)],
    ['추가 예상 양도세 (KRW)','—',taxResults[0]?fmt(taxResults[0].incrementalTaxKrw):'미입력']
+  ]));
+  const detailedTickers=[...new Set([...Object.keys(result.baseline.final.positions),...Object.keys(scenario.final.positions)])].sort();
+  const detailedRows=detailedTickers.map(t=>{
+   const before=result.baseline.final.positions[t]?.quantity??0,after=scenario.final.positions[t]?.quantity??0;
+   const price=prices[t];
+   return [t,fmt(before),fmt(after),fmt(after-before),fmt(price),fmt(after*price)];
+  });
+  byId('finalValuation').append(table(['종목','기준 수량','가상 수량','증감','최종 가정 주가 USD','최종 평가액 USD'],detailedRows));
+  byId('finalValuation').append(table(['항목','금액 USD'],[
+   ['가상 주식 평가액',fmt(scenario.terminalValue-scenario.final.cash)],
+   ['가상 현금 잔액',fmt(scenario.final.cash)],
+   ['가상 전체 평가총액',fmt(scenario.terminalValue)],
+   ['기준 전체 평가총액',fmt(result.baseline.terminalValue)],
+   ['기준 대비 차이',fmt(scenario.deltaVsHold)]
   ]));
   byId('strategies').append(table(['전략','최종 현금 USD','최종 평가총액 USD','보유 대비 차이 USD','실현손익 USD','추가 예상 세금 KRW'],result.scenarios.map((s,i)=>[s.name,fmt(s.final.cash),fmt(s.terminalValue),fmt(s.deltaVsHold),fmt(s.final.realizedPnL),taxResults[i]?fmt(taxResults[i].incrementalTaxKrw):'미입력'])));
   const basisRows=result.scenarios.map((s,i)=>[s.name,
@@ -111,6 +125,23 @@ function syncPortfolioJson(){
  byId('terminal').value=JSON.stringify(data.prices,null,2);
  return data;
 }
+function updateInitialValuation(){
+ const root=byId('initialValuation');root.replaceChildren();
+ try{
+  const {positions,prices}=portfolioJson();
+  const rows=Object.entries(positions).map(([t,p])=>{
+   if(prices[t]===undefined)throw Error(t+'의 최종 가정 주가를 입력하세요.');
+   return [t,fmt(p.quantity),fmt(p.averageCost),fmt(p.quantity*p.averageCost),fmt(prices[t]),fmt(p.quantity*prices[t])];
+  });
+  const cost=Object.values(positions).reduce((sum,p)=>sum+p.quantity*p.averageCost,0);
+  const stock=Object.entries(positions).reduce((sum,[t,p])=>sum+p.quantity*prices[t],0);
+  const cash=Number(byId('cash').value);
+  if(!Number.isFinite(cash)||cash<0||!byId('cash').value.trim())throw Error('시작 현금을 입력하세요.');
+  root.append(table(['종목','수량','평균 취득단가','취득원가 USD','가정 주가','기준 평가액 USD'],rows));
+  root.append(table(['항목','금액 USD'],[['주식 취득원가 합계',fmt(cost)],['기준 주식 평가액',fmt(stock)],['시작 현금',fmt(cash)],['기준 전체 평가총액',fmt(stock+cash)]]));
+ }catch(e){const p=document.createElement('p');p.className='notice';p.textContent='합계 계산 대기: '+e.message;root.append(p);}
+}
+byId('cash').addEventListener('input',updateInitialValuation);
 function renderPortfolio(){
  for(const [kind,id,fields] of [['positions','positionEditor',[['ticker','종목'],['quantity','수량'],['averageCost','평균단가']]],['prices','priceEditor',[['ticker','종목'],['price','최종가격']]]]){
   const root=byId(id);root.replaceChildren();
@@ -120,7 +151,7 @@ function renderPortfolio(){
     const input=document.createElement('input');input.setAttribute('aria-label',label);
     input.placeholder=label;input.type=field==='ticker'?'text':'number';if(field==='ticker')input.setAttribute('list','managedSymbolOptions');
     if(field!=='ticker'){input.step='any';input.min='0';}
-    input.value=entry[field];input.addEventListener('input',()=>{entry[field]=input.value;});
+    input.value=entry[field];input.addEventListener('input',()=>{entry[field]=input.value;updateInitialValuation();});
     row.append(input);
    }
    const remove=document.createElement('button');remove.type='button';remove.textContent='삭제';
@@ -128,6 +159,7 @@ function renderPortfolio(){
    row.append(remove);root.append(row);
   });
  }
+ updateInitialValuation();
 }
 byId('addPosition').addEventListener('click',()=>{portfolioState.positions.push({ticker:'',quantity:0,averageCost:0});renderPortfolio();});
 byId('addPrice').addEventListener('click',()=>{portfolioState.prices.push({ticker:'',price:0});renderPortfolio();});
