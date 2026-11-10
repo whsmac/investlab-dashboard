@@ -2,10 +2,10 @@
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>INVESTLAB | 가상 매매 시뮬레이터</title>
 <style>
 :root{font-family:system-ui,-apple-system,sans-serif;color-scheme:dark;background:#101724;color:#edf3ff}body{max-width:1100px;margin:32px auto;padding:0 20px}h1{font-size:26px}p,.hint{color:#b4c1d6}.layout{display:grid;grid-template-columns:1fr 1fr;gap:18px}.panel{border:1px solid #34425c;border-radius:12px;padding:20px;background:#1a2435}label{display:block;margin:10px 0 4px;font-size:14px}input,textarea,button{box-sizing:border-box;width:100%;border-radius:7px;border:1px solid #52637e;background:#111a29;color:white;padding:10px;font:inherit}textarea{min-height:140px;font-family:ui-monospace,monospace;font-size:13px}button{margin-top:15px;background:#285ca3;cursor:pointer;font-weight:600}table{width:100%;border-collapse:collapse}td,th{text-align:right;padding:9px;border-bottom:1px solid #34425c}td:first-child,th:first-child{text-align:left}.wide{grid-column:1/-1}.error{color:#ffb0b0;white-space:pre-wrap}.notice{color:#f4c97c}.editor-actions{display:flex;gap:8px;flex-wrap:wrap}.editor-actions button{width:auto;min-width:110px}.trade-grid{display:grid;grid-template-columns:110px 1fr 100px 100px 90px 80px;gap:7px;align-items:center;margin:8px 0}.trade-grid input,.trade-grid select{min-width:0;width:100%;box-sizing:border-box;border:1px solid #52637e;border-radius:6px;background:#111a29;color:white;padding:9px}.trade-grid button{margin:0;padding:9px;background:#493d55}.strategy-card{border:1px solid #40506a;border-radius:9px;padding:12px;margin-top:12px}.strategy-title{display:flex;gap:8px;align-items:center}.strategy-title input{flex:1}.strategy-title button{width:auto;margin:0;background:#493d55}.simple-row{display:grid;grid-template-columns:minmax(82px,1.2fr) minmax(72px,.8fr) minmax(90px,1fr) 65px;gap:6px;margin:8px 0;align-items:center}.simple-row.prices{grid-template-columns:minmax(82px,1fr) minmax(90px,1fr) 65px}.simple-row input{min-width:0;padding:8px}.simple-row button{margin:0;padding:8px;background:#493d55}.small-add{margin:5px 0 12px}.simple-caption{font-size:12px;color:#b4c1d6;margin-top:10px}details{margin-top:12px}.wide-editor{overflow-x:auto}.wide-editor .trade-grid{min-width:650px}@media(max-width:740px){.layout{grid-template-columns:1fr}}</style></head>
-<body><nav style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:18px"><a style="color:#8dc0ff" href="./index.html">대시보드</a><a style="color:#8dc0ff" href="./shared-data.html">공유 데이터 조회</a><a style="color:#8dc0ff" href="./shared-data-import.html">TEST CSV 가져오기</a></nav><h1>INVESTLAB · 가상 매매 시뮬레이터</h1><p>하락장 재매수·종목 전환과 상승장 단계별 매도를 시험합니다. 이 화면은 예시 데이터만 사용하며 실제 원장을 읽거나 변경하지 않습니다.</p>
+<body><nav style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:18px"><a style="color:#8dc0ff" href="./index.html">대시보드</a><a style="color:#8dc0ff" href="./shared-data.html">공유 데이터 조회</a><a style="color:#8dc0ff" href="./shared-data-import.html">TEST CSV 가져오기</a></nav><h1>INVESTLAB · 가상 매매 시뮬레이터</h1><p>하락장 재매수·종목 전환과 상승장 단계별 매도를 시험합니다. 기존 포트폴리오 보유정보를 읽기 전용으로 불러와 가상 거래에 사용합니다. 실제 포트폴리오와 매매원장은 변경하지 않습니다.</p>
 <section class="panel" style="margin-bottom:16px"><strong>기존 포트폴리오 종목 선택</strong><p class="hint" id="managedSymbolStatus">종목 목록 확인 중…</p><button type="button" id="refreshManagedSymbols" style="max-width:240px">종목 목록 새로고침</button><datalist id="managedSymbolOptions"></datalist><p class="hint">이 화면은 기존 종목관리 정보를 읽기만 합니다. 종목 등록·수정은 기존 종목관리에서 수행하세요. 다른 도메인이나 기기의 목록은 자동 연결되지 않습니다.</p></section>
 <div class="layout">
-<section class="panel"><h2>기준 보유정보</h2><label for="cash">시작 현금 (USD)</label><input id="cash" type="number" min="0" step="any" value="1000"><h3>보유종목</h3><p class="simple-caption">종목 · 수량 · 평균 취득단가(USD)</p><div id="positionEditor"></div><button class="small-add" type="button" id="addPosition">+ 보유종목 추가</button><h3>최종 가정 주가</h3><p class="simple-caption">종목별 가상 최종가격(USD)</p><div id="priceEditor"></div><button class="small-add" type="button" id="addPrice">+ 종목 가격 추가</button><details><summary>고급 입력: 보유정보·최종가격 JSON</summary><label for="positions">보유종목 JSON</label><textarea id="positions" spellcheck="false">{"TSLA":{"quantity":10,"averageCost":100}}</textarea><label for="terminal">최종 가정 주가 JSON</label><textarea id="terminal" spellcheck="false">{"TSLA":150,"SOXL":40}</textarea><button id="applyPortfolioJson" type="button">JSON 입력 반영</button></details><p id="portfolioStatus" class="hint" role="status"></p></section>
+<section class="panel"><h2>기준 보유정보</h2><label for="cash">시작 현금 (USD)</label><input id="cash" type="number" min="0" step="any" value="1000"><h3>보유종목</h3><p class="simple-caption">종목 · 수량 · 평균 취득단가(USD)</p><div id="positionEditor"></div><button type="button" id="loadPortfolioPositions">현재 포트폴리오 보유정보 다시 불러오기</button><p id="positionLoadStatus" class="hint" role="status"></p><button class="small-add" type="button" id="addPosition">+ 보유종목 추가</button><h3>최종 가정 주가</h3><p class="simple-caption">종목별 가상 최종가격(USD)</p><div id="priceEditor"></div><button class="small-add" type="button" id="addPrice">+ 종목 가격 추가</button><details><summary>고급 입력: 보유정보·최종가격 JSON</summary><label for="positions">보유종목 JSON</label><textarea id="positions" spellcheck="false">{"TSLA":{"quantity":10,"averageCost":100}}</textarea><label for="terminal">최종 가정 주가 JSON</label><textarea id="terminal" spellcheck="false">{"TSLA":150,"SOXL":40}</textarea><button id="applyPortfolioJson" type="button">JSON 입력 반영</button></details><p id="portfolioStatus" class="hint" role="status"></p></section>
 <section class="panel"><h2>가상 거래</h2><p class="hint">아래 전략 편집기에서 거래를 추가·삭제하고 가격과 수량을 직접 수정하세요.</p><div id="strategyEditor"></div><div class="editor-actions"><button id="addStrategy" type="button">+ 전략 추가</button><button id="presetRise" type="button">상승장 부분 매도</button><button id="presetDip" type="button">하락장 재매수</button></div><p id="editorStatus" class="hint"></p><button id="calculate" type="button">시나리오 계산</button><details><summary>고급 입력: JSON 직접 편집</summary><p class="hint">배열 순서대로 체결을 가정합니다. buy/sell, ticker, quantity, price, fee(선택)를 입력하세요.</p><label for="trades">가상 거래 목록 (JSON)</label><textarea id="trades" spellcheck="false" style="min-height:245px">[
  {"side":"sell","ticker":"TSLA","quantity":5,"price":200},
  {"side":"buy","ticker":"TSLA","quantity":10,"price":100}
@@ -16,6 +16,7 @@
 import {compareScenarios} from './src/simulator/scenario-comparison.mjs';
 import {estimateOverseasStockTax} from './src/simulator/overseas-stock-tax.mjs';
 import {readManagedSymbols} from './src/simulator/managed-symbols.mjs';
+import {readPortfolioPositions} from './src/simulator/portfolio-positions.mjs';
 const byId=id=>document.getElementById(id);
 let managedSymbols=[];
 function refreshManagedSymbols(){
@@ -141,6 +142,26 @@ byId('applyPortfolioJson').addEventListener('click',()=>{
  }catch(e){byId('portfolioStatus').textContent='JSON 입력 오류: '+e.message;}
 });
 renderPortfolio();
+function loadPortfolioPositions(){
+ const positions=readPortfolioPositions(window.localStorage);
+ if(!positions.length){
+  byId('positionLoadStatus').textContent='원본 포트폴리오에 유효한 보유종목이 없어 기존 입력값을 유지합니다.';
+  return;
+ }
+ portfolioState.positions=positions.map(p=>({...p}));
+ // Keep user-defined terminal price assumptions. Add missing tickers at their
+ // acquisition cost as an explicit neutral placeholder, not a market quote.
+ const existing=new Set(portfolioState.prices.map(p=>String(p.ticker).toUpperCase()));
+ for(const p of positions)if(!existing.has(p.ticker)){
+  portfolioState.prices.push({ticker:p.ticker,price:p.averageCost});
+  existing.add(p.ticker);
+ }
+ renderPortfolio();
+ syncPortfolioJson();
+ byId('positionLoadStatus').textContent='현재 보유 '+positions.length+'개 종목의 수량과 평균 취득단가를 읽기 전용으로 불러왔습니다. 새로 추가된 종목의 최종 가정 주가는 평균 취득단가로 임시 설정했습니다. 가정 주가와 전략 거래를 확인한 뒤 계산하세요.';
+}
+byId('loadPortfolioPositions').addEventListener('click',loadPortfolioPositions);
+loadPortfolioPositions();
 
 const editor=byId('strategyEditor');
 let strategyState=[];
