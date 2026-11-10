@@ -3,9 +3,10 @@
 <style>:root{font-family:system-ui,-apple-system,sans-serif;color-scheme:dark;background:#101724;color:#edf3ff}body{max-width:920px;margin:40px auto;padding:0 20px}h1{font-size:27px}p{color:#b8c6da;line-height:1.6}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}.card{display:block;background:#1a2435;border:1px solid #40506a;border-radius:12px;padding:20px;text-decoration:none;color:inherit}.card:hover,.card:focus{border-color:#80aaff;background:#22324b}.card strong{font-size:19px}.card p{margin-bottom:0}.tag{font-size:12px;color:#f0cc7d}.notice{border-top:1px solid #40506a;margin-top:28px;padding-top:16px}code{color:#c7d7ff}</style></head>
 <body><h1>INVESTLAB · 1차 Pilot Test</h1><p>기존 대시보드의 코드나 데이터베이스를 수정하지 않고, 개발 중인 모듈을 한 화면에서 이동하며 점검합니다.</p>
 <div class="grid">
-<a class="card" href="./six-company-price-preview.html"><span class="tag">기업 분석 · 통합 모니터링</span><h2>6개 기업 투자 모니터링</h2><p>주가·분기 매출·CAPEX·투자 추세를 한 화면에서 조회합니다. 현재는 CSV 기반 미리보기이며 고도화된 투자실적 분석은 후속 개발 항목입니다.</p></a>
-<a class="card" href="./virtual-trade-simulator.html"><span class="tag">전략 분석 · Pilot 검증</span><h2>가상 매매 시뮬레이터</h2><p>다단계 매매, 현금·보유수량·손익·세금 추정을 전략별로 비교합니다.</p></a>
-<a class="card" href="./shared-data.html"><span class="tag">데이터 관리 · TEST</span><h2>공유 데이터 관리</h2><p>TEST 기업 데이터 조회와 연결 확인. CSV 가져오기는 이 화면 상단의 TEST CSV 가져오기 메뉴에서 접근합니다.</p></a>
+<a class="card" href="./index.html"><span class="tag">1 · 개인 자산 관리</span><h2>내 투자 포트폴리오</h2><p>계좌별 자산·보유종목·매매기록 원장·손익·양도세·환율. 기존 개인 대시보드로 이동하며 미완성 기능은 후속 개발합니다.</p></a>
+<a class="card" href="./virtual-trade-simulator.html"><span class="tag">2 · 매매 전략 분석</span><h2>가상 매매 시뮬레이터</h2><p>다단계 매매, 현금·보유수량·실현손익·양도세 추정을 전략별로 비교합니다. 실제 원장은 변경하지 않습니다.</p></a>
+<a class="card" href="./six-company-price-preview.html"><span class="tag">3 · 기업 투자 분석</span><h2>기업 투자 분석</h2><p>6개 기업의 주가·분기 매출·CAPEX를 한 화면에서 확인합니다. 투자효율·AI 투자 사이클은 단계적으로 보완합니다.</p></a>
+<a class="card" href="./shared-data.html"><span class="tag">4 · 데이터 관리 (임시 주 메뉴)</span><h2>데이터 관리</h2><p>TEST 공유 데이터 조회·연결, CSV 검증 및 가져오기. 외부자료 자동 수집 안정화 후 메뉴 축소·통합 여부를 재검토합니다.</p></a>
 </div>
 <p class="notice">이 화면은 링크 모음이며 실제 투자원장·Supabase에 읽기/쓰기를 수행하지 않습니다. <strong>개인 대시보드(index.html)는 수정하지 않았습니다.</strong> 각 화면의 상대경로 파일과 모듈이 같은 폴더에 있어야 합니다.</p>
 </body></html>
