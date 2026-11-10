@@ -3,11 +3,9 @@
 <style>:root{font-family:system-ui,-apple-system,sans-serif;color-scheme:dark;background:#101724;color:#edf3ff}body{max-width:920px;margin:40px auto;padding:0 20px}h1{font-size:27px}p{color:#b8c6da;line-height:1.6}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}.card{display:block;background:#1a2435;border:1px solid #40506a;border-radius:12px;padding:20px;text-decoration:none;color:inherit}.card:hover,.card:focus{border-color:#80aaff;background:#22324b}.card strong{font-size:19px}.card p{margin-bottom:0}.tag{font-size:12px;color:#f0cc7d}.notice{border-top:1px solid #40506a;margin-top:28px;padding-top:16px}code{color:#c7d7ff}</style></head>
 <body><h1>INVESTLAB · 1차 Pilot Test</h1><p>기존 대시보드의 코드나 데이터베이스를 수정하지 않고, 개발 중인 모듈을 한 화면에서 이동하며 점검합니다.</p>
 <div class="grid">
-<a class="card" href="./virtual-trade-simulator.html"><span class="tag">우선 검증</span><h2>가상 매매 시뮬레이터</h2><p>다단계 매매, 보유수량, 현금, 전략 비교, 해외주식 양도세 시험값</p></a>
-<a class="card" href="./shared-data.html"><span class="tag">TEST 데이터 조회</span><h2>공유 기업 데이터</h2><p>6개 기업 주가 및 준비된 재무자료 조회. 연결 상태에 따라 일부 표시가 제한될 수 있습니다.</p></a>
-<a class="card" href="./six-company-price-preview.html"><span class="tag">기존 개발 화면</span><h2>6개 기업 주가 차트</h2><p>기존 CSV 기반 차트 미리보기</p></a>
-<a class="card" href="./six-company-price-preview.html#quarterly-financials"><span class="tag">기존 개발 화면</span><h2>분기 매출·CAPEX (CSV 미리보기)</h2><p>기존 미리보기의 분기 재무 CSV 입력 위치로 바로 이동합니다. 매출·CAPEX 차트는 CSV를 불러오면 표시됩니다.</p></a>
-<a class="card" href="./shared-data-import.html"><span class="tag">TEST 전용 · 주의</span><h2>CSV 검증·가져오기</h2><p>TEST 프로젝트용. 데이터 업로드는 별도 승인·점검 후에만 진행</p></a>
+<a class="card" href="./six-company-price-preview.html"><span class="tag">기업 분석 · 통합 모니터링</span><h2>6개 기업 투자 모니터링</h2><p>주가·분기 매출·CAPEX·투자 추세를 한 화면에서 조회합니다. 현재는 CSV 기반 미리보기이며 고도화된 투자실적 분석은 후속 개발 항목입니다.</p></a>
+<a class="card" href="./virtual-trade-simulator.html"><span class="tag">전략 분석 · Pilot 검증</span><h2>가상 매매 시뮬레이터</h2><p>다단계 매매, 현금·보유수량·손익·세금 추정을 전략별로 비교합니다.</p></a>
+<a class="card" href="./shared-data.html"><span class="tag">데이터 관리 · TEST</span><h2>공유 데이터 관리</h2><p>TEST 기업 데이터 조회와 연결 확인. CSV 가져오기는 이 화면 상단의 TEST CSV 가져오기 메뉴에서 접근합니다.</p></a>
 </div>
 <p class="notice">이 화면은 링크 모음이며 실제 투자원장·Supabase에 읽기/쓰기를 수행하지 않습니다. <strong>개인 대시보드(index.html)는 수정하지 않았습니다.</strong> 각 화면의 상대경로 파일과 모듈이 같은 폴더에 있어야 합니다.</p>
 </body></html>
