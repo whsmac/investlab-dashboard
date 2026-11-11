@@ -39,11 +39,11 @@ test('tax estimate uses explicit separate KRW inputs without Supabase writes',()
  assert.ok(!html.includes('supabase.from('));
 });
 
-test('optional tax UI requires explicit KRW tax-basis inputs and rejects other ticker sales',()=>{
+test('separate tax calculator uses explicit KRW inputs and keeps tax out of virtual cash',()=>{
  const html=readFileSync(new URL('../virtual-trade.html',import.meta.url),'utf8');
- for(const id of ['taxEnabled','taxPrior','taxBuyPrice','fxBuyRate','fxSellRate','taxDeductionUsed','taxResult'])assert.ok(html.includes('id="'+id+'"'),id);
- assert.match(html,/if\(\$\('taxEnabled'\)\.checked\)/);
- assert.match(html,/trades\.some\(t=>t\.side==='sell'&&t\.ticker!==ticker\)/);
- assert.match(html,/incrementalTaxKrw/);
- assert.match(html,/실제 신고용 아님/);
+ for(const id of ['taxPrior','taxHypothetical','taxDeduction','taxUsed','taxRate','taxResult','fxBuyRate','fxSellRate'])assert.ok(html.includes('id="'+id+'"'),id);
+ assert.match(html,/estimateOverseasStockTax\\(/);
+ assert.match(html,/calculateKrwDisposalGain\\(/);
+ assert.match(html,/예상 세액은 가상 현금에서 즉시 차감하지 않습니다/);
+ assert.doesNotMatch(html,/supabase\\.from\\(/);
 });
