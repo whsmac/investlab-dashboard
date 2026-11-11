@@ -1,12 +1,12 @@
 // Snapshot the original INVESTLAB portfolio for simulation; never write to storage.
-const validTicker=t=>/^[A-Z0-9.^_-]{1,20}$/.test(t)&&t!=='USD'&&t!=='USD-CASH';
+const validTicker=t=>/^[A-Z0-9][A-Z0-9.-]{0,14}$/.test(t)&&t!=='USD'&&t!=='USD-CASH';
 export function extractPortfolioPositions(holdings){
  if(!Array.isArray(holdings))return [];
  const positions=new Map();
  for(const row of holdings){
   if(!row||typeof row!=='object')continue;
   const ticker=String(row.symbol??'').trim().toUpperCase();
-  const quantity=Number(row.shares),averageCost=Number(row.avg_cost);
+  const quantity=row.shares==null||row.shares===''?NaN:Number(row.shares),averageCost=row.avg_cost==null||row.avg_cost===''?NaN:Number(row.avg_cost);
   if(!validTicker(ticker)||!Number.isFinite(quantity)||quantity<=0||!Number.isFinite(averageCost)||averageCost<0)continue;
   if(positions.has(ticker)){
    const prev=positions.get(ticker);
@@ -32,7 +32,7 @@ export function readPortfolioUsdCash(storage){
   if(!Array.isArray(rows))return null;
   const cash=rows.filter(r=>r&&String(r.symbol).trim().toUpperCase()==='USD-CASH');
   if(!cash.length)return null;
-  const values=cash.map(r=>Number(r.shares));
+  const values=cash.map(r=>r.shares==null||r.shares===''?NaN:Number(r.shares));
   if(values.some(n=>!Number.isFinite(n)||n<0))return null;
   return values.reduce((a,b)=>a+b,0);
  }catch{return null;}
