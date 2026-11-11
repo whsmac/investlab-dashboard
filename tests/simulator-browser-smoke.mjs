@@ -59,7 +59,8 @@ try{
  await trade.locator('[data-field="price"]').fill('200');
  await page.locator('#calculate').click();
  assert.match(await page.locator('#status').innerText(),/계산 완료/);
- assert.match(await page.locator('#finalValuation').textContent(),/TSLA/);
+ await page.locator('.result-details summary').click();
+ assert.match(await page.locator('#finalValuation').innerText(),/TSLA/);
  assert.match(await page.locator('#finalValuation').textContent(),/8/);
  // Complete the requested rotation: sell TSLA, then buy watchlisted SOXL.
  await page.locator('#strategyEditor .strategy-card button').last().click();
