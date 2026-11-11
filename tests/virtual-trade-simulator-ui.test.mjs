@@ -22,7 +22,7 @@ test('phase-1 UI exposes holdings, editable trades, terminal prices and comparis
  assert.match(html,/최종 가상 포트폴리오 상세/);
  assert.match(html,/전략별 종목 수량·평가금액 변화/);
  assert.match(html,/양도세 추정/);
- assert.match(html,/세금용 원화 실현손익/);
+ assert.match(html,/원화 기준 손익/);
 });
 
 test('initial scenario has no fictional holdings, cash or executed trades',()=>{
