@@ -56,6 +56,21 @@ try{
  assert.match(await page.locator('#status').innerText(),/계산 완료/);
  assert.match(await page.locator('#finalValuation').innerText(),/TSLA/);
  assert.match(await page.locator('#finalValuation').innerText(),/8/);
+ // Complete the requested rotation: sell TSLA, then buy watchlisted SOXL.
+ await page.locator('#strategyEditor .strategy-card button').last().click();
+ const second=page.locator('#strategyEditor .trade-grid').nth(1);
+ await second.locator('[data-field="side"]').selectOption('buy');
+ await second.locator('[data-field="ticker"]').fill('SOXL');
+ await second.locator('[data-field="quantity"]').fill('10');
+ await second.locator('[data-field="price"]').fill('30');
+ await page.locator('#calculate').click();
+ // The first calculation intentionally requests a terminal assumption for the new ticker.
+ assert.match(await page.locator('#status').innerText(),/SOXL/);
+ await page.locator('#priceEditor .simple-row').last().locator('input[aria-label="최종가격"]').fill('40');
+ await page.locator('#calculate').click();
+ assert.match(await page.locator('#status').innerText(),/계산 완료/);
+ assert.match(await page.locator('#finalValuation').innerText(),/SOXL/);
+ assert.match(await page.locator('#finalValuation').innerText(),/1,800|1800/);
  const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem('investlab_holdings')));
  assert.equal(stored[0].shares,10,'Virtual trades must not mutate actual holdings');
  assert.deepEqual(errors,[]);
