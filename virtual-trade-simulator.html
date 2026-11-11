@@ -389,6 +389,11 @@ for(const id of ['priorTax','deduction']){
 }
 async function refreshFxAndCalculate(){
  const button=byId('calculate');button.disabled=true;
+ // Results from a previous FX snapshot must never appear as current while refreshing.
+ for(const id of ['resultHero','positionCompare','summary','strategies','strategyHoldings','taxBasis','taxStages','taxGainEditor','steps','holdings','finalValuation'])byId(id).replaceChildren();
+ byId('positionCompareTitle').hidden=true;
+ byId('status').textContent='계산 대기: 최신 환율을 조회하고 있습니다.';
+ byId('status').className='';
  const fxController=new AbortController();
  const fxTimeout=setTimeout(()=>fxController.abort(),8000);
  byId('fxStatus').textContent='최신 공개 USD/KRW 환율 조회 중…';
