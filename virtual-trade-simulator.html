@@ -288,7 +288,7 @@ function ensureTradePrices(){
   portfolioState.prices.push({ticker,price:''});
   known.add(ticker);added++;
  }
- if(added){renderPortfolio();syncPortfolioJson();}
+ if(added){renderPortfolio();try{syncPortfolioJson();}catch{} /* Blank terminal prices are intentional until user enters them. */}
  return added;
 }
 function addPreset(key){const next=clone(presets[key]);if(strategyState.some(s=>s.name===next.name))next.name+=' '+(strategyState.length+1);strategyState.push(next);renderEditor();}
