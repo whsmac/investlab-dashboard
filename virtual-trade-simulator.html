@@ -40,7 +40,10 @@ function calculate(){
   const cash=Number(byId('cash').value);
   if(!byId('cash').value.trim()||!Number.isFinite(cash)||cash<0)throw new Error('시작 현금은 0 이상의 숫자여야 합니다.');
   const {positions,prices}=syncPortfolioJson();
-  const scenarios=readStrategies();const result=compareScenarios({cash,positions},scenarios,prices),scenario=result.scenarios[0];
+  const scenarios=readStrategies();
+  const missing=[...new Set(scenarios.flatMap(s=>s.trades.map(t=>t.ticker)))].filter(t=>!Object.prototype.hasOwnProperty.call(prices,t));
+  if(missing.length)throw Error('가상 거래 종목의 최종 가정 주가를 입력하세요: '+missing.join(', ')+'. 왼쪽의 「+ 종목 가격 추가」를 이용하세요.');
+  const result=compareScenarios({cash,positions},scenarios,prices),scenario=result.scenarios[0];
   const taxMap=readTaxForm();
   if(!taxMap||typeof taxMap!=='object'||Array.isArray(taxMap))throw Error('세금용 손익은 JSON 객체여야 합니다.');
   for(const id of ['priorTax','deduction','taxRate'])if(!byId(id).value.trim())throw Error('세금 계산 기준값을 입력하세요: '+id);
@@ -246,7 +249,7 @@ function renderEditor(){
    }
    const del=document.createElement('button');del.type='button';del.textContent='삭제';del.addEventListener('click',()=>{strategy.trades.splice(ti,1);renderEditor();});row.append(del);card.append(row);
   });
-  const add=document.createElement('button');add.type='button';add.textContent='+ 거래 추가';add.addEventListener('click',()=>{strategy.trades.push({side:'buy',ticker:'TSLA',quantity:1,price:100,fee:0});renderEditor();});
+  const add=document.createElement('button');add.type='button';add.textContent='+ 거래 추가';add.addEventListener('click',()=>{strategy.trades.push({side:'buy',ticker:'',quantity:1,price:100,fee:0});renderEditor();});
   card.append(add);editor.append(card);
  });
  syncAdvanced();
@@ -256,6 +259,20 @@ function syncAdvanced(){
  const scenarios=clone(strategyState);
  byId('alternatives').value=JSON.stringify(scenarios,null,2);
  if(scenarios[0])byId('trades').value=JSON.stringify(scenarios[0].trades,null,2);
+}
+function ensureTradePrices(){
+ const known=new Set(portfolioState.prices.map(p=>String(p.ticker).trim().toUpperCase()));
+ let added=0;
+ for(const strategy of strategyState)for(const trade of strategy.trades){
+  const ticker=String(trade.ticker||'').trim().toUpperCase();
+  if(!ticker||known.has(ticker))continue;
+  const existing=portfolioState.positions.find(p=>String(p.ticker).trim().toUpperCase()===ticker);
+  const fallback=existing?Number(existing.averageCost):Number(trade.price);
+  portfolioState.prices.push({ticker,price:Number.isFinite(fallback)&&fallback>0?fallback:0});
+  known.add(ticker);added++;
+ }
+ if(added){renderPortfolio();syncPortfolioJson();}
+ return added;
 }
 function addPreset(key){const next=clone(presets[key]);if(strategyState.some(s=>s.name===next.name))next.name+=' '+(strategyState.length+1);strategyState.push(next);renderEditor();}
 byId('addStrategy').addEventListener('click',()=>{strategyState.push({name:'새 전략 '+(strategyState.length+1),trades:[]});renderEditor();});
@@ -318,7 +335,7 @@ byId('applyTaxJson').addEventListener('click',()=>{
  }catch(e){byId('status').textContent='세금 JSON 오류: '+e.message;byId('status').className='error';}
 });
 
-strategyState=[clone(presets.rise),clone(presets.dip)];renderEditor();
+strategyState=[clone(presets.rise),clone(presets.dip)];renderEditor();ensureTradePrices();
 
 byId('taxExample').addEventListener('click',()=>{
  let scenarios;
