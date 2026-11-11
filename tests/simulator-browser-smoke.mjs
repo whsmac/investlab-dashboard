@@ -104,6 +104,13 @@ try{
  assert.equal(await page.locator('#summary').innerText(),'','Invalid oversell must clear the previous successful summary');
  assert.equal(await page.locator('#finalValuation').innerText(),'','Invalid oversell must clear stale terminal valuation');
  assert.equal((await page.evaluate(()=>JSON.parse(localStorage.getItem('investlab_holdings'))))[0].shares,10);
+ // Reject a buy larger than available cash, without altering real portfolio data.
+ await trade.locator('[data-field="quantity"]').fill('2');
+ await second.locator('[data-field="quantity"]').fill('999');
+ await page.locator('#calculate').click();
+ assert.doesNotMatch(await page.locator('#status').innerText(),/계산 완료/,'Insufficient cash must not report success');
+ assert.equal(await page.locator('#summary').innerText(),'','Insufficient cash must clear stale results');
+ assert.equal((await page.evaluate(()=>JSON.parse(localStorage.getItem('investlab_holdings'))))[0].shares,10);
  assert.deepEqual(remoteRequests,[],'Simulation must not contact Supabase');
  assert.deepEqual(errors,[]);
  console.log('Simulator browser smoke passed: real holdings, cash, sell, valuation, no writes.');
