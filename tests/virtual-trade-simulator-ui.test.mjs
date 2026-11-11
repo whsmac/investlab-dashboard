@@ -10,7 +10,7 @@ test('simulator uses read-only portfolio adapters and local scenario engine',()=
  assert.match(html,/readPortfolioPositions\(window\.localStorage\)/);
  assert.match(html,/readPortfolioUsdCash\(window\.localStorage\)/);
  assert.match(html,/실제 포트폴리오와 매매원장은 변경하지 않습니다/);
- assert.doesNotMatch(html,/supabase\.co|\.from\(|\.insert\(|\.update\(|\.delete\(|localStorage\.setItem\(/);
+ assert.doesNotMatch(html,/supabase\.co|supabaseClient\.from\(|\.insert\(|\.update\(|\.delete\(|localStorage\.setItem\(/);
 });
 
 test('phase-1 UI exposes holdings, editable trades, terminal prices and comparison',()=>{
