@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>INVESTLAB | 가상 매매 시뮬레이터</title>
 <style>
-:root{font-family:system-ui,-apple-system,sans-serif;color-scheme:dark;background:#101724;color:#edf3ff}body{max-width:1100px;margin:32px auto;padding:0 20px}h1{font-size:26px}p,.hint{color:#b4c1d6}.layout{display:grid;grid-template-columns:1fr 1fr;gap:18px}.panel{border:1px solid #34425c;border-radius:12px;padding:20px;background:#1a2435}label{display:block;margin:10px 0 4px;font-size:14px}input,textarea,button{box-sizing:border-box;width:100%;border-radius:7px;border:1px solid #52637e;background:#111a29;color:white;padding:10px;font:inherit}textarea{min-height:140px;font-family:ui-monospace,monospace;font-size:13px}button{margin-top:15px;background:#285ca3;cursor:pointer;font-weight:600}table{width:100%;border-collapse:collapse}td,th{text-align:right;padding:9px;border-bottom:1px solid #34425c}td:first-child,th:first-child{text-align:left}.wide{grid-column:1/-1}.error{color:#ffb0b0;white-space:pre-wrap}.notice{color:#f4c97c}.editor-actions{display:flex;gap:8px;flex-wrap:wrap}.editor-actions button{width:auto;min-width:110px}.trade-head{display:grid;grid-template-columns:110px 1fr 100px 120px 80px;gap:7px;margin:12px 0 2px;color:#b4c1d6;font-size:12px;text-align:center}.trade-head span:nth-child(2){text-align:left}.result-hero{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:14px 0}.result-metric{border:1px solid #40506a;background:#111a29;border-radius:10px;padding:15px}.result-metric strong{display:block;font-size:23px;margin-top:7px;font-variant-numeric:tabular-nums}.result-metric small{color:#b4c1d6}.result-metric .positive{color:#82e4ad}.result-metric .negative{color:#ffb0b0}.result-details{margin-top:18px}.result-details>summary{cursor:pointer;color:#8dc0ff;font-weight:600;padding:10px 0}@media(max-width:740px){.result-hero{grid-template-columns:1fr}}.trade-grid{display:grid;grid-template-columns:110px 1fr 100px 120px 80px;gap:7px;align-items:center;margin:8px 0}.trade-grid input,.trade-grid select{min-width:0;width:100%;box-sizing:border-box;border:1px solid #52637e;border-radius:6px;background:#111a29;color:white;padding:9px}.trade-grid button{margin:0;padding:9px;background:#493d55}.strategy-card{border:1px solid #40506a;border-radius:9px;padding:12px;margin-top:12px}.strategy-title{display:flex;gap:8px;align-items:center}.strategy-title input{flex:1}.strategy-title button{width:auto;margin:0;background:#493d55}.simple-row{display:grid;grid-template-columns:minmax(82px,1.2fr) minmax(72px,.8fr) minmax(90px,1fr) 65px;gap:6px;margin:8px 0;align-items:center}.simple-row.prices{grid-template-columns:minmax(82px,1fr) minmax(90px,1fr) 65px}.simple-row input{min-width:0;padding:8px}.simple-row button{margin:0;padding:8px;background:#493d55}.small-add{margin:5px 0 12px}.simple-caption{font-size:12px;color:#b4c1d6;margin-top:10px}details{margin-top:12px}.wide-editor{overflow-x:auto}.wide-editor .trade-grid{min-width:540px}.wide-editor .trade-head{min-width:540px}@media(max-width:740px){.layout{grid-template-columns:1fr}}</style></head>
+:root{font-family:system-ui,-apple-system,sans-serif;color-scheme:dark;background:#101724;color:#edf3ff}body{max-width:1100px;margin:32px auto;padding:0 20px}h1{font-size:26px}p,.hint{color:#b4c1d6}.layout{display:grid;grid-template-columns:1fr 1fr;gap:18px}.panel{border:1px solid #34425c;border-radius:12px;padding:20px;background:#1a2435}label{display:block;margin:10px 0 4px;font-size:14px}input,textarea,button{box-sizing:border-box;width:100%;border-radius:7px;border:1px solid #52637e;background:#111a29;color:white;padding:10px;font:inherit}textarea{min-height:140px;font-family:ui-monospace,monospace;font-size:13px}button{margin-top:15px;background:#285ca3;cursor:pointer;font-weight:600}table{width:100%;border-collapse:collapse}td,th{text-align:right;padding:9px;border-bottom:1px solid #34425c}td:first-child,th:first-child{text-align:left}.wide{grid-column:1/-1}.error{color:#ffb0b0;white-space:pre-wrap}.notice{color:#f4c97c}.editor-actions{display:flex;gap:8px;flex-wrap:wrap}.editor-actions button{width:auto;min-width:110px}.trade-head{display:grid;grid-template-columns:110px 1fr 100px 120px 80px;gap:7px;margin:12px 0 2px;color:#b4c1d6;font-size:12px;text-align:center}.trade-head span:nth-child(2){text-align:left}.result-hero{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:14px 0}.result-metric{border:1px solid #40506a;background:#111a29;border-radius:10px;padding:15px}.result-metric strong{display:block;font-size:23px;margin-top:7px;font-variant-numeric:tabular-nums}.result-metric small{color:#b4c1d6}.result-metric .positive{color:#82e4ad}.result-metric .negative{color:#ffb0b0}.result-details{margin-top:18px}.result-details>summary{cursor:pointer;color:#8dc0ff;font-weight:600;padding:10px 0}@media(max-width:740px){.result-hero{grid-template-columns:1fr}}.trade-grid{display:grid;grid-template-columns:110px 1fr 100px 120px 80px;gap:7px;align-items:center;margin:8px 0}.trade-grid input,.trade-grid select{min-width:0;width:100%;box-sizing:border-box;border:1px solid #52637e;border-radius:6px;background:#111a29;color:white;padding:9px}.trade-grid button{margin:0;padding:9px;background:#493d55}.strategy-card{border:1px solid #40506a;border-radius:9px;padding:12px;margin-top:12px}.strategy-title{display:flex;gap:8px;align-items:center}.strategy-title input{flex:1}.strategy-title button{width:auto;margin:0;background:#493d55}.simple-row{display:grid;grid-template-columns:minmax(82px,1.2fr) minmax(72px,.8fr) minmax(90px,1fr) 65px;gap:6px;margin:8px 0;align-items:center}.simple-row.prices{grid-template-columns:minmax(82px,1fr) minmax(90px,1fr) 65px}.simple-row input{min-width:0;padding:8px}.simple-row button{margin:0;padding:8px;background:#493d55}.small-add{margin:5px 0 12px}.simple-caption{font-size:12px;color:#b4c1d6;margin-top:10px}details{margin-top:12px}.wide-editor{overflow-x:auto}.buy-helper{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:4px 0 14px;padding:10px;border:1px solid #40506a;border-radius:8px}.buy-helper label{font-size:12px;color:#b4c1d6}.buy-helper input{width:135px;max-width:100%;margin:0}.buy-helper button{width:auto;margin:0}.buy-helper output{font-size:12px;color:#b4c1d6}.wide-editor .trade-grid{min-width:540px}.wide-editor .trade-head{min-width:540px}@media(max-width:740px){.layout{grid-template-columns:1fr}}</style></head>
 <body><nav style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:18px"><a style="color:#8dc0ff" href="./index.html">대시보드</a><a style="color:#8dc0ff" href="./shared-data.html">공유 데이터 조회</a><a style="color:#8dc0ff" href="./shared-data-import.html">TEST CSV 가져오기</a></nav><h1>INVESTLAB · 가상 매매 시뮬레이터</h1><p>하락장 재매수·종목 전환과 상승장 단계별 매도를 시험합니다. 기존 포트폴리오 보유정보를 읽기 전용으로 불러와 가상 거래에 사용합니다. 실제 포트폴리오와 매매원장은 변경하지 않습니다.</p>
 <section class="panel" style="margin-bottom:16px"><strong>기존 포트폴리오 종목 선택</strong><p class="hint" id="managedSymbolStatus">종목 목록 확인 중…</p><p id="savedQuoteStatus" class="hint" role="status"></p><button type="button" id="refreshManagedSymbols" style="max-width:240px">종목 목록 새로고침</button><datalist id="managedSymbolOptions"></datalist><p class="hint">이 화면은 기존 종목관리 정보를 읽기만 합니다. 종목 등록·수정은 기존 종목관리에서 수행하세요. 다른 도메인이나 기기의 목록은 자동 연결되지 않습니다.</p></section>
 <div class="layout">
@@ -14,6 +14,7 @@
 </div>
 <script type="module">
 import {compareScenarios} from './src/simulator/scenario-comparison.mjs';
+import {simulateTrades} from './src/simulator/virtual-trade-engine.mjs';
 import {estimateOverseasStockTax} from './src/simulator/overseas-stock-tax.mjs';
 import {readManagedSymbols} from './src/simulator/managed-symbols.mjs';
 import {readSavedPortfolioQuotes} from './src/simulator/shared-market-snapshot.mjs';
@@ -295,6 +296,35 @@ function renderEditor(){
     row.append(input);
    }
    const del=document.createElement('button');del.type='button';del.textContent='삭제';del.addEventListener('click',()=>{strategy.trades.splice(ti,1);renderEditor();});row.append(del);card.append(row);
+   const helper=document.createElement('div');helper.className='buy-helper';helper.hidden=trade.side!=='buy';
+   const reserveLabel=document.createElement('label');reserveLabel.textContent='매수 후 남길 목표 현금 (USD)';
+   const reserve=document.createElement('input');reserve.type='number';reserve.min='0';reserve.step='any';reserve.value='0';reserve.setAttribute('aria-label','목표 잔여 현금 USD');
+   const auto=document.createElement('button');auto.type='button';auto.textContent='매수 가능 최대 수량 계산';
+   const info=document.createElement('output');info.setAttribute('aria-live','polite');
+   auto.addEventListener('click',()=>{
+    try{
+     const cashValue=byId('cash').value.trim();
+     if(!cashValue||!Number.isFinite(Number(cashValue))||Number(cashValue)<0)throw Error('시작 현금을 먼저 입력하세요.');
+     const {positions}=syncPortfolioJson();
+     const previous=strategy.trades.slice(0,ti).map(t=>({
+      side:t.side,ticker:String(t.ticker).trim().toUpperCase(),quantity:Number(t.quantity),price:Number(t.price)
+     }));
+     const available=simulateTrades({cash:Number(cashValue),positions},previous).final.cash;
+     const price=Number(trade.price),target=Number(reserve.value);
+     if(!Number.isFinite(price)||price<=0)throw Error('현재 매수 거래의 체결가격을 0보다 크게 입력하세요.');
+     if(reserve.value.trim()===''||!Number.isFinite(target)||target<0)throw Error('목표 현금은 0 이상의 숫자여야 합니다.');
+     const budget=Math.max(0,available-target);
+     const max=Math.max(0,Math.floor((budget+1e-9)/price));
+     trade.quantity=max;
+     row.querySelector('[data-field="quantity"]').value=String(max);
+     syncAdvanced();
+     info.textContent='매수 직전 현금 '+fmt(available)+' USD · 최대 '+fmt(max)+'주 · 매수 후 잔여 '+fmt(available-max*price)+' USD';
+     if(target>available)info.textContent+=' (목표 현금이 현재 현금보다 큽니다)';
+    }catch(error){info.textContent='계산 불가: '+error.message;}
+   });
+   helper.append(reserveLabel,reserve,auto,info);card.append(helper);
+   side.addEventListener('change',()=>{helper.hidden=side.value!=='buy';});
+
   });
   const add=document.createElement('button');add.type='button';add.textContent='+ 거래 추가';add.addEventListener('click',()=>{strategy.trades.push({side:'buy',ticker:'',quantity:1,price:100});renderEditor();});
   card.append(add);editor.append(card);
