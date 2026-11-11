@@ -114,11 +114,11 @@ test('rounded FX display preserves raw rate and tax money fields use comma forma
 });
 
 test('FX request times out and distinguishes network failures without guessed rates',()=>{
- assert.match(html,/new AbortController\\(\\)/);
- assert.match(html,/setTimeout\\(\\(\\)=>fxController\\.abort\\(\\),8000\\)/);
- assert.match(html,/signal:fxController\\.signal/);
- assert.match(html,/clearTimeout\\(fxTimeout\\)/);
- assert.match(html,/error\\?\\.name==='AbortError'/);
- assert.match(html,/error instanceof TypeError/);
+ assert.ok(html.includes('new AbortController()'));
+ assert.ok(html.includes('setTimeout(()=>fxController.abort(),8000)'));
+ assert.ok(html.includes('signal:fxController.signal'));
+ assert.ok(html.includes('clearTimeout(fxTimeout)'));
+ assert.ok(html.includes("error?.name==='AbortError'"));
+ assert.ok(html.includes('error instanceof TypeError'));
  assert.match(html,/임의 환율을 적용하지 않았습니다/);
 });
