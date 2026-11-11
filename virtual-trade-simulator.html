@@ -333,7 +333,7 @@ function renderEditor(){
   card.append(add);editor.append(card);
  });
  syncAdvanced();
- if(byId('taxGainEditor'))renderTaxForm();
+ // Tax breakdown is rendered from calculated sell trades after scenario calculation.
 }
 function syncAdvanced(){
  const scenarios=clone(strategyState);
