@@ -211,7 +211,9 @@ function loadPortfolioPositions(){
   known.add(p.ticker);
  }
   renderPortfolio();
- syncPortfolioJson();
+ // A missing terminal price is an expected user-input state, not an import failure.
+ // The JSON mirrors update only after all price assumptions are valid.
+ try{syncPortfolioJson();}catch{}
  byId('positionLoadStatus').textContent='현재 보유 '+positions.length+'개 종목의 수량과 평균 취득단가를 읽기 전용으로 불러왔습니다. 기존 가정 주가는 유지하고 신규 종목에만 종목관리 가격을 적용했습니다. 가격 정보가 없으면 비워 두었으므로 최종 가정 주가를 직접 입력하세요. 가정 주가와 전략 거래를 확인한 뒤 계산하세요.';
 }
 byId('loadPortfolioPositions').addEventListener('click',loadPortfolioPositions);
