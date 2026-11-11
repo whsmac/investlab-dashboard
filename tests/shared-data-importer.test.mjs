@@ -5,7 +5,7 @@ const csv='date,ticker,close\n2026-11-06,TSLA,299.12\n';
 function mock({existing=[],signedIn=true}={}) {
   const calls=[];
   const client={
-    supabaseUrl:'https://gopofxyezhwpfbxebcrxd.supabase.co',
+    supabaseUrl:'https://gopofxyezhwpfxbecrxd.supabase.co',
     supabaseKey:'sb_publishable_mock',
     auth:{getUser:async()=>({data:{user:signedIn?{id:'owner'}:null},error:null})},
     rpc:async(name,args)=>{calls.push(name);return {data:{status:'committed',accepted_count:args.p_rows.length,batch_id:7},error:null}},
@@ -80,8 +80,8 @@ test('importer refuses production, unknown projects and privileged keys before a
   for (const [url,key] of [
     ['https://duffpsvaphccgxvkiobm.supabase.co','sb_publishable_mock'],
     ['https://unknown.supabase.co','sb_publishable_mock'],
-    ['https://gopofxyezhwpfbxebcrxd.supabase.co','sb_secret_example'],
-    ['https://gopofxyezhwpfbxebcrxd.supabase.co','service_role_example']
+    ['https://gopofxyezhwpfxbecrxd.supabase.co','sb_secret_example'],
+    ['https://gopofxyezhwpfxbecrxd.supabase.co','service_role_example']
   ]) {
     const {client,calls}=mock();
     client.supabaseUrl=url;
