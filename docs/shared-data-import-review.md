@@ -19,7 +19,7 @@ PR #33 targets PR #30's branch. The original personal dashboard, ledger transact
 - Live Postgres transaction/permission testing is pending.
 
 ## Deployment checklist — requires user approval
-1. Verify the Supabase project ref is exactly `gopofxyezhwpfbxebcrxd` (isolated TEST, never the personal production project).
+1. Verify the Supabase project ref is exactly `gopofxyezhwpfxbecrxd` (isolated TEST, never the personal production project).
 2. Review the SQL file, especially owner-only permission and rollback semantics.
 3. Apply the SQL only in the TEST SQL editor after explicit approval.
 4. Confirm the authenticated TEST user is registered in `app_private.data_owners`.
