@@ -70,9 +70,9 @@ function calculate(){
   const detailedRows=detailedTickers.map(t=>{
    const before=result.baseline.final.positions[t]?.quantity??0,after=scenario.final.positions[t]?.quantity??0;
    const price=prices[t];
-   return [t,fmt(before),fmt(after),fmt(after-before),fmt(price),fmt(after*price)];
+   return [t,fmt(before),fmt(after),fmt(after-before),fmt(price),fmt(before*price),fmt(after*price),fmt((after-before)*price)];
   });
-  byId('finalValuation').append(table(['종목','기준 수량','가상 수량','증감','최종 가정 주가 USD','최종 평가액 USD'],detailedRows));
+  byId('finalValuation').append(table(['종목','기준 수량','가상 수량','증감','가정 주가 USD','기준 평가액 USD','가상 평가액 USD','평가액 차이 USD'],detailedRows));
   byId('finalValuation').append(table(['항목','금액 USD'],[
    ['가상 주식 평가액',fmt(scenario.terminalValue-scenario.final.cash)],
    ['가상 현금 잔액',fmt(scenario.final.cash)],
@@ -184,19 +184,22 @@ function loadPortfolioPositions(){
   return;
  }
  portfolioState.positions=positions.map(p=>({...p}));
- // Reset the example terminal-price rows on initial import. Prices in the
- // holdings record are only used when explicitly present and valid.
+ // Reimporting the original holdings intentionally resets only the starting
+ // positions; preserve manually configured terminal prices and scenario trades.
  let sourceHoldings=[];
  try{sourceHoldings=JSON.parse(window.localStorage.getItem('investlab_holdings')||'[]');}catch{}
  const sourcePrices=new Map(Array.isArray(sourceHoldings)?sourceHoldings.filter(x=>x&&typeof x==='object').map(x=>[String(x.symbol||'').toUpperCase(),x.price]):[]);
- portfolioState.prices=positions.map(p=>{
+ const known=new Set(portfolioState.prices.map(p=>String(p.ticker).trim().toUpperCase()));
+ for(const p of positions){
+  if(known.has(p.ticker))continue;
   const raw=sourcePrices.get(p.ticker);
   const valid=raw!==null&&raw!==undefined&&raw!==''&&Number.isFinite(Number(raw))&&Number(raw)>0;
-  return {ticker:p.ticker,price:valid?Number(raw):p.averageCost};
- });
+  portfolioState.prices.push({ticker:p.ticker,price:valid?Number(raw):p.averageCost});
+  known.add(p.ticker);
+ }
   renderPortfolio();
  syncPortfolioJson();
- byId('positionLoadStatus').textContent='현재 보유 '+positions.length+'개 종목의 수량과 평균 취득단가를 읽기 전용으로 불러왔습니다. 종목관리의 유효한 가격이 없으면 최종 가정 주가를 평균 취득단가로 임시 설정했습니다. 실제 현재가 여부를 확인하세요. 가정 주가와 전략 거래를 확인한 뒤 계산하세요.';
+ byId('positionLoadStatus').textContent='현재 보유 '+positions.length+'개 종목의 수량과 평균 취득단가를 읽기 전용으로 불러왔습니다. 기존 가정 주가는 유지하고 신규 종목에만 종목관리 가격 또는 평균 취득단가를 임시 적용했습니다. 실제 현재가 여부를 확인하세요. 가정 주가와 전략 거래를 확인한 뒤 계산하세요.';
 }
 byId('loadPortfolioPositions').addEventListener('click',loadPortfolioPositions);
 loadPortfolioPositions();
@@ -353,6 +356,6 @@ byId('taxExample').addEventListener('click',()=>{
  byId('status').className='hint';
  }catch(e){byId('status').textContent='예시 입력 실패: '+e.message;byId('status').className='error';}
 });
-byId('calculate').addEventListener('click',()=>{syncAdvanced();calculate();});
+byId('calculate').addEventListener('click',()=>{syncAdvanced();ensureTradePrices();calculate();});
 calculate();
 </script></body></html>
