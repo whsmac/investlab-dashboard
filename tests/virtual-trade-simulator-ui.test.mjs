@@ -42,3 +42,13 @@ test('phase-1 trade editor excludes fees and retains distinct execution and term
  assert.match(html,/최종 가정 주가/);
  assert.match(html,/trades:s\.trades\.map\(\(\{fee,\.\.\.trade\}\)=>trade\)/);
 });
+
+
+test('buy helper uses preceding trades and target reserve without changing sell trades',()=>{
+ assert.match(html,/매수 후 남길 목표 현금 \(USD\)/);
+ assert.match(html,/매수 가능 최대 수량 계산/);
+ assert.match(html,/strategy\.trades\.slice\(0,ti\)/);
+ assert.match(html,/simulateTrades\(\{cash:Number\(cashValue\),positions\},previous\)\.final\.cash/);
+ assert.match(html,/Math\.floor\(\(budget\+1e-9\)\/price\)/);
+ assert.match(html,/helper\.hidden=trade\.side!=='buy'/);
+});
