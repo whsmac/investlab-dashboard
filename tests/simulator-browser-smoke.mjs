@@ -78,9 +78,9 @@ try{
  assert.match(row('최종 현금'),/100.*200/);
  assert.match(row('최종 평가총액'),/1,600.*1,800/);
  assert.match(row('보유 대비 평가 차이'),/200/);
- const finalRows=await page.locator('#finalValuation table').first().locator('tr').allTextContents();
- assert.match(finalRows.find(line=>line.includes('TSLA'))||'',/10.*8/);
- assert.match(finalRows.find(line=>line.includes('SOXL'))||'',/0.*10/);
+ const valuationRows=await page.locator('#finalValuation table').first().locator('tr').allTextContents();
+ assert.match(valuationRows.find(line=>line.includes('TSLA'))||'',/10.*8/);
+ assert.match(valuationRows.find(line=>line.includes('SOXL'))||'',/0.*10/);
  assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem('investlab_watchlist'))),['SOXL']);
  const summary=await page.locator('#summary').innerText();
  assert.match(summary,/최종 현금/);
