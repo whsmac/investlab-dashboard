@@ -8,7 +8,7 @@
 - `supabase/review-only/20261108_atomic_shared_import_rpc.sql`: transaction-scoped PostgreSQL RPC; **not deployed**.
 
 ## Safety and deployment
-1. Verify target project URL is exactly `https://gopofxyezhwpfbxebcrxd.supabase.co`; never apply to the personal ledger project.
+1. Verify target project URL is exactly `https://gopofxyezhwpfxbecrxd.supabase.co`; never apply to the personal ledger project.
 2. Inspect SQL, privileges, and current schema. Obtain explicit user approval before applying this script in the TEST SQL Editor.
 3. Use only publishable/anon key and authenticated owner login in the browser. Never use a service-role key.
 4. Verify non-owner is rejected and owner can import a *small disposable test sample*. Confirm batch count and row count match.
