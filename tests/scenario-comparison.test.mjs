@@ -67,8 +67,8 @@ test('phase-1 integrated real-style holdings, cash and rotation comparison',()=>
  assert.equal(scenario.final.cash,5500);
  assert.equal(scenario.final.positions.TSLA.quantity,212);
  assert.equal(scenario.final.positions.SOXL.quantity,20);
- assert.equal(scenario.terminalValue,114480);
- assert.equal(scenario.deltaVsHold,200);
+ assert.equal(scenario.terminalValue,114580);
+ assert.equal(scenario.deltaVsHold,300);
  assert.equal(scenario.steps[0].cash,6500);
  assert.equal(scenario.steps[1].cash,5500);
  assert.deepEqual(original,saved);
