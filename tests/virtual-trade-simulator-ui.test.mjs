@@ -45,7 +45,7 @@ test('phase-1 trade editor excludes fees and retains distinct execution and term
 
 
 test('buy helper uses preceding trades and target reserve without changing sell trades',()=>{
- assert.match(html,/이 전략에서 매수 후 남길 목표 현금 \(USD\)/);
+ assert.match(html,/마지막 매수 후 남길 목표 현금 \(USD\)/);
  assert.match(html,/매수 가능 최대 수량 계산/);
  assert.match(html,/strategy\.trades\.slice\(0,ti\)/);
  assert.match(html,/simulateTrades\(\{cash:Number\(cashValue\),positions\},previous\)\.final\.cash/);
@@ -57,7 +57,16 @@ test('buy helper uses preceding trades and target reserve without changing sell 
 test('target cash reserve is entered once per strategy and reused for buy calculations',()=>{
  assert.match(html,/reserve\.value=String\(strategy\.targetCash\?\?0\)/);
  assert.match(html,/strategy\.targetCash=reserve\.value/);
- assert.match(html,/const price=Number\(trade\.price\),target=Number\(reserve\.value\)/);
+ assert.match(html,/const price=Number\(trade\.price\),target=isFinalBuy\?Number\(reserve\.value\):0/);
  assert.match(html,/helper\.append\(auto,info\)/);
  assert.doesNotMatch(html,/helper\.append\(reserveLabel,reserve,auto,info\)/);
+});
+
+
+test('reserve applies to final buy only, allowing earlier leveraged ETF buy to use all cash',()=>{
+ assert.match(html,/const finalBuyIndex=strategy\.trades\.findLastIndex\(t=>t\.side==='buy'\)/);
+ assert.match(html,/const isFinalBuy=ti===finalBuyIndex/);
+ assert.match(html,/target=isFinalBuy\?Number\(reserve\.value\):0/);
+ assert.match(html,/중간 매수 \(목표 현금 미적용\)/);
+ assert.match(html,/최종 매수 \(목표 현금 적용\)/);
 });
