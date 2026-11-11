@@ -94,6 +94,8 @@ try{
  await trade.locator('[data-field="quantity"]').fill('999');
  await page.locator('#calculate').click();
  assert.doesNotMatch(await page.locator('#status').innerText(),/계산 완료/);
+ assert.equal(await page.locator('#summary').innerText(),'','Invalid oversell must clear the previous successful summary');
+ assert.equal(await page.locator('#finalValuation').innerText(),'','Invalid oversell must clear stale terminal valuation');
  assert.equal((await page.evaluate(()=>JSON.parse(localStorage.getItem('investlab_holdings'))))[0].shares,10);
  assert.deepEqual(errors,[]);
  console.log('Simulator browser smoke passed: real holdings, cash, sell, valuation, no writes.');
