@@ -83,7 +83,7 @@ test('tax is estimated automatically from each sell trade in USD using user FX',
  assert.match(html,/id="taxFx"/);
  assert.match(html,/step\.tradePnL\*fx/);
  assert.match(html,/estimateOverseasStockTax\(/);
- assert.match(html,/id="deduction"[^>]*min="0"/);
+ assert.match(html,/id="deduction" type="text" inputmode="decimal" value="2,500,000"/);\n assert.match(html,/taxOpts\.annualDeductionKrw<0/);
  assert.doesNotMatch(html,/id="taxExample"|renderTaxForm\(/);
 });
 
