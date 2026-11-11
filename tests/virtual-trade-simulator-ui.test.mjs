@@ -32,3 +32,13 @@ test('initial scenario has no fictional holdings, cash or executed trades',()=>{
  assert.match(html,/price:valid\?Number\(raw\):''/);
  assert.match(html,/portfolioState\.prices\.push\(\{ticker,price:''\}\)/);
 });
+
+
+test('phase-1 trade editor excludes fees and retains distinct execution and terminal prices',()=>{
+ assert.match(html,/\['구분','종목코드','수량 \(주\)','체결가 \(\$\)',''\]/);
+ assert.match(html,/\['quantity','price'\]/);
+ assert.match(html,/price:Number\(value\('price'\)\)/);
+ assert.doesNotMatch(html,/data-field=['"]fee|\['fee','수수료|\['price','가격 USD'\],\['fee'/);
+ assert.match(html,/최종 가정 주가/);
+ assert.match(html,/trades:s\.trades\.map\(\(\{fee,\.\.\.trade\}\)=>trade\)/);
+});
