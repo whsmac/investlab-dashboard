@@ -146,6 +146,21 @@ try{
  await page.route('https://open.er-api.com/v6/latest/USD',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({result:'success',base_code:'USD',rates:{KRW:1341.693922},time_last_update_unix:Math.floor(Date.now()/1000)})}));
  await calculateAndWait();
  assert.match(await page.locator('#status').innerText(),/계산 완료/);
+ // A hung FX request must time out, clear results, and allow a later retry.
+ await page.unroute('https://open.er-api.com/v6/latest/USD');
+ await page.route('https://open.er-api.com/v6/latest/USD',async route=>{
+  await new Promise(resolve=>setTimeout(resolve,12000));
+  try{await route.fulfill({status:200,contentType:'application/json',body:'{}'});}catch{}
+ });
+ await page.locator('#calculate').click();
+ await page.waitForFunction(()=>document.querySelector('#status').textContent.includes('계산 중단'),{timeout:11000});
+ assert.match(await page.locator('#fxStatus').innerText(),/8초 내 환율 서버 응답/);
+ assert.equal(await page.locator('#summary').innerText(),'');
+ assert.equal(await page.locator('#calculate').isDisabled(),false);
+ await page.unroute('https://open.er-api.com/v6/latest/USD');
+ await page.route('https://open.er-api.com/v6/latest/USD',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({result:'success',base_code:'USD',rates:{KRW:1341.693922},time_last_update_unix:Math.floor(Date.now()/1000)})}));
+ await calculateAndWait();
+ assert.match(await page.locator('#status').innerText(),/계산 완료/);
  // Reject an oversell without changing original holdings or leaving a success message.
  await trade.locator('[data-field="quantity"]').fill('999');
  await calculateAndWait();
