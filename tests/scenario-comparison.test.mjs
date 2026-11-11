@@ -50,3 +50,26 @@ test('sale then buy different ticker compares share changes and cash',()=>{
  assert.equal(result.scenarios[0].final.positions.TSLA.quantity,8);
  assert.equal(result.scenarios[0].final.positions.SOXL.quantity,10);
 });
+
+test('phase-1 integrated real-style holdings, cash and rotation comparison',()=>{
+ const original={cash:2500,positions:{
+  TSLA:{quantity:222,averageCost:385.2},
+  BITU:{quantity:160,averageCost:14},
+  TQQQ:{quantity:283,averageCost:72.3}
+ }};
+ const saved=structuredClone(original);
+ const result=compareScenarios(original,[{name:'TSLA 일부 매도 후 SOXL 매수',trades:[
+  {side:'sell',ticker:'TSLA',quantity:10,price:400},
+  {side:'buy',ticker:'SOXL',quantity:20,price:50}
+ ]}],{TSLA:390,BITU:16,TQQQ:80,SOXL:60});
+ const scenario=result.scenarios[0];
+ assert.equal(result.baseline.terminalValue,114280);
+ assert.equal(scenario.final.cash,5500);
+ assert.equal(scenario.final.positions.TSLA.quantity,212);
+ assert.equal(scenario.final.positions.SOXL.quantity,20);
+ assert.equal(scenario.terminalValue,114480);
+ assert.equal(scenario.deltaVsHold,200);
+ assert.equal(scenario.steps[0].cash,6500);
+ assert.equal(scenario.steps[1].cash,5500);
+ assert.deepEqual(original,saved);
+});
