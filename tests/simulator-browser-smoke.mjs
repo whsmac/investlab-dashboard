@@ -20,7 +20,7 @@ const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 const page=await browser.newPage();
 const errors=[];
 const remoteRequests=[];
-page.on('request',request=>{if(/supabase\\.co/i.test(request.url()))remoteRequests.push(request.url());});
+page.on('request',request=>{if(/supabase\.co/i.test(request.url()))remoteRequests.push(request.url());});
 page.on('pageerror',e=>errors.push(e.message));
 try{
  await page.goto('http://127.0.0.1:'+server.address().port+'/virtual-trade-simulator.html');
