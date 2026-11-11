@@ -70,3 +70,10 @@ test('reserve applies to final buy only, allowing earlier leveraged ETF buy to u
  assert.match(html,/중간 매수 \(목표 현금 미적용\)/);
  assert.match(html,/최종 매수 \(목표 현금 적용\)/);
 });
+
+
+test('buy calculator is visually hidden for sell trades despite flex styling',()=>{
+ assert.match(html,/\.buy-helper\[hidden\]\{display:none!important\}/);
+ assert.match(html,/helper\.hidden=trade\.side!=='buy'/);
+ assert.match(html,/helper\.hidden=side\.value!=='buy'/);
+});
