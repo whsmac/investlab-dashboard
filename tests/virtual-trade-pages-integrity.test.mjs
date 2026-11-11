@@ -42,8 +42,8 @@ test('tax estimate uses explicit separate KRW inputs without Supabase writes',()
 test('separate tax calculator uses explicit KRW inputs and keeps tax out of virtual cash',()=>{
  const html=readFileSync(new URL('../virtual-trade.html',import.meta.url),'utf8');
  for(const id of ['taxPrior','taxHypothetical','taxDeduction','taxUsed','taxRate','taxResult','fxBuyRate','fxSellRate'])assert.ok(html.includes('id="'+id+'"'),id);
- assert.match(html,/estimateOverseasStockTax\\(/);
- assert.match(html,/calculateKrwDisposalGain\\(/);
+ assert.match(html,/estimateOverseasStockTax\(/);
+ assert.match(html,/calculateKrwDisposalGain\(/);
  assert.match(html,/예상 세액은 가상 현금에서 즉시 차감하지 않습니다/);
- assert.doesNotMatch(html,/supabase\\.from\\(/);
+ assert.doesNotMatch(html,/supabase\.from\(/);
 });
