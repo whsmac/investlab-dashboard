@@ -87,6 +87,7 @@ try{
  assert.match(valuationRows.find(line=>line.includes('TSLA'))||'',/10.*8/);
  assert.match(valuationRows.find(line=>line.includes('SOXL'))||'',/0.*10/);
  assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem('investlab_watchlist'))),['SOXL']);
+ assert.equal(await page.evaluate(()=>localStorage.getItem('investlab_past_symbols')),null,'Simulation must not create or modify symbol history');
  const summary=await page.locator('#summary').innerText();
  assert.match(summary,/최종 현금/);
  assert.match(summary,/200/);
