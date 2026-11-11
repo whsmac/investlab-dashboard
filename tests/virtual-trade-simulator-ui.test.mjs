@@ -91,7 +91,7 @@ test('tax is estimated automatically from each sell trade in USD using user FX',
 
 test('FX is fetched once at calculation, displays quote timestamp and fails closed',()=>{
  assert.match(html,/async function refreshFxAndCalculate\(/);
- assert.match(html,/fetch\('https:\/\/open\.er-api\.com\/v6\/latest\/USD',\{cache:'no-store'\}\)/);
+ assert.match(html,/fetch\('https:\/\/open\.er-api\.com\/v6\/latest\/USD',\{cache:'no-store',signal:fxController\.signal\}\)/);
  assert.match(html,/data\?\.rates\?\.KRW/);
  assert.match(html,/time_last_update_unix/);
  assert.match(html,/age>172800/);
