@@ -76,6 +76,7 @@ try{
  await page.locator('#priceEditor .simple-row').last().locator('input[aria-label="최종가격"]').fill('40');
  await page.locator('#calculate').click();
  assert.match(await page.locator('#status').innerText(),/계산 완료/);
+ assert.equal(JSON.parse(await page.locator('#terminal').inputValue()).SOXL,40,'Advanced terminal JSON must reflect the new ticker price');
  assert.match(await page.locator('#finalValuation').innerText(),/SOXL/);
  assert.match(await page.locator('#finalValuation').innerText(),/1,800|1800/);
  const summaryRows=await page.locator('#summary table tr').allTextContents();
