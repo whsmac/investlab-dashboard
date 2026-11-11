@@ -164,7 +164,7 @@ function renderPortfolio(){
     const input=document.createElement('input');input.setAttribute('aria-label',label);
     input.placeholder=label;input.type=field==='ticker'?'text':'number';if(field==='ticker')input.setAttribute('list','managedSymbolOptions');
     if(field!=='ticker'){input.step='any';input.min='0';}
-    input.value=entry[field];input.addEventListener('input',()=>{entry[field]=input.value;updateInitialValuation();});
+    input.value=entry[field];input.addEventListener('input',()=>{entry[field]=input.value;updateInitialValuation();try{syncPortfolioJson();byId('portfolioStatus').textContent='';}catch{byId('portfolioStatus').textContent='최종 가정주가 등 필수값을 입력하면 JSON도 동기화됩니다.';}});
     row.append(input);
    }
    const remove=document.createElement('button');remove.type='button';remove.textContent='삭제';
