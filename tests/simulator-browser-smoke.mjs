@@ -19,6 +19,8 @@ await new Promise(done=>server.listen(0,'127.0.0.1',done));
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 const page=await browser.newPage();
 const errors=[];
+const remoteRequests=[];
+page.on('request',request=>{if(/supabase\\.co/i.test(request.url()))remoteRequests.push(request.url());});
 page.on('pageerror',e=>errors.push(e.message));
 try{
  await page.goto('http://127.0.0.1:'+server.address().port+'/virtual-trade-simulator.html');
@@ -97,6 +99,7 @@ try{
  assert.equal(await page.locator('#summary').innerText(),'','Invalid oversell must clear the previous successful summary');
  assert.equal(await page.locator('#finalValuation').innerText(),'','Invalid oversell must clear stale terminal valuation');
  assert.equal((await page.evaluate(()=>JSON.parse(localStorage.getItem('investlab_holdings'))))[0].shares,10);
+ assert.deepEqual(remoteRequests,[],'Simulation must not contact Supabase');
  assert.deepEqual(errors,[]);
  console.log('Simulator browser smoke passed: real holdings, cash, sell, valuation, no writes.');
 }finally{
