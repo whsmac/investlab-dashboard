@@ -105,6 +105,29 @@ try{
  assert.equal(afterCash,'100','Starting cash input remains unchanged by simulation');
  const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem('investlab_holdings')));
  assert.equal(stored[0].shares,10,'Virtual trades must not mutate actual holdings');
+ // Verify comma formatting, zero deduction, and one FX snapshot per calculation.
+ await page.locator('#priorTax').fill('1234567');
+ assert.equal(await page.locator('#priorTax').inputValue(),'1,234,567');
+ await page.locator('#deduction').fill('0');
+ assert.equal(await page.locator('#deduction').inputValue(),'0');
+ await calculateAndWait();
+ assert.match(await page.locator('#status').innerText(),/계산 완료/);
+ assert.equal(await page.locator('#taxFx').inputValue(),'1,342');
+ assert.match(await page.locator('#taxGainEditor').innerText(),/134,169|134,170|134,169/);
+ // A failed exchange-rate request must remove all previous financial results.
+ await page.route('https://open.er-api.com/v6/latest/USD',route=>route.fulfill({status:503,body:'Service unavailable'}));
+ await calculateAndWait();
+ assert.match(await page.locator('#status').innerText(),/계산 중단/);
+ assert.match(await page.locator('#fxStatus').innerText(),/환율 자동 조회 실패/);
+ assert.equal(await page.locator('#taxFx').inputValue(),'');
+ for(const id of ['summary','finalValuation','taxBasis','taxGainEditor','resultHero']){
+  assert.equal(await page.locator('#'+id).innerText(),'','FX failure must clear stale '+id);
+ }
+ assert.equal(await page.locator('#positionCompareTitle').isVisible(),false);
+ await page.unroute('https://open.er-api.com/v6/latest/USD');
+ await page.route('https://open.er-api.com/v6/latest/USD',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({result:'success',base_code:'USD',rates:{KRW:1341.693922},time_last_update_unix:Math.floor(Date.now()/1000)})}));
+ await calculateAndWait();
+ assert.match(await page.locator('#status').innerText(),/계산 완료/);
  // Reject an oversell without changing original holdings or leaving a success message.
  await trade.locator('[data-field="quantity"]').fill('999');
  await calculateAndWait();
