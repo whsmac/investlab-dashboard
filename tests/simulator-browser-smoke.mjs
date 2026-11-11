@@ -114,6 +114,20 @@ try{
  assert.match(await page.locator('#status').innerText(),/계산 완료/);
  assert.equal(await page.locator('#taxFx').inputValue(),'1,342');
  assert.match(await page.locator('#taxGainEditor').innerText(),/268,339/);
+ // Pending FX lookup must immediately invalidate prior results, not just after failure.
+ await page.route('https://open.er-api.com/v6/latest/USD',async route=>{
+  await new Promise(resolve=>setTimeout(resolve,900));
+  try{await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({result:'success',base_code:'USD',rates:{KRW:1341.693922},time_last_update_unix:Math.floor(Date.now()/1000)})});}catch{}
+ });
+ await page.locator('#calculate').click();
+ assert.equal(await page.locator('#calculate').isDisabled(),true);
+ assert.match(await page.locator('#status').innerText(),/계산 대기/);
+ assert.equal(await page.locator('#summary').innerText(),'','Pending FX must clear previous summary immediately');
+ assert.equal(await page.locator('#taxGainEditor').innerText(),'','Pending FX must clear previous tax results immediately');
+ assert.equal(await page.locator('#taxFx').inputValue(),'');
+ await page.waitForFunction(()=>document.querySelector('#status').textContent.includes('계산 완료'),null,{timeout:5000});
+ assert.match(await page.locator('#summary').innerText(),/최종 현금/);
+ await page.unroute('https://open.er-api.com/v6/latest/USD');
  // A failed exchange-rate request must remove all previous financial results.
  await page.route('https://open.er-api.com/v6/latest/USD',route=>route.fulfill({status:503,body:'Service unavailable'}));
  await calculateAndWait();
