@@ -25,3 +25,13 @@ test('USD-CASH is read as cash; legacy USD is not guessed',()=>{
  assert.equal(readPortfolioUsdCash(storage([{symbol:'USD-CASH',shares:-10}])),null);
  assert.equal(readPortfolioUsdCash(null),null);
 });
+
+test('rejects missing quantity, missing cost, and invalid engine ticker',()=>{
+ assert.deepEqual(extractPortfolioPositions([
+  {symbol:'TSLA',shares:null,avg_cost:100},
+  {symbol:'TQQQ',shares:2,avg_cost:null},
+  {symbol:'BAD_CODE',shares:1,avg_cost:5},
+  {symbol:'SOXL',shares:20,avg_cost:10}
+ ]),[{ticker:'SOXL',quantity:20,averageCost:10}]);
+ assert.equal(readPortfolioUsdCash({getItem:()=>JSON.stringify([{symbol:'USD-CASH',shares:null}])}),null);
+});
