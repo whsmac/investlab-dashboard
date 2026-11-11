@@ -5,7 +5,7 @@
 <body><nav style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:18px"><a style="color:#8dc0ff" href="./index.html">대시보드</a><a style="color:#8dc0ff" href="./shared-data.html">공유 데이터 조회</a><a style="color:#8dc0ff" href="./shared-data-import.html">TEST CSV 가져오기</a></nav><h1>INVESTLAB · 가상 매매 시뮬레이터</h1><p>하락장 재매수·종목 전환과 상승장 단계별 매도를 시험합니다. 기존 포트폴리오 보유정보를 읽기 전용으로 불러와 가상 거래에 사용합니다. 실제 포트폴리오와 매매원장은 변경하지 않습니다.</p>
 <section class="panel" style="margin-bottom:16px"><strong>기존 포트폴리오 종목 선택</strong><p class="hint" id="managedSymbolStatus">종목 목록 확인 중…</p><button type="button" id="refreshManagedSymbols" style="max-width:240px">종목 목록 새로고침</button><datalist id="managedSymbolOptions"></datalist><p class="hint">이 화면은 기존 종목관리 정보를 읽기만 합니다. 종목 등록·수정은 기존 종목관리에서 수행하세요. 다른 도메인이나 기기의 목록은 자동 연결되지 않습니다.</p></section>
 <div class="layout">
-<section class="panel"><h2>기준 보유정보</h2><label for="cash">시작 현금 (USD)</label><input id="cash" type="number" min="0" step="any" placeholder="실제 USD 현금잔액 입력" value=""><p class="hint">현금은 원본 주식 종목관리와 별개입니다. 확인된 현금잔액을 직접 입력하세요. 임의의 예시 현금을 자동 적용하지 않습니다.</p><h3>보유종목</h3><p class="simple-caption">종목 · 수량 · 평균 취득단가(USD)</p><div id="positionEditor"></div><button type="button" id="loadPortfolioPositions">현재 포트폴리오 보유정보 다시 불러오기</button><p id="positionLoadStatus" class="hint" role="status"></p><button class="small-add" type="button" id="addPosition">+ 보유종목 추가</button><h3>기준 포트폴리오 합계</h3><div id="initialValuation"></div><p class="hint">기준 평가액은 아래 최종 가정 주가와 동일한 가격을 적용한 비교용 금액입니다. 실시간 현재가가 아닙니다. 취득원가 합계도 별도로 표시합니다.</p><h3>최종 가정 주가</h3><p class="simple-caption">종목별 가상 최종가격(USD)</p><div id="priceEditor"></div><button class="small-add" type="button" id="addPrice">+ 종목 가격 추가</button><details><summary>고급 입력: 보유정보·최종가격 JSON</summary><label for="positions">보유종목 JSON</label><textarea id="positions" spellcheck="false">{"TSLA":{"quantity":10,"averageCost":100}}</textarea><label for="terminal">최종 가정 주가 JSON</label><textarea id="terminal" spellcheck="false">{"TSLA":150,"SOXL":40}</textarea><button id="applyPortfolioJson" type="button">JSON 입력 반영</button></details><p id="portfolioStatus" class="hint" role="status"></p></section>
+<section class="panel"><h2>기준 보유정보</h2><label for="cash">시작 현금 (USD)</label><input id="cash" type="number" min="0" step="any" placeholder="실제 USD 현금잔액 입력" value=""><p class="hint">원본에 USD-CASH 현금 항목이 있으면 자동 반영합니다. 구형 USD 종목은 현금으로 단정할 수 없어 직접 확인 후 입력하세요.</p><h3>보유종목</h3><p class="simple-caption">종목 · 수량 · 평균 취득단가(USD)</p><div id="positionEditor"></div><button type="button" id="loadPortfolioPositions">현재 포트폴리오 보유정보 다시 불러오기</button><p id="positionLoadStatus" class="hint" role="status"></p><button class="small-add" type="button" id="addPosition">+ 보유종목 추가</button><h3>기준 포트폴리오 합계</h3><div id="initialValuation"></div><p class="hint">기준 평가액은 아래 최종 가정 주가와 동일한 가격을 적용한 비교용 금액입니다. 실시간 현재가가 아닙니다. 취득원가 합계도 별도로 표시합니다.</p><h3>최종 가정 주가</h3><p class="simple-caption">종목별 가상 최종가격(USD)</p><div id="priceEditor"></div><button class="small-add" type="button" id="addPrice">+ 종목 가격 추가</button><details><summary>고급 입력: 보유정보·최종가격 JSON</summary><label for="positions">보유종목 JSON</label><textarea id="positions" spellcheck="false">{"TSLA":{"quantity":10,"averageCost":100}}</textarea><label for="terminal">최종 가정 주가 JSON</label><textarea id="terminal" spellcheck="false">{"TSLA":150,"SOXL":40}</textarea><button id="applyPortfolioJson" type="button">JSON 입력 반영</button></details><p id="portfolioStatus" class="hint" role="status"></p></section>
 <section class="panel"><h2>가상 거래</h2><p class="hint">아래 전략 편집기에서 거래를 추가·삭제하고 가격과 수량을 직접 수정하세요.</p><div id="strategyEditor"></div><div class="editor-actions"><button id="addStrategy" type="button">+ 전략 추가</button><button id="presetRise" type="button">상승장 부분 매도</button><button id="presetDip" type="button">하락장 재매수</button></div><p id="editorStatus" class="hint"></p><button id="calculate" type="button">시나리오 계산</button><details><summary>고급 입력: JSON 직접 편집</summary><p class="hint">배열 순서대로 체결을 가정합니다. buy/sell, ticker, quantity, price, fee(선택)를 입력하세요.</p><label for="trades">가상 거래 목록 (JSON)</label><textarea id="trades" spellcheck="false" style="min-height:245px">[
  {"side":"sell","ticker":"TSLA","quantity":5,"price":200},
  {"side":"buy","ticker":"TSLA","quantity":10,"price":100}
@@ -16,7 +16,7 @@
 import {compareScenarios} from './src/simulator/scenario-comparison.mjs';
 import {estimateOverseasStockTax} from './src/simulator/overseas-stock-tax.mjs';
 import {readManagedSymbols} from './src/simulator/managed-symbols.mjs';
-import {readPortfolioPositions} from './src/simulator/portfolio-positions.mjs';
+import {readPortfolioPositions,readPortfolioUsdCash} from './src/simulator/portfolio-positions.mjs';
 const byId=id=>document.getElementById(id);
 let managedSymbols=[];
 function refreshManagedSymbols(){
@@ -113,7 +113,7 @@ function calculate(){
 }
 
 
-const portfolioState={positions:[{ticker:'TSLA',quantity:10,averageCost:100}],prices:[{ticker:'TSLA',price:150},{ticker:'SOXL',price:40}]};
+const portfolioState={positions:[],prices:[]};
 function portfolioJson(){
  const positions={},prices={};
  for(const p of portfolioState.positions){
@@ -189,8 +189,11 @@ byId('applyPortfolioJson').addEventListener('click',()=>{
 renderPortfolio();
 function loadPortfolioPositions(){
  const positions=readPortfolioPositions(window.localStorage);
+ const sourceCash=readPortfolioUsdCash(window.localStorage);
+ if(sourceCash!==null){byId('cash').value=String(sourceCash);}
  if(!positions.length){
-  byId('positionLoadStatus').textContent='원본 포트폴리오에 유효한 보유종목이 없어 기존 입력값을 유지합니다.';
+  updateInitialValuation();
+  byId('positionLoadStatus').textContent='원본 포트폴리오에 유효한 보유종목이 없습니다. 종목관리에서 먼저 등록하세요.';
   return;
  }
  portfolioState.positions=positions.map(p=>({...p}));
@@ -348,7 +351,7 @@ byId('applyTaxJson').addEventListener('click',()=>{
  }catch(e){byId('status').textContent='세금 JSON 오류: '+e.message;byId('status').className='error';}
 });
 
-strategyState=[clone(presets.rise),clone(presets.dip)];renderEditor();ensureTradePrices();
+strategyState=[{name:'가상 거래 1',trades:[]}];renderEditor();ensureTradePrices();
 
 byId('taxExample').addEventListener('click',()=>{
  let scenarios;
@@ -367,5 +370,6 @@ byId('taxExample').addEventListener('click',()=>{
  }catch(e){byId('status').textContent='예시 입력 실패: '+e.message;byId('status').className='error';}
 });
 byId('calculate').addEventListener('click',()=>{syncAdvanced();ensureTradePrices();calculate();});
-calculate();
+if(byId('cash').value.trim()&&portfolioState.positions.length)calculate();
+else byId('status').textContent='기준 보유정보와 시작 현금을 확인한 뒤 시나리오 계산을 누르세요.';
 </script></body></html>
