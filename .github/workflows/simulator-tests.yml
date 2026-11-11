@@ -36,4 +36,5 @@ jobs:
           node --check src/simulator/virtual-trade-engine.mjs
           node --check src/simulator/scenario-comparison.mjs
       - name: Run simulator tests
-        run: node --test tests/*.test.mjs
+        run: |
+          node --test tests/portfolio-positions.test.mjs tests/managed-symbols.test.mjs tests/virtual-trade-engine.test.mjs tests/scenario-comparison.test.mjs tests/virtual-trade-simulator-ui.test.mjs
