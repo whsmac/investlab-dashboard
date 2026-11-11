@@ -31,6 +31,8 @@ try{
  });
  await page.reload();
  assert.equal(await page.locator('#cash').inputValue(),'100');
+ assert.match(await page.locator('#managedSymbolStatus').innerText(),/종목/);
+ assert.equal(await page.locator('#managedSymbolOptions option[value="SOXL"]').count(),1,'Watchlist ticker should appear in symbol suggestions');
  // Missing market price must not break import; user supplies the terminal assumption.
  await page.evaluate(()=>{
   localStorage.setItem('investlab_holdings',JSON.stringify([
@@ -82,6 +84,11 @@ try{
  assert.equal(afterCash,'100','Starting cash input remains unchanged by simulation');
  const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem('investlab_holdings')));
  assert.equal(stored[0].shares,10,'Virtual trades must not mutate actual holdings');
+ // Reject an oversell without changing original holdings or leaving a success message.
+ await trade.locator('[data-field="quantity"]').fill('999');
+ await page.locator('#calculate').click();
+ assert.doesNotMatch(await page.locator('#status').innerText(),/계산 완료/);
+ assert.equal((await page.evaluate(()=>JSON.parse(localStorage.getItem('investlab_holdings'))))[0].shares,10);
  assert.deepEqual(errors,[]);
  console.log('Simulator browser smoke passed: real holdings, cash, sell, valuation, no writes.');
 }finally{
