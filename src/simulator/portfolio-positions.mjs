@@ -21,3 +21,19 @@ export function readPortfolioPositions(storage){
  try{return extractPortfolioPositions(JSON.parse(storage.getItem('investlab_holdings')||'[]'));}
  catch{return [];}
 }
+
+/** Only USD-CASH is an explicit dollar-cash balance in the source portfolio.
+ * Legacy ticker USD is not assumed to be cash: its meaning is ambiguous.
+ */
+export function readPortfolioUsdCash(storage){
+ if(!storage)return null;
+ try{
+  const rows=JSON.parse(storage.getItem('investlab_holdings')||'[]');
+  if(!Array.isArray(rows))return null;
+  const cash=rows.filter(r=>r&&String(r.symbol).trim().toUpperCase()==='USD-CASH');
+  if(!cash.length)return null;
+  const values=cash.map(r=>Number(r.shares));
+  if(values.some(n=>!Number.isFinite(n)||n<0))return null;
+  return values.reduce((a,b)=>a+b,0);
+ }catch{return null;}
+}
