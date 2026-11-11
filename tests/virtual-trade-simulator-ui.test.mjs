@@ -22,7 +22,7 @@ test('phase-1 UI exposes holdings, editable trades, terminal prices and comparis
  assert.match(html,/최종 가상 포트폴리오 상세/);
  assert.match(html,/전략별 종목 수량·평가금액 변화/);
  assert.match(html,/양도세 추정/);
- assert.match(html,/원화 기준 손익/);
+ assert.match(html,/시나리오 매도별 자동 원화 실현손익/);
 });
 
 test('initial scenario has no fictional holdings, cash or executed trades',()=>{
@@ -76,4 +76,13 @@ test('buy calculator is visually hidden for sell trades despite flex styling',()
  assert.match(html,/\.buy-helper\[hidden\]\{display:none!important\}/);
  assert.match(html,/helper\.hidden=trade\.side!=='buy'/);
  assert.match(html,/helper\.hidden=side\.value!=='buy'/);
+});
+
+
+test('tax is estimated automatically from each sell trade in USD using user FX',()=>{
+ assert.match(html,/id="taxFx"/);
+ assert.match(html,/step\.tradePnL\*fx/);
+ assert.match(html,/estimateOverseasStockTax\(/);
+ assert.match(html,/id="deduction"[^>]*min="0"/);
+ assert.doesNotMatch(html,/id="taxExample"|renderTaxForm\(/);
 });
