@@ -18,7 +18,7 @@ const server=createServer(async(req,res)=>{
 await new Promise(done=>server.listen(0,'127.0.0.1',done));
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 const page=await browser.newPage();
-const errors=[];
+const errors=[];\nawait page.route('https://open.er-api.com/v6/latest/USD',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({result:'success',base_code:'USD',rates:{KRW:1341.693922},time_last_update_unix:Math.floor(Date.now()/1000)})}));\nasync function calculateAndWait(){await page.locator('#calculate').click();await page.waitForFunction(()=>!document.querySelector('#calculate').disabled);}\n
 const remoteRequests=[];
 page.on('request',request=>{if(/supabase\.co/i.test(request.url()))remoteRequests.push(request.url());});
 page.on('pageerror',e=>errors.push(e.message));
@@ -57,7 +57,7 @@ try{
  await trade.locator('[data-field="ticker"]').fill('TSLA');
  await trade.locator('[data-field="quantity"]').fill('2');
  await trade.locator('[data-field="price"]').fill('200');
- await page.locator('#calculate').click();
+ await calculateAndWait();
  assert.match(await page.locator('#status').innerText(),/계산 완료/);
  assert.equal(await page.locator('#positionCompareTitle').isVisible(),true);
  const quantityRows=await page.locator('#positionCompare table tr').allTextContents();
@@ -73,13 +73,13 @@ try{
  await second.locator('[data-field="ticker"]').fill('SOXL');
  await second.locator('[data-field="quantity"]').fill('10');
  await second.locator('[data-field="price"]').fill('30');
- await page.locator('#calculate').click();
+ await calculateAndWait();
  // The first calculation intentionally requests a terminal assumption for the new ticker.
  assert.match(await page.locator('#status').innerText(),/SOXL/);
  assert.doesNotMatch(await page.locator('#status').innerText(),/계산 완료/,'Missing price must not report success');
  assert.equal(await page.locator('#summary').innerText(),'','Missing price must clear previous results');
  await page.locator('#priceEditor .simple-row').last().locator('input[aria-label="최종가격"]').fill('40');
- await page.locator('#calculate').click();
+ await calculateAndWait();
  assert.match(await page.locator('#status').innerText(),/계산 완료/);
  assert.equal(JSON.parse(await page.locator('#terminal').inputValue()).SOXL,40,'Advanced terminal JSON must reflect the new ticker price');
  assert.match(await page.locator('#finalValuation').textContent(),/SOXL/);
@@ -104,7 +104,7 @@ try{
  assert.equal(stored[0].shares,10,'Virtual trades must not mutate actual holdings');
  // Reject an oversell without changing original holdings or leaving a success message.
  await trade.locator('[data-field="quantity"]').fill('999');
- await page.locator('#calculate').click();
+ await calculateAndWait();
  assert.doesNotMatch(await page.locator('#status').innerText(),/계산 완료/);
  assert.equal(await page.locator('#summary').innerText(),'','Invalid oversell must clear the previous successful summary');
  assert.equal(await page.locator('#finalValuation').textContent(),'','Invalid oversell must clear stale terminal valuation');
@@ -112,7 +112,7 @@ try{
  // Reject a buy larger than available cash, without altering real portfolio data.
  await trade.locator('[data-field="quantity"]').fill('2');
  await second.locator('[data-field="quantity"]').fill('999');
- await page.locator('#calculate').click();
+ await calculateAndWait();
  assert.doesNotMatch(await page.locator('#status').innerText(),/계산 완료/,'Insufficient cash must not report success');
  assert.equal(await page.locator('#summary').innerText(),'','Insufficient cash must clear stale results');
  assert.equal((await page.evaluate(()=>JSON.parse(localStorage.getItem('investlab_holdings'))))[0].shares,10);
