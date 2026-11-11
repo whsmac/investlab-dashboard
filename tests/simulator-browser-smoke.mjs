@@ -153,7 +153,7 @@ try{
   try{await route.fulfill({status:200,contentType:'application/json',body:'{}'});}catch{}
  });
  await page.locator('#calculate').click();
- await page.waitForFunction(()=>document.querySelector('#status').textContent.includes('계산 중단'),{timeout:11000});
+ await page.waitForFunction(()=>document.querySelector('#status').textContent.includes('계산 중단'),null,{timeout:11000});
  assert.match(await page.locator('#fxStatus').innerText(),/8초 내 환율 서버 응답/);
  assert.equal(await page.locator('#summary').innerText(),'');
  assert.equal(await page.locator('#calculate').isDisabled(),false);
