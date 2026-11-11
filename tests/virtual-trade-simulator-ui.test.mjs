@@ -45,10 +45,19 @@ test('phase-1 trade editor excludes fees and retains distinct execution and term
 
 
 test('buy helper uses preceding trades and target reserve without changing sell trades',()=>{
- assert.match(html,/매수 후 남길 목표 현금 \(USD\)/);
+ assert.match(html,/이 전략에서 매수 후 남길 목표 현금 \(USD\)/);
  assert.match(html,/매수 가능 최대 수량 계산/);
  assert.match(html,/strategy\.trades\.slice\(0,ti\)/);
  assert.match(html,/simulateTrades\(\{cash:Number\(cashValue\),positions\},previous\)\.final\.cash/);
  assert.match(html,/Math\.floor\(\(budget\+1e-9\)\/price\)/);
  assert.match(html,/helper\.hidden=trade\.side!=='buy'/);
+});
+
+
+test('target cash reserve is entered once per strategy and reused for buy calculations',()=>{
+ assert.match(html,/reserve\.value=String\(strategy\.targetCash\?\?0\)/);
+ assert.match(html,/strategy\.targetCash=reserve\.value/);
+ assert.match(html,/const price=Number\(trade\.price\),target=Number\(reserve\.value\)/);
+ assert.match(html,/helper\.append\(auto,info\)/);
+ assert.doesNotMatch(html,/helper\.append\(reserveLabel,reserve,auto,info\)/);
 });
