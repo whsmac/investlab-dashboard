@@ -282,11 +282,12 @@ function renderEditor(){
   for(const label of ['구분','종목코드','수량 (주)','체결가 ($)','']){const cell=document.createElement('span');cell.textContent=label;columns.append(cell);}
   card.append(columns);
   const reserveBar=document.createElement('div');reserveBar.className='buy-helper';
-  const reserveLabel=document.createElement('label');reserveLabel.textContent='이 전략에서 매수 후 남길 목표 현금 (USD)';
+  const reserveLabel=document.createElement('label');reserveLabel.textContent='마지막 매수 후 남길 목표 현금 (USD)';
   const reserve=document.createElement('input');reserve.type='number';reserve.min='0';reserve.step='any';reserve.value=String(strategy.targetCash??0);reserve.setAttribute('aria-label','전략 목표 잔여 현금 USD');
   reserve.addEventListener('input',()=>{strategy.targetCash=reserve.value;});
-  const reserveHint=document.createElement('span');reserveHint.textContent='매수 가능 수량 계산 시 모든 매수 거래에 공통 적용';reserveHint.style.fontSize='12px';
+  const reserveHint=document.createElement('span');reserveHint.textContent='중간 ETF 매수는 현금을 최대 활용하고, 마지막 매수에서만 목표 현금을 제외합니다.';reserveHint.style.fontSize='12px';
   reserveBar.append(reserveLabel,reserve,reserveHint);card.append(reserveBar);
+  const finalBuyIndex=strategy.trades.findLastIndex(t=>t.side==='buy');
   strategy.trades.forEach((trade,ti)=>{
    const row=document.createElement('div');row.className='trade-grid';
    const side=document.createElement('select');side.dataset.field='side';
@@ -314,15 +315,16 @@ function renderEditor(){
       side:t.side,ticker:String(t.ticker).trim().toUpperCase(),quantity:Number(t.quantity),price:Number(t.price)
      }));
      const available=simulateTrades({cash:Number(cashValue),positions},previous).final.cash;
-     const price=Number(trade.price),target=Number(reserve.value);
+     const isFinalBuy=ti===finalBuyIndex;
+     const price=Number(trade.price),target=isFinalBuy?Number(reserve.value):0;
      if(!Number.isFinite(price)||price<=0)throw Error('현재 매수 거래의 체결가격을 0보다 크게 입력하세요.');
-     if(reserve.value.trim()===''||!Number.isFinite(target)||target<0)throw Error('목표 현금은 0 이상의 숫자여야 합니다.');
+     if(isFinalBuy&&(reserve.value.trim()===''||!Number.isFinite(target)||target<0))throw Error('목표 현금은 0 이상의 숫자여야 합니다.');
      const budget=Math.max(0,available-target);
      const max=Math.max(0,Math.floor((budget+1e-9)/price));
      trade.quantity=max;
      row.querySelector('[data-field="quantity"]').value=String(max);
      syncAdvanced();
-     info.textContent='매수 직전 현금 '+fmt(available)+' USD · 최대 '+fmt(max)+'주 · 매수 후 잔여 '+fmt(available-max*price)+' USD';
+     info.textContent=(isFinalBuy?'최종 매수 (목표 현금 적용)':'중간 매수 (목표 현금 미적용)')+' · 매수 직전 현금 '+fmt(available)+' USD · 최대 '+fmt(max)+'주 · 매수 후 잔여 '+fmt(available-max*price)+' USD';
      if(target>available)info.textContent+=' (목표 현금이 현재 현금보다 큽니다)';
     }catch(error){info.textContent='계산 불가: '+error.message;}
    });
