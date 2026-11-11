@@ -18,7 +18,10 @@ const server=createServer(async(req,res)=>{
 await new Promise(done=>server.listen(0,'127.0.0.1',done));
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 const page=await browser.newPage();
-const errors=[];\nawait page.route('https://open.er-api.com/v6/latest/USD',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({result:'success',base_code:'USD',rates:{KRW:1341.693922},time_last_update_unix:Math.floor(Date.now()/1000)})}));\nasync function calculateAndWait(){await page.locator('#calculate').click();await page.waitForFunction(()=>!document.querySelector('#calculate').disabled);}\n
+const errors=[];
+await page.route('https://open.er-api.com/v6/latest/USD',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({result:'success',base_code:'USD',rates:{KRW:1341.693922},time_last_update_unix:Math.floor(Date.now()/1000)})}));
+async function calculateAndWait(){await page.locator('#calculate').click();await page.waitForFunction(()=>!document.querySelector('#calculate').disabled);}
+
 const remoteRequests=[];
 page.on('request',request=>{if(/supabase\.co/i.test(request.url()))remoteRequests.push(request.url());});
 page.on('pageerror',e=>errors.push(e.message));
@@ -62,7 +65,7 @@ try{
  assert.equal(await page.locator('#positionCompareTitle').isVisible(),true);
  const quantityRows=await page.locator('#positionCompare table tr').allTextContents();
  assert.match(quantityRows.find(line=>line.includes('TSLA'))||'',/10.*8.*-2/);
- assert.match(quantityRows.find(line=>line.includes('SOXL'))||'',/0.*10.*\+10/);
+ assert.equal(quantityRows.some(line=>line.includes('SOXL')),false,'SOXL is not held before its buy trade');
  await page.locator('.result-details summary').click();
  assert.match(await page.locator('#finalValuation').innerText(),/TSLA/);
  assert.match(await page.locator('#finalValuation').textContent(),/8/);
