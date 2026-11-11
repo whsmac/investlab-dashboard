@@ -389,11 +389,13 @@ for(const id of ['priorTax','deduction']){
 }
 async function refreshFxAndCalculate(){
  const button=byId('calculate');button.disabled=true;
+ const fxController=new AbortController();
+ const fxTimeout=setTimeout(()=>fxController.abort(),8000);
  byId('fxStatus').textContent='최신 공개 USD/KRW 환율 조회 중…';
  fxRateSnapshot=null;
  byId('taxFx').value='';
  try{
-  const response=await fetch('https://open.er-api.com/v6/latest/USD',{cache:'no-store'});
+  const response=await fetch('https://open.er-api.com/v6/latest/USD',{cache:'no-store',signal:fxController.signal});
   if(!response.ok)throw new Error('환율 서버 응답 '+response.status);
   const data=await response.json();
   const rate=Number(data?.rates?.KRW);
@@ -408,12 +410,13 @@ async function refreshFxAndCalculate(){
  }catch(error){
   fxRateSnapshot=null;
   byId('taxFx').value='';
-  byId('fxStatus').textContent='환율 자동 조회 실패: '+error.message+' · 임의 환율을 적용하지 않았습니다.';
+  const reason=error?.name==='AbortError'?'8초 내 환율 서버 응답이 없습니다.':error instanceof TypeError?'환율 서버 연결 또는 브라우저 네트워크 정책 문제입니다.':error.message;
+  byId('fxStatus').textContent='환율 자동 조회 실패: '+reason+' · 임의 환율을 적용하지 않았습니다.';
   for(const id of ['resultHero','positionCompare','summary','strategies','strategyHoldings','taxBasis','taxStages','taxGainEditor','steps','holdings','finalValuation'])byId(id).replaceChildren();
   byId('positionCompareTitle').hidden=true;
   byId('status').textContent='계산 중단: 최신 환율을 가져오지 못했습니다. 연결 상태를 확인하고 다시 시도하세요.';
   byId('status').className='error';
- }finally{button.disabled=false;}
+ }finally{clearTimeout(fxTimeout);button.disabled=false;}
 }
 byId('calculate').addEventListener('click',refreshFxAndCalculate);
 byId('status').textContent='기준 보유정보와 시작 현금을 확인한 뒤 시나리오 계산을 누르세요.';
