@@ -23,7 +23,9 @@ let managedSymbols=[];
 function refreshManagedSymbols(){
   managedSymbols=readManagedSymbols(window.localStorage);
   const saved=readSavedPortfolioQuotes(window.localStorage);
-  byId('savedQuoteStatus').textContent=saved.length?'기존 포트폴리오 저장 주가 '+saved.length+'개 확인 (실시간 여부 미확인 · 최종 가정주가에 자동 적용하지 않음): '+saved.map(q=>q.ticker+' 
+  byId('savedQuoteStatus').textContent=saved.length
+    ? '기존 포트폴리오 저장 주가 '+saved.length+'개 확인 (실시간 여부 미확인 · 최종 가정주가에 자동 적용하지 않음): '+saved.map(q=>q.ticker+' '+Number(q.price).toLocaleString('ko-KR')).join(' · ')
+    : '기존 포트폴리오에 저장된 주가가 없습니다. 실시간 시세 연동은 별도 검증이 필요합니다.';
   const list=byId('managedSymbolOptions');list.replaceChildren();
   for(const item of managedSymbols){
     const option=document.createElement('option');option.value=item.ticker;
