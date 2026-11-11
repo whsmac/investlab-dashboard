@@ -59,6 +59,10 @@ try{
  await trade.locator('[data-field="price"]').fill('200');
  await page.locator('#calculate').click();
  assert.match(await page.locator('#status').innerText(),/계산 완료/);
+ assert.equal(await page.locator('#positionCompareTitle').isVisible(),true);
+ const quantityRows=await page.locator('#positionCompare table tr').allTextContents();
+ assert.match(quantityRows.find(line=>line.includes('TSLA'))||'',/10.*8.*-2/);
+ assert.match(quantityRows.find(line=>line.includes('SOXL'))||'',/0.*10.*\+10/);
  await page.locator('.result-details summary').click();
  assert.match(await page.locator('#finalValuation').innerText(),/TSLA/);
  assert.match(await page.locator('#finalValuation').textContent(),/8/);
