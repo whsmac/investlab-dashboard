@@ -71,6 +71,15 @@ try{
  assert.match(await page.locator('#status').innerText(),/계산 완료/);
  assert.match(await page.locator('#finalValuation').innerText(),/SOXL/);
  assert.match(await page.locator('#finalValuation').innerText(),/1,800|1800/);
+ const summary=await page.locator('#summary').innerText();
+ assert.match(summary,/최종 현금/);
+ assert.match(summary,/200/);
+ assert.match(summary,/1,800|1800/);
+ const finalRows=await page.locator('#finalValuation table').first().locator('tbody tr').allTextContents();
+ assert.ok(finalRows.some(row=>/TSLA/.test(row)&&/8/.test(row)),'TSLA remaining quantity must be 8');
+ assert.ok(finalRows.some(row=>/SOXL/.test(row)&&/10/.test(row)),'SOXL purchased quantity must be 10');
+ const afterCash=await page.locator('#cash').inputValue();
+ assert.equal(afterCash,'100','Starting cash input remains unchanged by simulation');
  const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem('investlab_holdings')));
  assert.equal(stored[0].shares,10,'Virtual trades must not mutate actual holdings');
  assert.deepEqual(errors,[]);
