@@ -112,3 +112,13 @@ test('rounded FX display preserves raw rate and tax money fields use comma forma
  assert.match(html,/priorRealizedKrw:parseTaxMoney\('priorTax'\)/);
  assert.match(html,/annualDeductionKrw:parseTaxMoney\('deduction'\)/);
 });
+
+test('FX request times out and distinguishes network failures without guessed rates',()=>{
+ assert.match(html,/new AbortController\\(\\)/);
+ assert.match(html,/setTimeout\\(\\(\\)=>fxController\\.abort\\(\\),8000\\)/);
+ assert.match(html,/signal:fxController\\.signal/);
+ assert.match(html,/clearTimeout\\(fxTimeout\\)/);
+ assert.match(html,/error\\?\\.name==='AbortError'/);
+ assert.match(html,/error instanceof TypeError/);
+ assert.match(html,/임의 환율을 적용하지 않았습니다/);
+});
