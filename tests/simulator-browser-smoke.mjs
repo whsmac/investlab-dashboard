@@ -47,6 +47,7 @@ try{
  assert.equal(await page.locator('#priceEditor input[aria-label="최종가격"]').first().inputValue(),'');
  assert.match(await page.locator('#initialValuation').innerText(),/합계 계산 대기/);
  await page.locator('#priceEditor input[aria-label="최종가격"]').first().fill('150');
+ assert.equal(JSON.parse(await page.locator('#terminal').inputValue()).TSLA,150,'Advanced JSON should reflect a valid price edit');
 
  assert.match(await page.locator('#positionLoadStatus').innerText(),/1개 종목/);
  assert.equal(await page.locator('#positionEditor input[aria-label="수량"]').first().inputValue(),'10');
