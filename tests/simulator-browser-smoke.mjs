@@ -59,8 +59,8 @@ try{
  await trade.locator('[data-field="price"]').fill('200');
  await page.locator('#calculate').click();
  assert.match(await page.locator('#status').innerText(),/계산 완료/);
- assert.match(await page.locator('#finalValuation').innerText(),/TSLA/);
- assert.match(await page.locator('#finalValuation').innerText(),/8/);
+ assert.match(await page.locator('#finalValuation').textContent(),/TSLA/);
+ assert.match(await page.locator('#finalValuation').textContent(),/8/);
  // Complete the requested rotation: sell TSLA, then buy watchlisted SOXL.
  await page.locator('#strategyEditor .strategy-card button').last().click();
  const second=page.locator('#strategyEditor .trade-grid').nth(1);
@@ -77,8 +77,8 @@ try{
  await page.locator('#calculate').click();
  assert.match(await page.locator('#status').innerText(),/계산 완료/);
  assert.equal(JSON.parse(await page.locator('#terminal').inputValue()).SOXL,40,'Advanced terminal JSON must reflect the new ticker price');
- assert.match(await page.locator('#finalValuation').innerText(),/SOXL/);
- assert.match(await page.locator('#finalValuation').innerText(),/1,800|1800/);
+ assert.match(await page.locator('#finalValuation').textContent(),/SOXL/);
+ assert.match(await page.locator('#finalValuation').textContent(),/1,800|1800/);
  const summaryRows=await page.locator('#summary table tr').allTextContents();
  const row=label=>summaryRows.find(line=>line.includes(label))||'';
  assert.match(row('최종 현금'),/100.*200/);
@@ -102,7 +102,7 @@ try{
  await page.locator('#calculate').click();
  assert.doesNotMatch(await page.locator('#status').innerText(),/계산 완료/);
  assert.equal(await page.locator('#summary').innerText(),'','Invalid oversell must clear the previous successful summary');
- assert.equal(await page.locator('#finalValuation').innerText(),'','Invalid oversell must clear stale terminal valuation');
+ assert.equal(await page.locator('#finalValuation').textContent(),'','Invalid oversell must clear stale terminal valuation');
  assert.equal((await page.evaluate(()=>JSON.parse(localStorage.getItem('investlab_holdings'))))[0].shares,10);
  // Reject a buy larger than available cash, without altering real portfolio data.
  await trade.locator('[data-field="quantity"]').fill('2');
