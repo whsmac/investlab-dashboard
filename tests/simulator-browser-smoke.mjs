@@ -31,6 +31,19 @@ try{
  });
  await page.reload();
  assert.equal(await page.locator('#cash').inputValue(),'100');
+ // Missing market price must not break import; user supplies the terminal assumption.
+ await page.evaluate(()=>{
+  localStorage.setItem('investlab_holdings',JSON.stringify([
+   {symbol:'TSLA',shares:10,avg_cost:100},
+   {symbol:'USD-CASH',shares:100,avg_cost:1}
+  ]));
+ });
+ await page.reload();
+ assert.match(await page.locator('#positionLoadStatus').innerText(),/1개 종목/);
+ assert.equal(await page.locator('#priceEditor input[aria-label="최종가격"]').first().inputValue(),'');
+ assert.match(await page.locator('#initialValuation').innerText(),/합계 계산 대기/);
+ await page.locator('#priceEditor input[aria-label="최종가격"]').first().fill('150');
+
  assert.match(await page.locator('#positionLoadStatus').innerText(),/1개 종목/);
  assert.equal(await page.locator('#positionEditor input[aria-label="수량"]').first().inputValue(),'10');
  await page.locator('#strategyEditor .strategy-card button').last().click();
