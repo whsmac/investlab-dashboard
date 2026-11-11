@@ -175,7 +175,7 @@ function renderPortfolio(){
  updateInitialValuation();
 }
 byId('addPosition').addEventListener('click',()=>{portfolioState.positions.push({ticker:'',quantity:0,averageCost:0});renderPortfolio();});
-byId('addPrice').addEventListener('click',()=>{portfolioState.prices.push({ticker:'',price:0});renderPortfolio();});
+byId('addPrice').addEventListener('click',()=>{portfolioState.prices.push({ticker:'',price:''});renderPortfolio();});
 byId('applyPortfolioJson').addEventListener('click',()=>{
  try{
   const positions=JSON.parse(byId('positions').value),prices=JSON.parse(byId('terminal').value);
