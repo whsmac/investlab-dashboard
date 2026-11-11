@@ -284,11 +284,15 @@ function ensureTradePrices(){
  for(const strategy of strategyState)for(const trade of strategy.trades){
   const ticker=String(trade.ticker||'').trim().toUpperCase();
   if(!ticker||known.has(ticker))continue;
-  const existing=portfolioState.positions.find(p=>String(p.ticker).trim().toUpperCase()===ticker);
   portfolioState.prices.push({ticker,price:''});
   known.add(ticker);added++;
  }
- if(added){renderPortfolio();try{syncPortfolioJson();}catch{} /* Blank terminal prices are intentional until user enters them. */}
+ if(added){
+  renderPortfolio();
+  // Newly added symbols have no assumed terminal price yet. Keep the form
+  // editable and synchronize advanced JSON only when all inputs are valid.
+  if(portfolioState.prices.every(p=>p.price!==''&&p.price!==null&&p.price!==undefined))syncPortfolioJson();
+ }
  return added;
 }
 function addPreset(key){const next=clone(presets[key]);if(strategyState.some(s=>s.name===next.name))next.name+=' '+(strategyState.length+1);strategyState.push(next);renderEditor();}
