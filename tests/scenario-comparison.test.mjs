@@ -27,3 +27,26 @@ test('reject missing terminal prices, duplicate names and unfunded trades',()=>{
  assert.throws(()=>compareScenarios(portfolio,[{name:'x',trades:[]},{name:'x',trades:[]}],{TSLA:100}),/unique/);
  assert.throws(()=>compareScenarios(portfolio,[{name:'x',trades:[{side:'buy',ticker:'SOXL',quantity:1,price:100}]}],{TSLA:100,SOXL:100}),/insufficient cash/);
 });
+
+test('empty trade scenario matches unchanged portfolio and keeps original untouched',()=>{
+ const original={cash:500,positions:{TSLA:{quantity:2,averageCost:100},TQQQ:{quantity:3,averageCost:20}}};
+ const before=structuredClone(original);
+ const result=compareScenarios(original,[{name:'no changes',trades:[]}],{TSLA:150,TQQQ:40});
+ assert.equal(result.baseline.terminalValue,920);
+ assert.equal(result.scenarios[0].terminalValue,920);
+ assert.equal(result.scenarios[0].deltaVsHold,0);
+ assert.deepEqual(original,before);
+});
+test('sale then buy different ticker compares share changes and cash',()=>{
+ const original={cash:100,positions:{TSLA:{quantity:10,averageCost:100}}};
+ const result=compareScenarios(original,[{name:'rotation',trades:[
+  {side:'sell',ticker:'TSLA',quantity:2,price:200},
+  {side:'buy',ticker:'SOXL',quantity:10,price:30}
+ ]}],{TSLA:150,SOXL:40});
+ assert.equal(result.baseline.terminalValue,1600);
+ assert.equal(result.scenarios[0].terminalValue,1800);
+ assert.equal(result.scenarios[0].deltaVsHold,200);
+ assert.equal(result.scenarios[0].final.cash,200);
+ assert.equal(result.scenarios[0].final.positions.TSLA.quantity,8);
+ assert.equal(result.scenarios[0].final.positions.SOXL.quantity,10);
+});
