@@ -409,6 +409,8 @@ async function refreshFxAndCalculate(){
   fxRateSnapshot=null;
   byId('taxFx').value='';
   byId('fxStatus').textContent='환율 자동 조회 실패: '+error.message+' · 임의 환율을 적용하지 않았습니다.';
+  for(const id of ['resultHero','positionCompare','summary','strategies','strategyHoldings','taxBasis','taxStages','taxGainEditor','steps','holdings','finalValuation'])byId(id).replaceChildren();
+  byId('positionCompareTitle').hidden=true;
   byId('status').textContent='계산 중단: 최신 환율을 가져오지 못했습니다. 연결 상태를 확인하고 다시 시도하세요.';
   byId('status').className='error';
  }finally{button.disabled=false;}
