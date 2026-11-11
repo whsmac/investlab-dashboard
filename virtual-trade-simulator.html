@@ -10,7 +10,7 @@
  {"side":"sell","ticker":"TSLA","quantity":5,"price":200},
  {"side":"buy","ticker":"TSLA","quantity":10,"price":100}
 ]</textarea><p class="hint">여러 전략 비교(선택): 아래에 시나리오 배열을 입력하면 위 거래 목록 대신 전략별로 독립 계산합니다.</p><label for="alternatives">비교 전략 목록 (JSON 배열, 비우면 기존 거래 사용)</label><textarea id="alternatives" spellcheck="false" placeholder="여러 시나리오를 JSON 배열로 입력하세요."></textarea></details><p class="notice">USD 매매 평가와 KRW 세금 추정은 별도 · 미래 가격은 사용자 가정</p></section>
-<section class="panel wide"><h2>해외주식 양도세 추정 (선택)</h2><p class="hint">세금용 원화 실현손익을 전략별로 별도 입력합니다. USD 손익을 단순 환산하지 않습니다. 일반 과세계좌 예시이며 실제 세법·환율·취득원가 확인이 필요합니다.</p><button id="taxExample" type="button" style="max-width:290px;background:#38547c">세금 계산 예시 입력</button><p class="hint">예시를 입력한 뒤 시나리오 계산을 누르세요. 실제 세무자료가 아닌 시험값입니다.</p><label>기존 연간 실현손익 (KRW)</label><input id="priorTax" type="number" value="0"><label>기본공제 가정 (KRW)</label><input id="deduction" type="number" value="2500000"><label>세율 가정</label><input id="taxRate" type="number" step="0.01" value="0.22"><h3>전략별 매도 손익 직접 입력 (KRW)</h3><p class="simple-caption">매도 거래마다 원화 기준 손익을 입력합니다. 모든 칸이 비어 있으면 세금을 계산하지 않습니다.</p><div id="taxGainEditor"></div><details><summary>고급 입력: 세금용 JSON</summary><label for="taxGains">전략명별 원화 손익 배열</label><textarea id="taxGains" placeholder='{"상승장 단계별 매도":[500000,800000]}'></textarea><button type="button" id="applyTaxJson">JSON 입력 반영</button></details><p class="notice">세금용 손익 배열은 해당 전략의 매도 거래 건수와 순서가 같아야 합니다. 예상 세금은 현금에서 즉시 차감하지 않으며 USD 평가금액과 합산하지 않습니다.</p></section><section class="panel wide"><h2>결과 비교</h2><p id="status" role="status" aria-live="polite">계산 버튼을 누르세요.</p><div id="resultHero" class="result-hero"></div><h3 id="positionCompareTitle" hidden>종목별 보유수량 비교</h3><div id="positionCompare"></div><div id="summary"></div><details class="result-details"><summary>상세 분석표 펼치기 (종목별 평가·세금·거래 단계)</summary><h3>최종 가상 포트폴리오 상세 (첫 번째 전략)</h3><div id="finalValuation"></div><h3>전략별 비교</h3><div id="strategies"></div><h3>전략별 종목 수량·평가금액 변화</h3><div id="strategyHoldings"></div><h3>세금 계산 기준 및 환율</h3><div id="taxBasis"></div><h3>세금 단계별 추정 (입력된 전략)</h3><div id="taxStages"></div><h3>거래 단계별 변화 (첫 번째 전략)</h3><div id="steps"></div><h3>최종 종목별 보유수량</h3><div id="holdings"></div></details></section>
+<section class="panel wide"><h2>해외주식 양도세 추정 (선택)</h2><p class="hint">시나리오의 매도별 USD 실현손익을 입력 환율로 원화 환산하여 자동 추정합니다. 실제 세무 신고용 원화 취득가·양도가 계산과 다를 수 있습니다.</p><label>적용 환율 (KRW/USD)</label><input id="taxFx" type="number" min="0.01" step="any" value="1400"><label>기존 연간 실현손익 (KRW) — 다른 거래에서 이미 발생한 금액</label><input id="priorTax" type="number" value="0"><label>기본공제 가정 (KRW, 0 허용)</label><input id="deduction" type="number" min="0" value="2500000"><label>세율 가정</label><input id="taxRate" type="number" step="0.01" min="0" value="0.22"><h3>시나리오 매도별 자동 원화 실현손익</h3><div id="taxGainEditor"></div><p class="notice">자동 계산: 각 매도 USD 실현손익 × 입력 환율. 기존 연간 실현손익과 합산하여 세액을 추정합니다. 세액은 가상 현금에서 차감하지 않습니다.</p></section><section class="panel wide"><h2>결과 비교</h2><p id="status" role="status" aria-live="polite">계산 버튼을 누르세요.</p><div id="resultHero" class="result-hero"></div><h3 id="positionCompareTitle" hidden>종목별 보유수량 비교</h3><div id="positionCompare"></div><div id="summary"></div><details class="result-details"><summary>상세 분석표 펼치기 (종목별 평가·세금·거래 단계)</summary><h3>최종 가상 포트폴리오 상세 (첫 번째 전략)</h3><div id="finalValuation"></div><h3>전략별 비교</h3><div id="strategies"></div><h3>전략별 종목 수량·평가금액 변화</h3><div id="strategyHoldings"></div><h3>세금 계산 기준 및 환율</h3><div id="taxBasis"></div><h3>세금 단계별 추정 (입력된 전략)</h3><div id="taxStages"></div><h3>거래 단계별 변화 (첫 번째 전략)</h3><div id="steps"></div><h3>최종 종목별 보유수량</h3><div id="holdings"></div></details></section>
 </div>
 <script type="module">
 import {compareScenarios} from './src/simulator/scenario-comparison.mjs';
@@ -53,21 +53,19 @@ function calculate(){
   const missing=[...new Set([...Object.keys(positions),...scenarios.flatMap(s=>s.trades.map(t=>t.ticker))])].filter(t=>!Object.prototype.hasOwnProperty.call(prices,t));
   if(missing.length)throw Error('가상 거래 종목의 최종 가정 주가를 입력하세요: '+missing.join(', ')+'. 왼쪽의 「+ 종목 가격 추가」를 이용하세요.');
   const result=compareScenarios({cash,positions},scenarios,prices),scenario=result.scenarios[0];
-  const taxMap=readTaxForm();
-  if(!taxMap||typeof taxMap!=='object'||Array.isArray(taxMap))throw Error('세금용 손익은 JSON 객체여야 합니다.');
+  const fx=Number(byId('taxFx').value);
+  if(!byId('taxFx').value.trim()||!Number.isFinite(fx)||fx<=0)throw Error('적용 환율은 0보다 큰 숫자여야 합니다.');
   for(const id of ['priorTax','deduction','taxRate'])if(!byId(id).value.trim())throw Error('세금 계산 기준값을 입력하세요: '+id);
   const taxOpts={priorRealizedKrw:Number(byId('priorTax').value),annualDeductionKrw:Number(byId('deduction').value),taxRate:Number(byId('taxRate').value)};
-  const names=result.scenarios.map(s=>s.name);
-  if(new Set(names).size!==names.length)throw Error('비교 전략 이름은 서로 달라야 합니다.');
-  for(const name of Object.keys(taxMap))if(!names.includes(name))throw Error('세금용 손익의 전략명이 일치하지 않습니다: '+name);
-  const taxResults=result.scenarios.map(s=>{
-   if(!Object.prototype.hasOwnProperty.call(taxMap,s.name))return null;
-   const gains=taxMap[s.name];
-   if(!Array.isArray(gains))throw Error(s.name+' 세금용 손익은 배열이어야 합니다.');
-   const sellCount=s.steps.filter(step=>step.side==='sell').length;
-   if(gains.length!==sellCount)throw Error(s.name+'의 매도 거래 '+sellCount+'건과 세금용 손익 '+gains.length+'건이 일치하지 않습니다.');
-   return estimateOverseasStockTax({...taxOpts,hypotheticalGainsKrw:gains});
-  });
+  if(!Number.isFinite(taxOpts.priorRealizedKrw)||!Number.isFinite(taxOpts.annualDeductionKrw)||taxOpts.annualDeductionKrw<0||!Number.isFinite(taxOpts.taxRate)||taxOpts.taxRate<0||taxOpts.taxRate>1)throw Error('기존 손익, 기본공제(0 이상), 세율(0~1)을 확인하세요.');
+  const taxResults=result.scenarios.map(s=>estimateOverseasStockTax({...taxOpts,hypotheticalGainsKrw:s.steps.filter(step=>step.side==='sell').map(step=>Math.round(step.tradePnL*fx))}));
+  const taxEditor=byId('taxGainEditor');taxEditor.replaceChildren();
+  for(const sc of result.scenarios){
+   const title=document.createElement('h4');title.textContent=sc.name;taxEditor.append(title);
+   const rows=sc.steps.filter(step=>step.side==='sell').map((step,i)=>[String(i+1),step.ticker,fmt(step.quantity),fmt(step.tradePnL),fmt(Math.round(step.tradePnL*fx))]);
+   taxEditor.append(table(['매도 순서','종목','수량 (주)','실현손익 USD','환산 실현손익 KRW'],rows));
+   const total=document.createElement('p');total.textContent='시나리오 실현손익 합계: '+fmt(Math.round(sc.final.realizedPnL*fx))+' KRW (환율 '+fmt(fx)+')';taxEditor.append(total);
+  }
   const hero=byId('resultHero');hero.replaceChildren();
   for(const [label,value,css] of [
    ['계속 보유',fmt(result.baseline.terminalValue)+' USD',''],
@@ -126,9 +124,8 @@ function calculate(){
     taxResults[i]?fmt(taxResults[i].incrementalTaxKrw):'미입력']);
   byId('taxBasis').append(table(['전략','기존 실현손익 KRW','가상 실현손익 KRW','거래 전 예상세액 KRW','거래 후 예상세액 KRW','추가 예상세액 KRW'],basisRows));
   const fxNotice=document.createElement('p');fxNotice.className='notice';
-  fxNotice.textContent='적용 환율: 없음 (미입력). 원화 실현손익을 별도로 입력하는 방식이며, USD 손익을 원화로 자동 환산하지 않습니다.';
+  fxNotice.textContent='단순 적용 환율: '+fmt(fx)+' KRW/USD · 매도별 USD 실현손익을 동일 환율로 환산한 추정치입니다. 실제 신고 세액과 다를 수 있습니다.';
   byId('taxBasis').append(fxNotice);
-  if(taxResults.every(t=>t===null)){const note=document.createElement('p');note.className='notice';note.textContent='세금용 실현손익이 입력되지 않아 세액을 계산하지 않았습니다. 위의 세금 계산 예시 입력 버튼으로 기능을 시험할 수 있습니다.';byId('taxBasis').append(note);}
   const stageRows=taxResults.flatMap((tax,i)=>tax?tax.stages.map(stage=>[result.scenarios[i].name,stage.stage,fmt(stage.gainKrw),fmt(stage.cumulativeProjectedTaxKrw),fmt(stage.stageIncrementalTaxKrw)]):[]);
   if(stageRows.length)byId('taxStages').append(table(['전략','매도 순서','원화 실현손익','연간 예상 세액 KRW','직전 단계 대비 세액 변화 KRW'],stageRows));
   byId('steps').append(table(['순서','거래','종목','수량','체결가','거래 후 현금','누적 실현손익'],scenario.steps.map(s=>[s.index+1,s.side==='buy'?'매수':'매도',s.ticker,fmt(s.quantity),fmt(s.price),fmt(s.cash),fmt(s.cumulativeRealizedPnL)])));
@@ -369,76 +366,8 @@ byId('alternatives').addEventListener('change',()=>{
  catch(e){byId('editorStatus').textContent='JSON 입력 오류: '+e.message;}
 });
 
-// Tax form is keyed by strategy name and sell-order. No FX conversion is implied.
-const taxFormState=new Map();
-function renderTaxForm(){
- const root=byId('taxGainEditor');root.replaceChildren();
- for(const scenario of strategyState){
-  const name=scenario.name;
-  const sells=scenario.trades.filter(t=>t.side==='sell');
-  const box=document.createElement('div');box.className='strategy-card';
-  const title=document.createElement('strong');title.textContent=name+' · 매도 '+sells.length+'건';box.append(title);
-  const saved=taxFormState.get(name)||[];
-  sells.forEach((trade,index)=>{
-   const label=document.createElement('label');label.textContent=(index+1)+'번 매도 · '+trade.ticker+' '+trade.quantity+'주 · 원화 실현손익';
-   const input=document.createElement('input');input.type='number';input.step='1';
-   input.placeholder='예: 500000 또는 -100000';input.value=saved[index]??'';
-   input.dataset.taxScenario=name;input.dataset.taxIndex=String(index);
-   input.addEventListener('input',()=>{
-    const next=taxFormState.get(name)||[];next[index]=input.value;taxFormState.set(name,next);
-   });
-   box.append(label,input);
-  });
-  if(!sells.length){const note=document.createElement('p');note.className='hint';note.textContent='매도 없음';box.append(note);}
-  root.append(box);
- }
-}
-function readTaxForm(){
- const result={};
- for(const scenario of strategyState){
-  const inputs=[...byId('taxGainEditor').querySelectorAll('input')].filter(x=>x.dataset.taxScenario===scenario.name);
-  if(!inputs.length)continue;
-  const values=inputs.map(x=>x.value.trim());
-  if(values.every(v=>v===''))continue;
-  if(values.some(v=>v===''||!Number.isFinite(Number(v))))throw Error(scenario.name+' 매도 손익을 모두 입력하세요.');
-  result[scenario.name]=values.map(Number);
- }
- byId('taxGains').value=JSON.stringify(result,null,2);
- return result;
-}
-byId('applyTaxJson').addEventListener('click',()=>{
- try{
-  const data=JSON.parse(byId('taxGains').value||'{}');
-  if(!data||typeof data!=='object'||Array.isArray(data))throw Error('전략별 객체 형식이어야 합니다.');
-  const names=new Set(strategyState.map(s=>s.name));
-  for(const [name,values] of Object.entries(data)){
-   if(!names.has(name))throw Error('존재하지 않는 전략: '+name);
-   const expected=strategyState.find(s=>s.name===name).trades.filter(t=>t.side==='sell').length;
-   if(!Array.isArray(values)||values.length!==expected||values.some(v=>typeof v!=='number'||!Number.isFinite(v)))throw Error(name+'의 매도 건수 또는 손익을 확인하세요.');
-   taxFormState.set(name,values.map(String));
-  }
-  renderTaxForm();byId('status').textContent='세금 JSON을 입력창에 반영했습니다.';
- }catch(e){byId('status').textContent='세금 JSON 오류: '+e.message;byId('status').className='error';}
-});
-
 strategyState=[{name:'가상 거래 1',trades:[]}];renderEditor();ensureTradePrices();
 
-byId('taxExample').addEventListener('click',()=>{
- let scenarios;
- try{scenarios=readStrategies();
- if(!Array.isArray(scenarios))throw Error('비교 전략 목록은 배열이어야 합니다.');
- const example={};
- for(const s of scenarios){if(typeof s.name!=='string'||!Array.isArray(s.trades))throw Error('전략 이름 또는 거래 배열을 확인하세요.');
-  const sells=s.trades.filter(t=>t.side==='sell').length;
-  if(sells)example[s.name]=Array.from({length:sells},(_,i)=>500000+i*300000);
- }
- byId('priorTax').value='3000000';
- for(const [name,values] of Object.entries(example))taxFormState.set(name,values.map(String));
- renderTaxForm();byId('taxGains').value=JSON.stringify(example,null,2);
- byId('status').textContent='세금 계산 시험값을 입력했습니다. 시나리오 계산을 누르세요.';
- byId('status').className='hint';
- }catch(e){byId('status').textContent='예시 입력 실패: '+e.message;byId('status').className='error';}
-});
 byId('calculate').addEventListener('click',()=>{syncAdvanced();ensureTradePrices();calculate();});
 if(byId('cash').value.trim()&&portfolioState.positions.length&&portfolioState.prices.every(p=>p.price!==''))calculate();
 else byId('status').textContent='기준 보유정보와 시작 현금을 확인한 뒤 시나리오 계산을 누르세요.';
