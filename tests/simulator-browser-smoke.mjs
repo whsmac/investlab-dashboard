@@ -128,6 +128,24 @@ try{
  await page.route('https://open.er-api.com/v6/latest/USD',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({result:'success',base_code:'USD',rates:{KRW:1341.693922},time_last_update_unix:Math.floor(Date.now()/1000)})}));
  await calculateAndWait();
  assert.match(await page.locator('#status').innerText(),/계산 완료/);
+ // Reject stale exchange-rate data rather than silently reusing a prior rate.
+ await page.unroute('https://open.er-api.com/v6/latest/USD');
+ await page.route('https://open.er-api.com/v6/latest/USD',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({result:'success',base_code:'USD',rates:{KRW:1341.693922},time_last_update_unix:Math.floor(Date.now()/1000)-172801})}));
+ await calculateAndWait();
+ assert.match(await page.locator('#fxStatus').innerText(),/48시간보다 오래/);
+ assert.match(await page.locator('#status').innerText(),/계산 중단/);
+ assert.equal(await page.locator('#summary').innerText(),'');
+ assert.equal(await page.locator('#taxFx').inputValue(),'');
+ // Network policy or DNS failure is reported separately from an HTTP server error.
+ await page.unroute('https://open.er-api.com/v6/latest/USD');
+ await page.route('https://open.er-api.com/v6/latest/USD',route=>route.abort('failed'));
+ await calculateAndWait();
+ assert.match(await page.locator('#fxStatus').innerText(),/네트워크 정책 문제/);
+ assert.equal(await page.locator('#summary').innerText(),'');
+ await page.unroute('https://open.er-api.com/v6/latest/USD');
+ await page.route('https://open.er-api.com/v6/latest/USD',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({result:'success',base_code:'USD',rates:{KRW:1341.693922},time_last_update_unix:Math.floor(Date.now()/1000)})}));
+ await calculateAndWait();
+ assert.match(await page.locator('#status').innerText(),/계산 완료/);
  // Reject an oversell without changing original holdings or leaving a success message.
  await trade.locator('[data-field="quantity"]').fill('999');
  await calculateAndWait();
