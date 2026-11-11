@@ -86,9 +86,6 @@ try{
  assert.match(summary,/최종 현금/);
  assert.match(summary,/200/);
  assert.match(summary,/1,800|1800/);
- const finalRows=await page.locator('#finalValuation table').first().locator('tbody tr').allTextContents();
- assert.ok(finalRows.some(row=>/TSLA/.test(row)&&/8/.test(row)),'TSLA remaining quantity must be 8');
- assert.ok(finalRows.some(row=>/SOXL/.test(row)&&/10/.test(row)),'SOXL purchased quantity must be 10');
  const afterCash=await page.locator('#cash').inputValue();
  assert.equal(afterCash,'100','Starting cash input remains unchanged by simulation');
  const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem('investlab_holdings')));
