@@ -70,6 +70,8 @@ try{
  await page.locator('#calculate').click();
  // The first calculation intentionally requests a terminal assumption for the new ticker.
  assert.match(await page.locator('#status').innerText(),/SOXL/);
+ assert.doesNotMatch(await page.locator('#status').innerText(),/계산 완료/,'Missing price must not report success');
+ assert.equal(await page.locator('#summary').innerText(),'','Missing price must clear previous results');
  await page.locator('#priceEditor .simple-row').last().locator('input[aria-label="최종가격"]').fill('40');
  await page.locator('#calculate').click();
  assert.match(await page.locator('#status').innerText(),/계산 완료/);
