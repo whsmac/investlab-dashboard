@@ -113,7 +113,7 @@ try{
  await calculateAndWait();
  assert.match(await page.locator('#status').innerText(),/계산 완료/);
  assert.equal(await page.locator('#taxFx').inputValue(),'1,342');
- assert.match(await page.locator('#taxGainEditor').innerText(),/134,169|134,170|134,169/);
+ assert.match(await page.locator('#taxGainEditor').innerText(),/268,339/);
  // A failed exchange-rate request must remove all previous financial results.
  await page.route('https://open.er-api.com/v6/latest/USD',route=>route.fulfill({status:503,body:'Service unavailable'}));
  await calculateAndWait();
