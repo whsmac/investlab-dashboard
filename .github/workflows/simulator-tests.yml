@@ -35,6 +35,7 @@ jobs:
           node --check src/simulator/managed-symbols.mjs
           node --check src/simulator/virtual-trade-engine.mjs
           node --check src/simulator/scenario-comparison.mjs
+          node --check tests/simulator-browser-smoke.mjs
       - name: Install Playwright browser
         run: |
           npm install --no-save playwright
