@@ -94,8 +94,20 @@ test('FX is fetched once at calculation, displays quote timestamp and fails clos
  assert.match(html,/data\?\.rates\?\.KRW/);
  assert.match(html,/time_last_update_unix/);
  assert.match(html,/age>172800/);
- assert.match(html,/byId\('taxFx'\)\.value=String\(rate\)/);
+ assert.match(html,/fxRateSnapshot=rate/);
  assert.match(html,/byId\('taxFx'\)\.value=''/);
  assert.match(html,/id="taxFx"[^>]*readonly/);
  assert.doesNotMatch(html,/id="taxFx"[^>]*value="1400"/);
+});
+
+
+test('rounded FX display preserves raw rate and tax money fields use comma formatting',()=>{
+ assert.match(html,/byId\('taxFx'\)\.value=Math\.round\(rate\)\.toLocaleString\('ko-KR'\)/);
+ assert.match(html,/const fx=fxRateSnapshot/);
+ assert.match(html,/id="priorTax" type="text" inputmode="decimal"/);
+ assert.match(html,/id="deduction" type="text" inputmode="decimal" value="2,500,000"/);
+ assert.match(html,/function parseTaxMoney\(id\)/);
+ assert.match(html,/replaceAll\(',',''\)/);
+ assert.match(html,/priorRealizedKrw:parseTaxMoney\('priorTax'\)/);
+ assert.match(html,/annualDeductionKrw:parseTaxMoney\('deduction'\)/);
 });
