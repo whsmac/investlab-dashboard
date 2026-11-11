@@ -281,6 +281,12 @@ function renderEditor(){
   const columns=document.createElement('div');columns.className='trade-head';
   for(const label of ['구분','종목코드','수량 (주)','체결가 ($)','']){const cell=document.createElement('span');cell.textContent=label;columns.append(cell);}
   card.append(columns);
+  const reserveBar=document.createElement('div');reserveBar.className='buy-helper';
+  const reserveLabel=document.createElement('label');reserveLabel.textContent='이 전략에서 매수 후 남길 목표 현금 (USD)';
+  const reserve=document.createElement('input');reserve.type='number';reserve.min='0';reserve.step='any';reserve.value=String(strategy.targetCash??0);reserve.setAttribute('aria-label','전략 목표 잔여 현금 USD');
+  reserve.addEventListener('input',()=>{strategy.targetCash=reserve.value;});
+  const reserveHint=document.createElement('span');reserveHint.textContent='매수 가능 수량 계산 시 모든 매수 거래에 공통 적용';reserveHint.style.fontSize='12px';
+  reserveBar.append(reserveLabel,reserve,reserveHint);card.append(reserveBar);
   strategy.trades.forEach((trade,ti)=>{
    const row=document.createElement('div');row.className='trade-grid';
    const side=document.createElement('select');side.dataset.field='side';
@@ -297,8 +303,6 @@ function renderEditor(){
    }
    const del=document.createElement('button');del.type='button';del.textContent='삭제';del.addEventListener('click',()=>{strategy.trades.splice(ti,1);renderEditor();});row.append(del);card.append(row);
    const helper=document.createElement('div');helper.className='buy-helper';helper.hidden=trade.side!=='buy';
-   const reserveLabel=document.createElement('label');reserveLabel.textContent='매수 후 남길 목표 현금 (USD)';
-   const reserve=document.createElement('input');reserve.type='number';reserve.min='0';reserve.step='any';reserve.value='0';reserve.setAttribute('aria-label','목표 잔여 현금 USD');
    const auto=document.createElement('button');auto.type='button';auto.textContent='매수 가능 최대 수량 계산';
    const info=document.createElement('output');info.setAttribute('aria-live','polite');
    auto.addEventListener('click',()=>{
@@ -322,7 +326,7 @@ function renderEditor(){
      if(target>available)info.textContent+=' (목표 현금이 현재 현금보다 큽니다)';
     }catch(error){info.textContent='계산 불가: '+error.message;}
    });
-   helper.append(reserveLabel,reserve,auto,info);card.append(helper);
+   helper.append(auto,info);card.append(helper);
    side.addEventListener('change',()=>{helper.hidden=side.value!=='buy';});
 
   });
