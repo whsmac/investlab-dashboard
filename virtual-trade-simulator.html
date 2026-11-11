@@ -41,7 +41,7 @@ function calculate(){
   if(!byId('cash').value.trim()||!Number.isFinite(cash)||cash<0)throw new Error('시작 현금은 0 이상의 숫자여야 합니다.');
   const {positions,prices}=syncPortfolioJson();
   const scenarios=readStrategies();
-  const missing=[...new Set(scenarios.flatMap(s=>s.trades.map(t=>t.ticker)))].filter(t=>!Object.prototype.hasOwnProperty.call(prices,t));
+  const missing=[...new Set([...Object.keys(positions),...scenarios.flatMap(s=>s.trades.map(t=>t.ticker))])].filter(t=>!Object.prototype.hasOwnProperty.call(prices,t));
   if(missing.length)throw Error('가상 거래 종목의 최종 가정 주가를 입력하세요: '+missing.join(', ')+'. 왼쪽의 「+ 종목 가격 추가」를 이용하세요.');
   const result=compareScenarios({cash,positions},scenarios,prices),scenario=result.scenarios[0];
   const taxMap=readTaxForm();
@@ -127,7 +127,7 @@ function portfolioJson(){
   const ticker=String(p.ticker).trim().toUpperCase();
   if(!ticker)throw Error('가정 주가의 종목명을 입력하세요.');
   if(Object.prototype.hasOwnProperty.call(prices,ticker))throw Error('가정 주가 중복: '+ticker);
-  if(p.price===''||!Number.isFinite(Number(p.price))||Number(p.price)<0)throw Error(ticker+' 최종 가정 주가는 0 이상의 숫자여야 합니다.');
+  if(p.price===''||p.price===null||!Number.isFinite(Number(p.price))||Number(p.price)<0)throw Error(ticker+' 최종 가정 주가는 0 이상의 숫자여야 합니다.');
   prices[ticker]=Number(p.price);
  }
  return {positions,prices};
@@ -207,12 +207,12 @@ function loadPortfolioPositions(){
   if(known.has(p.ticker))continue;
   const raw=sourcePrices.get(p.ticker);
   const valid=raw!==null&&raw!==undefined&&raw!==''&&Number.isFinite(Number(raw))&&Number(raw)>0;
-  portfolioState.prices.push({ticker:p.ticker,price:valid?Number(raw):p.averageCost});
+  portfolioState.prices.push({ticker:p.ticker,price:valid?Number(raw):''});
   known.add(p.ticker);
  }
   renderPortfolio();
  syncPortfolioJson();
- byId('positionLoadStatus').textContent='현재 보유 '+positions.length+'개 종목의 수량과 평균 취득단가를 읽기 전용으로 불러왔습니다. 기존 가정 주가는 유지하고 신규 종목에만 종목관리 가격 또는 평균 취득단가를 임시 적용했습니다. 실제 현재가 여부를 확인하세요. 가정 주가와 전략 거래를 확인한 뒤 계산하세요.';
+ byId('positionLoadStatus').textContent='현재 보유 '+positions.length+'개 종목의 수량과 평균 취득단가를 읽기 전용으로 불러왔습니다. 기존 가정 주가는 유지하고 신규 종목에만 종목관리 가격을 적용했습니다. 가격 정보가 없으면 비워 두었으므로 최종 가정 주가를 직접 입력하세요. 가정 주가와 전략 거래를 확인한 뒤 계산하세요.';
 }
 byId('loadPortfolioPositions').addEventListener('click',loadPortfolioPositions);
 loadPortfolioPositions();
@@ -283,8 +283,7 @@ function ensureTradePrices(){
   const ticker=String(trade.ticker||'').trim().toUpperCase();
   if(!ticker||known.has(ticker))continue;
   const existing=portfolioState.positions.find(p=>String(p.ticker).trim().toUpperCase()===ticker);
-  const fallback=existing?Number(existing.averageCost):Number(trade.price);
-  portfolioState.prices.push({ticker,price:Number.isFinite(fallback)&&fallback>0?fallback:0});
+  portfolioState.prices.push({ticker,price:''});
   known.add(ticker);added++;
  }
  if(added){renderPortfolio();syncPortfolioJson();}
@@ -370,6 +369,6 @@ byId('taxExample').addEventListener('click',()=>{
  }catch(e){byId('status').textContent='예시 입력 실패: '+e.message;byId('status').className='error';}
 });
 byId('calculate').addEventListener('click',()=>{syncAdvanced();ensureTradePrices();calculate();});
-if(byId('cash').value.trim()&&portfolioState.positions.length)calculate();
+if(byId('cash').value.trim()&&portfolioState.positions.length&&portfolioState.prices.every(p=>p.price!==''))calculate();
 else byId('status').textContent='기준 보유정보와 시작 현금을 확인한 뒤 시나리오 계산을 누르세요.';
 </script></body></html>
