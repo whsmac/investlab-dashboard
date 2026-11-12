@@ -30,6 +30,7 @@ page.on('pageerror',e=>errors.push(e.message));
 try{
  await page.goto('http://127.0.0.1:'+server.address().port+'/virtual-trade-simulator.html');
  assert.match(await page.locator('body').innerText(),/저장된 전략 불러오기는 현재 편집 중인 전략을 교체하므로, 유지할 내용은 먼저 저장하세요/);
+ for(const id of ['savedScenarioList','loadScenario','appendScenario','deleteScenario'])assert.equal(await page.locator('#'+id).isDisabled(),true,'Empty saved list must disable '+id);
  await page.evaluate(()=>{
   localStorage.setItem('investlab_holdings',JSON.stringify([
    {symbol:'TSLA',shares:10,avg_cost:100,price:150},
@@ -259,6 +260,7 @@ try{
  await page.locator('#scenarioName').fill('TSLA 재매수 검증');
  await page.locator('#saveScenario').click();
  assert.match(await page.locator('#scenarioStorageStatus').innerText(),/저장했습니다/);
+ for(const id of ['savedScenarioList','loadScenario','appendScenario','deleteScenario'])assert.equal(await page.locator('#'+id).isEnabled(),true,'Saving must enable '+id);
  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('investlab_simulator_saved_scenarios_v1')));
  assert.ok(saved['TSLA 재매수 검증']);
  assert.equal(await page.evaluate(()=>localStorage.getItem('investlab_holdings')),holdingsBeforeSave);
@@ -442,6 +444,7 @@ try{
  assert.match(await page.locator('#scenarioStorageStatus').innerText(),/삭제했습니다/);
  assert.equal(await page.locator('#strategyEditor .strategy-card').first().locator('.strategy-name').inputValue(),editorBeforeDelete,'Deleting saved scenario must not remove active editor strategy');
  assert.equal(await page.locator('#savedScenarioList option').count(),0);
+ for(const id of ['savedScenarioList','loadScenario','appendScenario','deleteScenario'])assert.equal(await page.locator('#'+id).isDisabled(),true,'Deleting last saved scenario must disable '+id);
  assert.equal(await page.evaluate(()=>localStorage.getItem('investlab_holdings')),holdingsBeforeSave);
  assert.deepEqual(remoteRequests,[],'Simulation must not contact Supabase');
  assert.deepEqual(errors,[]);
