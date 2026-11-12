@@ -10,7 +10,7 @@
  {"side":"sell","ticker":"TSLA","quantity":5,"price":200},
  {"side":"buy","ticker":"TSLA","quantity":10,"price":100}
 ]</textarea><p class="hint">여러 전략 비교(선택): 아래에 시나리오 배열을 입력하면 위 거래 목록 대신 전략별로 독립 계산합니다.</p><label for="alternatives">비교 전략 목록 (JSON 배열, 비우면 기존 거래 사용)</label><textarea id="alternatives" spellcheck="false" placeholder="여러 시나리오를 JSON 배열로 입력하세요."></textarea></details><p class="notice">USD 매매 평가와 KRW 세금 추정은 별도 · 미래 가격은 사용자 가정</p></section>
-<section class="panel wide"><h2>해외주식 양도세 추정 (선택)</h2><p class="hint">시나리오의 매도별 USD 실현손익을 입력 환율로 원화 환산하여 자동 추정합니다. 실제 세무 신고용 원화 취득가·양도가 계산과 다를 수 있습니다.</p><label>계산 시 자동 조회 환율 (KRW/USD)</label><input id="taxFx" type="text" readonly value="" placeholder="시나리오 계산 시 최신 공개 환율 조회"><p id="fxStatus" class="hint" role="status">환율은 계산 버튼을 누를 때 조회합니다. 공개 API의 최근 갱신 환율이며 실시간 체결 호가는 아닙니다.</p><label>기존 연간 실현손익 (KRW) — 다른 거래에서 이미 발생한 금액</label><input id="priorTax" type="text" inputmode="decimal" value="0"><label>기본공제 가정 (KRW, 0 허용)</label><input id="deduction" type="text" inputmode="decimal" value="2,500,000"><label>세율 가정</label><input id="taxRate" type="number" step="0.01" min="0" value="0.22"><h3>시나리오 매도별 자동 원화 실현손익</h3><div id="taxGainEditor"></div><p class="notice">자동 계산: 각 매도 USD 실현손익 × 입력 환율. 기존 연간 실현손익과 합산하여 세액을 추정합니다. 세액은 가상 현금에서 차감하지 않습니다.</p></section><section class="panel wide"><h2>결과 비교</h2><p id="status" role="status" aria-live="polite">계산 버튼을 누르세요.</p><div id="resultHero" class="result-hero"></div><h3 id="positionCompareTitle" hidden>종목별 보유수량 비교</h3><div id="positionCompare"></div><div id="summary"></div><details class="result-details"><summary>상세 분석표 펼치기 (종목별 평가·세금·거래 단계)</summary><h3>최종 가상 포트폴리오 상세 (첫 번째 전략)</h3><div id="finalValuation"></div><h3>전략별 비교</h3><div id="strategies"></div><h3>전략별 종목 수량·평가금액 변화</h3><div id="strategyHoldings"></div><h3>세금 계산 기준 및 환율</h3><div id="taxBasis"></div><h3>세금 단계별 추정 (입력된 전략)</h3><div id="taxStages"></div><h3>거래 단계별 변화 (첫 번째 전략)</h3><div id="steps"></div><h3>최종 종목별 보유수량</h3><div id="holdings"></div></details></section>
+<section class="panel wide"><h2>해외주식 양도세 추정 (선택)</h2><p class="hint">시나리오의 매도별 USD 실현손익을 입력 환율로 원화 환산하여 자동 추정합니다. 실제 세무 신고용 원화 취득가·양도가 계산과 다를 수 있습니다.</p><label>계산 시 자동 조회 환율 (KRW/USD)</label><input id="taxFx" type="text" readonly value="" placeholder="시나리오 계산 시 최신 공개 환율 조회"><p id="fxStatus" class="hint" role="status">환율은 계산 버튼을 누를 때 조회합니다. 공개 API의 최근 갱신 환율이며 실시간 체결 호가는 아닙니다.</p><label>기존 연간 실현손익 (KRW) — 다른 거래에서 이미 발생한 금액</label><input id="priorTax" type="text" inputmode="decimal" value="0"><label>기본공제 가정 (KRW, 0 허용)</label><input id="deduction" type="text" inputmode="decimal" value="2,500,000"><label>세율 가정</label><input id="taxRate" type="number" step="0.01" min="0" value="0.22"><h3>시나리오 매도별 자동 원화 실현손익</h3><div id="taxGainEditor"></div><p class="notice">자동 계산: 각 매도 USD 실현손익 × 입력 환율. 기존 연간 실현손익과 합산하여 세액을 추정합니다. 세액은 가상 현금에서 차감하지 않습니다.</p></section><section class="panel wide"><h2>결과 비교</h2><p id="status" role="status" aria-live="polite">계산 버튼을 누르세요.</p><div id="resultHero" class="result-hero"></div><h3 id="allStrategyTitle" hidden>전체 전략 핵심 비교</h3><div id="allStrategySummary"></div><h3 id="positionCompareTitle" hidden>종목별 보유수량 비교</h3><div id="positionCompare"></div><div id="summary"></div><details class="result-details"><summary>상세 분석표 펼치기 (종목별 평가·세금·거래 단계)</summary><h3>최종 가상 포트폴리오 상세 (첫 번째 전략)</h3><div id="finalValuation"></div><h3>전략별 비교</h3><div id="strategies"></div><h3>전략별 종목 수량·평가금액 변화</h3><div id="strategyHoldings"></div><h3>세금 계산 기준 및 환율</h3><div id="taxBasis"></div><h3>세금 단계별 추정 (입력된 전략)</h3><div id="taxStages"></div><h3>거래 단계별 변화 (첫 번째 전략)</h3><div id="steps"></div><h3>최종 종목별 보유수량</h3><div id="holdings"></div></details></section>
 </div>
 <script type="module">
 import {compareScenarios} from './src/simulator/scenario-comparison.mjs';
@@ -42,6 +42,7 @@ const fmt=v=>Number(v).toLocaleString('ko-KR',{maximumFractionDigits:8});
 const table=(headers,rows)=>{const t=document.createElement('table'),thead=t.createTHead(),tr=thead.insertRow();for(const h of headers){const th=document.createElement('th');th.textContent=h;tr.append(th);}const body=t.createTBody();for(const row of rows){const r=body.insertRow();for(const value of row){const cell=r.insertCell();cell.textContent=String(value);}}return t;};
 function calculate(){
  byId('resultHero').replaceChildren();
+ byId('allStrategySummary').replaceChildren();byId('allStrategyTitle').hidden=true;
  byId('positionCompare').replaceChildren();
  byId('positionCompareTitle').hidden=true;
  for(const id of ['summary','strategies','strategyHoldings','taxBasis','taxStages','taxGainEditor','steps','holdings','finalValuation'])byId(id).replaceChildren();
@@ -65,6 +66,16 @@ function calculate(){
    const rows=sc.steps.filter(step=>step.side==='sell').map((step,i)=>[String(i+1),step.ticker,fmt(step.quantity),fmt(step.tradePnL),fmt(Math.round(step.tradePnL*fx))]);
    taxEditor.append(table(['매도 순서','종목','수량 (주)','실현손익 USD','환산 실현손익 KRW'],rows));
    const total=document.createElement('p');total.textContent='시나리오 실현손익 합계: '+fmt(Math.round(sc.final.realizedPnL*fx))+' KRW (환율 '+fmt(fx)+')';taxEditor.append(total);
+  }
+  if(result.scenarios.length>1){
+   byId('allStrategyTitle').hidden=false;
+   byId('allStrategySummary').append(table(['비교 항목','계속 보유',...result.scenarios.map(s=>s.name)],[
+    ['최종 현금 USD',fmt(result.baseline.final.cash),...result.scenarios.map(s=>fmt(s.final.cash))],
+    ['최종 평가총액 USD',fmt(result.baseline.terminalValue),...result.scenarios.map(s=>fmt(s.terminalValue))],
+    ['보유 대비 차이 USD','—',...result.scenarios.map(s=>fmt(s.deltaVsHold))],
+    ['누적 실현손익 USD','0',...result.scenarios.map(s=>fmt(s.final.realizedPnL))],
+    ['추가 예상 양도세 KRW','—',...taxResults.map(t=>fmt(t.incrementalTaxKrw))]
+   ]));
   }
   const hero=byId('resultHero');hero.replaceChildren();
   for(const [label,value,css] of [
@@ -448,6 +459,7 @@ let fxRateSnapshot=null;
 let simulatorInputRevision=0;
 // User edits invalidate previous results, even before another FX request starts.
 function invalidateCalculatedResults(){
+ byId('allStrategySummary').replaceChildren();byId('allStrategyTitle').hidden=true;
  fxRateSnapshot=null;
  byId('taxFx').value='';
  for(const id of ['resultHero','positionCompare','summary','strategies','strategyHoldings','taxBasis','taxStages','taxGainEditor','steps','holdings','finalValuation'])byId(id).replaceChildren();
