@@ -73,3 +73,30 @@ test('phase-1 integrated real-style holdings, cash and rotation comparison',()=>
  assert.equal(scenario.steps[1].cash,5500);
  assert.deepEqual(original,saved);
 });
+
+test('transaction fees can reverse pretax strategy ranking without changing actual holdings',()=>{
+ const original={cash:100,positions:{TSLA:{quantity:2,averageCost:100}}};
+ const before=structuredClone(original);
+ const result=compareScenarios(original,[
+  {name:'저수수료',trades:[{side:'sell',ticker:'TSLA',quantity:1,price:200,fee:1},{side:'buy',ticker:'SOXL',quantity:5,price:30,fee:1}]},
+  {name:'고수수료',trades:[{side:'sell',ticker:'TSLA',quantity:1,price:200,fee:15},{side:'buy',ticker:'SOXL',quantity:5,price:30,fee:15}]}
+ ],{TSLA:150,SOXL:40});
+ assert.equal(result.baseline.terminalValue,400);
+ assert.deepEqual(result.scenarios.map(s=>s.terminalValue),[498,470]);
+ assert.deepEqual(result.scenarios.map(s=>s.deltaVsHold),[98,70]);
+ assert.deepEqual(result.scenarios.map(s=>s.final.cash),[148,120]);
+ assert.deepEqual(result.scenarios.map(s=>s.final.positions.SOXL.quantity),[5,5]);
+ assert.deepEqual(result.scenarios.map(s=>s.final.realizedPnL),[99,85]);
+ assert.deepEqual(original,before,'Scenario comparison must never write to actual holdings');
+});
+
+test('fee-bearing saved-style trade objects retain valuation and cash when re-compared',()=>{
+ const original={cash:100,positions:{TSLA:{quantity:2,averageCost:100}}};
+ const scenarios=[{name:'수수료 저장',trades:[{side:'sell',ticker:'TSLA',quantity:1,price:200,fee:5},{side:'buy',ticker:'SOXL',quantity:3,price:30,fee:2}]}];
+ const before=compareScenarios(original,scenarios,{TSLA:150,SOXL:40});
+ const restored=JSON.parse(JSON.stringify(scenarios));
+ const after=compareScenarios(original,restored,{TSLA:150,SOXL:40});
+ assert.deepEqual(after,before);
+ assert.equal(after.scenarios[0].final.cash,203);
+ assert.equal(after.scenarios[0].terminalValue,473);
+});
