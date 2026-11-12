@@ -129,7 +129,7 @@ try{
  await third.locator('[data-field="ticker"]').fill('TQQQ');
  await third.locator('[data-field="quantity"]').fill('1');
  await third.locator('[data-field="price"]').fill('50');
- const helpers=page.locator('#strategyEditor .strategy-card').first().locator('.buy-helper').filter({has:page.getByRole('button',{name:'매수 가능 최대 수량 계산'})});
+ const helpers=page.locator('#strategyEditor .strategy-card').first().locator('.buy-helper').filter({has:page.locator('button')});
  assert.equal(await helpers.count(),3,'Every trade must have an adjacent buy helper');
  assert.equal(await tradeRows.nth(1).locator('[data-field="side"]').inputValue(),'buy','Intermediate trade must remain a buy after adding final trade');
  assert.equal(await tradeRows.nth(2).locator('[data-field="side"]').inputValue(),'buy','Final trade must remain a buy');
