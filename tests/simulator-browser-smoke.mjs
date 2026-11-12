@@ -277,6 +277,20 @@ try{
  assert.equal(await page.locator('#allStrategySummary .strategy-overview-table').count(),1);
  assert.match(await page.locator('#scenarioStorageStatus').innerText(),/비교 목록에 추가했습니다/);
  assert.equal(await page.evaluate(()=>localStorage.getItem('investlab_holdings')),holdingsBeforeSave);
+ // Appending the same saved strategy creates identical alternatives: both
+ // pretax and incremental-tax-adjusted rankings must report a shared first place.
+ const tiedRanking=await page.locator('#strategyRanking').innerText();
+ assert.match(tiedRanking,/세전 평가총액 1위 \(공동 2개\)/);
+ assert.match(tiedRanking,/추가 예상세액 반영 1위 \(공동 2개\)/);
+ assert.match(tiedRanking,/두 기준의 1위가 같습니다/);
+ // Editing any strategy assumption invalidates the previously calculated ranks.
+ const originalName=await page.locator('#strategyEditor .strategy-card').first().locator('.strategy-name').inputValue();
+ await page.locator('#strategyEditor .strategy-card').first().locator('.strategy-name').fill(originalName+' 변경');
+ assert.equal(await page.locator('#strategyRanking').isVisible(),false);
+ assert.equal(await page.locator('#strategyRanking').innerText(),'');
+ await page.locator('#strategyEditor .strategy-card').first().locator('.strategy-name').fill(originalName);
+ await calculateAndWait();
+ assert.match(await page.locator('#status').innerText(),/계산 완료/);
  // Ranking inversion: strategy B has $5 more pretax value but realizes an extra
  // $500 gain, so its estimated incremental tax makes strategy A the net leader.
  const firstStrategyName=await page.locator('#strategyEditor .strategy-card').first().locator('.strategy-name').inputValue();
