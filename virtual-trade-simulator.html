@@ -429,7 +429,7 @@ byId('addStrategy').addEventListener('click',()=>{strategyState.push({name:'새 
 byId('presetRise').addEventListener('click',()=>addPreset('rise'));
 byId('presetDip').addEventListener('click',()=>addPreset('dip'));
 byId('alternatives').addEventListener('change',()=>{
- try{const value=JSON.parse(byId('alternatives').value);if(!Array.isArray(value)||!value.every(s=>s&&typeof s.name==='string'&&Array.isArray(s.trades)))throw Error('전략 배열 형식이 아닙니다.');strategyState=clone(value).map(s=>({...s,trades:s.trades.map(({fee,...trade})=>trade)}));renderEditor();byId('editorStatus').textContent='JSON을 전략 편집기에 반영했습니다.';}
+ try{const value=JSON.parse(byId('alternatives').value);if(!Array.isArray(value)||!value.every(s=>s&&typeof s.name==='string'&&Array.isArray(s.trades)))throw Error('전략 배열 형식이 아닙니다.');strategyState=clone(value);renderEditor();byId('editorStatus').textContent='JSON을 전략 편집기에 반영했습니다.';}
  catch(e){byId('editorStatus').textContent='JSON 입력 오류: '+e.message;}
 });
 
