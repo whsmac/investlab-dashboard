@@ -423,6 +423,9 @@ function refreshSavedScenarioList(){
   const option=document.createElement('option');option.value=name;option.textContent=name;list.append(option);
  }
  if([...list.options].some(option=>option.value===selected))list.value=selected;
+ const hasSaved=list.options.length>0;
+ for(const id of ['loadScenario','appendScenario','deleteScenario'])byId(id).disabled=!hasSaved;
+ list.disabled=!hasSaved;
 }
 function validateSavedStrategy(value){
  if(!Array.isArray(value)||!value.length||value.length>30)throw Error('전략은 1~30개여야 합니다.');
