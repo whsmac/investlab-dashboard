@@ -93,3 +93,29 @@ test('scenario comparison identifies the exact failing trade and strategy withou
  assert.equal(portfolio.cash,10);
  assert.equal(portfolio.positions.TSLA.quantity,2);
 });
+
+test('buy fees reduce affordable shares and never allow negative cash at the boundary', () => {
+ const portfolio={cash:100,positions:{}};
+ const funded=simulateTrades(portfolio,[{side:'buy',ticker:'SOXL',quantity:9,price:10,fee:5}]);
+ assert.equal(funded.final.cash,5);
+ assert.equal(funded.final.positions.SOXL.quantity,9);
+ assert.equal(funded.final.positions.SOXL.averageCost,95/9);
+ assert.equal(funded.steps[0].fee,5);
+ assert.throws(()=>simulateTrades(portfolio,[{side:'buy',ticker:'SOXL',quantity:10,price:10,fee:5}]),/insufficient cash at 0/);
+ assert.deepEqual(portfolio,{cash:100,positions:{}},'A rejected buy must not mutate the starting portfolio');
+});
+
+test('sell fees reduce the next buy budget and reserved cash survives a fee-charged rotation', () => {
+ const portfolio={cash:100,positions:{TSLA:{quantity:2,averageCost:100}}};
+ const steps=[
+  {side:'sell',ticker:'TSLA',quantity:2,price:200,fee:5},
+  {side:'buy',ticker:'SOXL',quantity:9,price:30,fee:5}
+ ];
+ const result=simulateTrades(portfolio,steps);
+ assert.equal(result.steps[0].cash,495,'Sale proceeds must be net of fee');
+ assert.equal(result.steps[1].cash,220,'Buy fee must be deducted from cash');
+ assert.equal(result.final.positions.SOXL.averageCost,275/9,'Buy fee must enter average acquisition cost');
+ assert.equal(result.final.realizedPnL,195,'Sale fee must reduce realized gains');
+ assert.throws(()=>simulateTrades(portfolio,[steps[0],{side:'buy',ticker:'SOXL',quantity:10,price:30,fee:200}]),/insufficient cash at 1/);
+ assert.equal(portfolio.positions.TSLA.quantity,2);
+});
