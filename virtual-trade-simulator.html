@@ -426,10 +426,11 @@ async function refreshFxAndCalculate(){
   fxRateSnapshot=null;
   byId('taxFx').value='';
   const reason=error?.name==='AbortError'?'8초 내 환율 서버 응답이 없습니다.':error instanceof TypeError?'환율 서버 연결 또는 브라우저 네트워크 정책 문제입니다.':error.message;
-  byId('fxStatus').textContent='환율 자동 조회 실패: '+reason+' · 임의 환율을 적용하지 않았습니다.';
+  const inputsChanged=simulatorInputRevision!==inputRevisionAtStart;
+  byId('fxStatus').textContent=inputsChanged?'계산 취소: 환율 조회 중 시나리오 입력값이 변경되었습니다. 현재 입력값으로 다시 계산해 주세요.':'환율 자동 조회 실패: '+reason+' · 임의 환율을 적용하지 않았습니다.';
   for(const id of ['resultHero','positionCompare','summary','strategies','strategyHoldings','taxBasis','taxStages','taxGainEditor','steps','holdings','finalValuation'])byId(id).replaceChildren();
   byId('positionCompareTitle').hidden=true;
-  byId('status').textContent=simulatorInputRevision!==inputRevisionAtStart?'계산 중단: 환율 조회 중 시나리오 입력값이 변경되었습니다. 다시 계산해 주세요.':'계산 중단: 최신 환율을 가져오지 못했습니다. 연결 상태를 확인하고 다시 시도하세요.';
+  byId('status').textContent=inputsChanged?'계산 중단: 환율 조회 중 시나리오 입력값이 변경되었습니다. 다시 계산해 주세요.':'계산 중단: 최신 환율을 가져오지 못했습니다. 연결 상태를 확인하고 다시 시도하세요.';
   byId('status').className='error';
  }finally{clearTimeout(fxTimeout);button.disabled=false;}
 }
