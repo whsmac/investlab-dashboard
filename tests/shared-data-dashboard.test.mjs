@@ -38,3 +38,11 @@ test("recent observations are ordered on the server before limiting results", ()
   assert.match(page, /return query\.limit\(100\)/);
   assert.match(page, /count: "exact"/);
 });
+
+test("quarterly financial absence is explicit and never presented as zero-dollar performance", () => {
+  assert.match(page, /financialTotal === 0/);
+  assert.match(page, /분기 재무 데이터 없음/);
+  assert.match(page, /미수집은 0 USD가 아닙니다/);
+  assert.match(page, /\$\("financialCount"\)\.textContent = financialTotal\.toLocaleString/);
+  assert.match(page, /\$\("prices"\)\.innerHTML = table/);
+});
