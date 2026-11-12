@@ -127,6 +127,19 @@ try{
  assert.equal(JSON.parse(await page.locator('#terminal').inputValue()).SOXL,40,'Advanced terminal JSON must reflect the new ticker price');
  assert.match(await page.locator('#finalValuation').textContent(),/SOXL/);
  assert.match(await page.locator('#finalValuation').textContent(),/1,800|1800/);
+ // Trade order is financially meaningful: buying $300 of SOXL before a TSLA sale
+ // cannot be funded from the initial $100, while selling first yields $200 cash.
+ await tradeRows.last().getByRole('button',{name:'2번째 거래 위로 이동'}).click();
+ assert.equal(await tradeRows.first().locator('[data-field="ticker"]').inputValue(),'SOXL');
+ await calculateAndWait();
+ assert.match(await page.locator('#status').innerText(),/실행 불가: 전략 .*1번째 거래 \(SOXL\).*현금이 부족합니다/);
+ assert.equal(await tradeRows.first().evaluate(el=>el.classList.contains('trade-error')),true);
+ assert.equal(await page.locator('#summary').innerText(),'','An unfunded reordered trade must not display stale valuation');
+ await tradeRows.first().getByRole('button',{name:'1번째 거래 아래로 이동'}).click();
+ assert.equal(await tradeRows.first().locator('[data-field="ticker"]').inputValue(),'TSLA');
+ await calculateAndWait();
+ assert.match(await page.locator('#status').innerText(),/계산 완료/);
+ assert.match(await page.locator('#finalValuation').textContent(),/1,800|1800/);
  const stepTable=page.locator('#steps table').first();
  assert.match(await stepTable.locator('thead').innerText(),/수수료.*거래 후 해당 종목 수량.*거래 후 현금/);
  const stepRows=await stepTable.locator('tbody tr').allTextContents();
