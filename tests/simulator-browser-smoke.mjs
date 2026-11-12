@@ -394,6 +394,20 @@ try{
  assert.ok(mixedTax,'Missing mixed tax row');
  assert.notEqual(numeric(mixedTax[2]),numeric(mixedTax[3]),'Distinct realized gains should produce different incremental taxes');
  assert.equal(await page.evaluate(()=>localStorage.getItem('investlab_holdings')),holdingsBeforeSave);
+ // Removing a comparison alternative must clear both rankings and the table;
+ // recalculating with only one alternative must not resurrect stale comparisons.
+ await page.locator('#strategyEditor .strategy-card').last().getByRole('button',{name:'전략 삭제'}).click();
+ assert.equal(await page.locator('#strategyEditor .strategy-card').count(),1);
+ assert.equal(await page.locator('#strategyRanking').isVisible(),false);
+ assert.equal(await page.locator('#strategyRanking').innerText(),'');
+ assert.equal(await page.locator('#allStrategySummary').innerText(),'');
+ assert.equal(await page.locator('#allStrategyTitle').isVisible(),false);
+ await calculateAndWait();
+ assert.match(await page.locator('#status').innerText(),/계산 완료/);
+ assert.equal(await page.locator('#strategyRanking').isVisible(),false);
+ assert.equal(await page.locator('#allStrategySummary .strategy-overview-table').count(),0);
+ assert.equal(await page.locator('#allStrategyTitle').isVisible(),false);
+ assert.equal(await page.evaluate(()=>localStorage.getItem('investlab_holdings')),holdingsBeforeSave);
  await page.reload();
  await page.locator('#savedScenarioList').selectOption('TSLA 재매수 검증');
  await page.locator('#loadScenario').click();
