@@ -74,7 +74,7 @@ try {
       from: table => ({
         select: () => ({
           order(){return this;},
-          limit: async () => ({...datasets[table],error:null})
+          limit: async () => localStorage.getItem("pilot_read_error") === "yes" ? {data:null,count:null,error:{message:"permission denied for table"}} : {...datasets[table],error:null}
         })
       })
     })};
@@ -99,6 +99,18 @@ try {
   assert.ok(financialText.includes("\t0\t"));
   assert.doesNotMatch(financialText, /분기 재무 데이터 없음/);
   await page.evaluate(() => localStorage.removeItem("pilot_financial_rows"));
+  // Failed read must not leave stale counts or imply missing data means zero.
+  await page.evaluate(() => localStorage.setItem("pilot_read_error", "yes"));
+  await page.reload();
+  await page.waitForFunction(() => document.querySelector("#authStatus")?.textContent.includes("조회 실패"));
+  assert.equal(await page.locator("#companyCount").innerText(), "—");
+  assert.equal(await page.locator("#priceCount").innerText(), "—");
+  assert.equal(await page.locator("#financialCount").innerText(), "—");
+  assert.match(await page.locator("#authStatus").innerText(), /permission denied for table/);
+  assert.match(await page.locator("#authStatus").innerText(), /테이블 조회 권한\\(RLS\\)/);
+  assert.match(await page.locator("#authStatus").innerText(), /데이터는 변경되지 않았습니다/);
+  await page.evaluate(() => localStorage.removeItem("pilot_read_error"));
+
   assert.deepEqual(pageErrors, [], "Shared data page should not emit uncaught JavaScript errors");
   console.log("Shared data browser smoke passed: initial state, project allowlist, service-role rejection, isolated local storage, and no page errors.");
 } finally {
