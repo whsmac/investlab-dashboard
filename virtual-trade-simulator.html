@@ -168,7 +168,7 @@ function calculate(){
   byId('taxBasis').append(fxNotice);
   const stageRows=taxResults.flatMap((tax,i)=>tax?tax.stages.map(stage=>[result.scenarios[i].name,stage.stage,fmt(stage.gainKrw),fmt(stage.cumulativeProjectedTaxKrw),fmt(stage.stageIncrementalTaxKrw)]):[]);
   if(stageRows.length)byId('taxStages').append(table(['전략','매도 순서','원화 실현손익','연간 예상 세액 KRW','직전 단계 대비 세액 변화 KRW'],stageRows));
-  byId('steps').append(table(['순서','거래','종목','수량','체결가','거래 후 현금','누적 실현손익'],scenario.steps.map(s=>[s.index+1,s.side==='buy'?'매수':'매도',s.ticker,fmt(s.quantity),fmt(s.price),fmt(s.cash),fmt(s.cumulativeRealizedPnL)])));
+  byId('steps').append(table(['순서','거래','종목','거래 수량','체결가','수수료','거래 후 해당 종목 수량','거래 후 현금','누적 실현손익'],scenario.steps.map(s=>[s.index+1,s.side==='buy'?'매수':'매도',s.ticker,fmt(s.quantity),fmt(s.price),fmt(s.fee),fmt(s.positions[s.ticker]?.quantity??0),fmt(s.cash),fmt(s.cumulativeRealizedPnL)])));
   const tickers=new Set([...Object.keys(result.baseline.final.positions),...Object.keys(scenario.final.positions)]);
   byId('holdings').append(table(['종목','계속 보유 주식 수','가상 거래 후 주식 수'],[...tickers].map(t=>[t,fmt(result.baseline.final.positions[t]?.quantity??0),fmt(scenario.final.positions[t]?.quantity??0)])));
   byId('status').textContent='계산 완료 · 실제 거래 및 데이터베이스 저장 없음';
