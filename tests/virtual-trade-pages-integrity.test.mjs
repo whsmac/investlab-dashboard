@@ -39,11 +39,10 @@ test('tax estimate uses explicit separate KRW inputs without Supabase writes',()
  assert.ok(!html.includes('supabase.from('));
 });
 
-test('optional tax UI requires explicit KRW tax-basis inputs and rejects other ticker sales',()=>{
+test('tax UI uses explicit separate KRW inputs and does not claim filing-grade results',()=>{
  const html=readFileSync(new URL('../virtual-trade.html',import.meta.url),'utf8');
- for(const id of ['taxEnabled','taxPrior','taxBuyPrice','fxBuyRate','fxSellRate','taxDeductionUsed','taxResult'])assert.ok(html.includes('id="'+id+'"'),id);
- assert.match(html,/if\(\$\('taxEnabled'\)\.checked\)/);
- assert.match(html,/trades\.some\(t=>t\.side==='sell'&&t\.ticker!==ticker\)/);
+ for(const id of ['taxPrior','taxHypothetical','taxDeduction','taxRate','taxResult','fxBuyRate','fxSellRate'])assert.ok(html.includes('id="'+id+'"'),id);
  assert.match(html,/incrementalTaxKrw/);
- assert.match(html,/실제 신고용 아님/);
+ assert.match(html,/신고·납부액 확정용이 아니며/);
+ assert.doesNotMatch(html,/supabase\\.co|supabase\\.from\\(/);
 });
