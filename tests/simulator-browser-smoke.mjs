@@ -150,6 +150,20 @@ try{
  assert.match(await page.locator('#status').innerText(),/계산 중단/);
  assert.equal(await page.locator('#summary').innerText(),'');
  assert.equal(await page.locator('#taxFx').inputValue(),'');
+ // Reject malformed, zero and future-dated FX data without reusing an old rate.
+ for(const [payload,expected] of [
+  [{result:'success',base_code:'USD',rates:{},time_last_update_unix:Math.floor(Date.now()/1000)},/유효하지 않습니다/],
+  [{result:'success',base_code:'USD',rates:{KRW:0},time_last_update_unix:Math.floor(Date.now()/1000)},/유효하지 않습니다/],
+  [{result:'success',base_code:'USD',rates:{KRW:1341.69},time_last_update_unix:Math.floor(Date.now()/1000)+7200},/갱신 시각이 유효하지 않거나/]
+ ]){
+  await page.unroute('https://open.er-api.com/v6/latest/USD');
+  await page.route('https://open.er-api.com/v6/latest/USD',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(payload)}));
+  await calculateAndWait();
+  assert.match(await page.locator('#fxStatus').innerText(),expected);
+  assert.match(await page.locator('#status').innerText(),/계산 중단/);
+  assert.equal(await page.locator('#taxFx').inputValue(),'');
+  assert.equal(await page.locator('#summary').innerText(),'');
+ }
  // Network policy or DNS failure is reported separately from an HTTP server error.
  await page.unroute('https://open.er-api.com/v6/latest/USD');
  await page.route('https://open.er-api.com/v6/latest/USD',route=>route.abort('failed'));
