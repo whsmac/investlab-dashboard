@@ -389,6 +389,15 @@ function trackSimulatorEdit(event){
 }
 document.addEventListener('input',trackSimulatorEdit,true);
 document.addEventListener('change',trackSimulatorEdit,true);
+ // Strategy buttons mutate in-memory trades without emitting input/change events.
+document.addEventListener('click',event=>{
+ const button=event.target instanceof Element?event.target.closest('button'):null;
+ if(!button)return;
+ if(button.closest('#strategyEditor')||['addStrategy','presetRise','presetDip'].includes(button.id)){
+  simulatorInputRevision++;
+  invalidateCalculatedResults();
+ }
+});
 function parseTaxMoney(id){
  const raw=byId(id).value.replaceAll(',','').trim();
  return raw===''?NaN:Number(raw);
