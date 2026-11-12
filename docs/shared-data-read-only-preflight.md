@@ -5,13 +5,13 @@
 Before applying the proposed shared-data schema migration, inspect the existing state of the **existing target project** without changing database objects, data, policies, or settings.
 
 - Target: `investlab-ledger-test`
-- Project ref: `gopofxyezhwpfbxebcrxd`
+- Project ref: `gopofxyezhwpfxbecrxd`
 - Region: `eu-west-1`
 - **Never run this against** the operating project `whsmac’s Project` (`duffpsvaphccgxvkiobm`).
 
 ## Procedure
 
-1. Open the Supabase Dashboard and verify the project ref in the project selector / URL is exactly `gopofxyezhwpfbxebcrxd`.
+1. Open the Supabase Dashboard and verify the project ref in the project selector / URL is exactly `gopofxyezhwpfxbecrxd`.
 2. Open SQL Editor. Do not use the operating project's SQL Editor.
 3. Run `docs/shared-data-read-only-preflight.sql` as one script.
 4. Save/export the result grids or screenshots for review. Do not include secrets or personal user details.

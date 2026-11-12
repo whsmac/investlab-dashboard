@@ -1,0 +1,47 @@
+name: Simulator unit tests
+
+on:
+  pull_request:
+    paths:
+      - 'src/simulator/**'
+      - 'tests/**'
+      - 'virtual-trade-simulator.html'
+      - '.github/workflows/simulator-tests.yml'
+  push:
+    branches:
+      - feature/simulator-shared-symbols-20261111
+    paths:
+      - 'src/simulator/**'
+      - 'tests/**'
+      - 'virtual-trade-simulator.html'
+      - '.github/workflows/simulator-tests.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  node-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check simulator module syntax
+        run: |
+          node --check src/simulator/portfolio-positions.mjs
+          node --check src/simulator/managed-symbols.mjs
+          node --check src/simulator/virtual-trade-engine.mjs
+          node --check src/simulator/scenario-comparison.mjs
+          node --check tests/simulator-browser-smoke.mjs
+      - name: Install Playwright browser
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Run simulator browser smoke
+        run: node tests/simulator-browser-smoke.mjs
+      - name: Run simulator tests
+        run: |
+          node --test tests/portfolio-positions.test.mjs tests/managed-symbols.test.mjs tests/virtual-trade-engine.test.mjs tests/scenario-comparison.test.mjs tests/virtual-trade-simulator-ui.test.mjs

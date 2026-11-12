@@ -2,7 +2,7 @@
 
 Status: proposal only. This document does not authorize or perform any Supabase changes.
 
-Target project: `investlab-ledger-test` (`gopofxyezhwpfbxebcrxd`).
+Target project: `investlab-ledger-test` (`gopofxyezhwpfxbecrxd`).
 Never use the existing operating project `whsmac's Project` (`duffpsvaphccgxvkiobm`).
 
 ## Current observed state
@@ -21,7 +21,7 @@ These observations are limited to the read-only catalog queries that were run. A
 
 ## Safe account setup sequence
 
-1. In the Supabase Dashboard, verify the project selector and confirm the project ID is exactly `gopofxyezhwpfbxebcrxd`.
+1. In the Supabase Dashboard, verify the project selector and confirm the project ID is exactly `gopofxyezhwpfxbecrxd`.
 2. Open Authentication settings and inspect (do not change yet):
    - Email provider enabled/disabled.
    - Whether new sign-ups are allowed.

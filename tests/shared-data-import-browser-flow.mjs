@@ -19,13 +19,13 @@ const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 const page=await browser.newPage();
 const errors=[];page.on('pageerror',e=>errors.push(e.message));
 await page.addInitScript(()=>{
-  localStorage.setItem('investlab_shared_data_connection_v1',JSON.stringify({url:'https://gopofxyezhwpfbxebcrxd.supabase.co',key:'sb_publishable_mock'}));
+  localStorage.setItem('investlab_shared_data_connection_v1',JSON.stringify({url:'https://gopofxyezhwpfxbecrxd.supabase.co',key:'sb_publishable_mock'}));
   window.confirm=()=>true;
 });
 await page.route('https://cdn.jsdelivr.net/**',route=>route.fulfill({status:200,contentType:'text/javascript',body:`
 window.__writes=[];
 window.supabase={createClient:()=>({
-  supabaseUrl:'https://gopofxyezhwpfbxebcrxd.supabase.co',
+  supabaseUrl:'https://gopofxyezhwpfxbecrxd.supabase.co',
   supabaseKey:'sb_publishable_mock',
   auth:{getUser:async()=>({data:{user:{id:'owner-test'}},error:null})},
   from:(name)=>({

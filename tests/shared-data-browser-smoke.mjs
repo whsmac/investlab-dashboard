@@ -28,8 +28,8 @@ await page.route("https://cdn.jsdelivr.net/**", route => route.abort());
 try {
   await page.goto(`http://127.0.0.1:${address.port}/shared-data.html`);
   await page.locator("h1").getByText("공유 기업 데이터").waitFor();
-  await page.waitForFunction(() => document.querySelector("#projectUrl")?.value === "https://gopofxyezhwpfbxebcrxd.supabase.co");
-  assert.equal(await page.locator("#projectUrl").inputValue(), "https://gopofxyezhwpfbxebcrxd.supabase.co");
+  await page.waitForFunction(() => document.querySelector("#projectUrl")?.value === "https://gopofxyezhwpfxbecrxd.supabase.co");
+  assert.equal(await page.locator("#projectUrl").inputValue(), "https://gopofxyezhwpfxbecrxd.supabase.co");
   assert.equal(await page.locator("#logout").isDisabled(), true);
   assert.equal(await page.locator("#reload").isDisabled(), true);
   assert.match(await page.locator("#authStatus").innerText(), /등록된 계정/);
@@ -40,23 +40,23 @@ try {
   assert.match(await page.locator("#connectionStatus").innerText(), /일치하지 않습니다/);
   assert.equal(await page.evaluate(() => localStorage.getItem("investlab_shared_data_connection_v1")), null);
 
-  await page.locator("#projectUrl").fill("https://gopofxyezhwpfbxebcrxd.supabase.co");
+  await page.locator("#projectUrl").fill("https://gopofxyezhwpfxbecrxd.supabase.co");
   await page.locator("#publicKey").fill("service_role_secret");
   await page.locator("#connect").click();
   assert.match(await page.locator("#connectionStatus").innerText(), /service_role 또는 sb_secret 키는 사용할 수 없습니다/);
   assert.equal(await page.evaluate(() => localStorage.getItem("investlab_shared_data_connection_v1")), null);
 
-  await page.locator("#projectUrl").fill("https://gopofxyezhwpfbxebcrxd.supabase.co");
+  await page.locator("#projectUrl").fill("https://gopofxyezhwpfxbecrxd.supabase.co");
   await page.locator("#publicKey").fill("sb_secret_test_only");
   await page.locator("#connect").click();
   assert.match(await page.locator("#connectionStatus").innerText(), /sb_secret 키는 사용할 수 없습니다/);
   assert.equal(await page.evaluate(() => localStorage.getItem("investlab_shared_data_connection_v1")), null);
 
-  await page.locator("#projectUrl").fill("https://gopofxyezhwpfbxebcrxd.supabase.co");
+  await page.locator("#projectUrl").fill("https://gopofxyezhwpfxbecrxd.supabase.co");
   await page.locator("#publicKey").fill("sb_publishable_test_only");
   await page.locator("#connect").click();
   const stored = await page.evaluate(() => JSON.parse(localStorage.getItem("investlab_shared_data_connection_v1")));
-  assert.equal(stored.url, "https://gopofxyezhwpfbxebcrxd.supabase.co");
+  assert.equal(stored.url, "https://gopofxyezhwpfxbecrxd.supabase.co");
   assert.equal(stored.key, "sb_publishable_test_only");
   assert.match(await page.locator("#connectionStatus").innerText(), /저장했습니다/);
   assert.deepEqual(pageErrors, [], "Shared data page should not emit uncaught JavaScript errors");

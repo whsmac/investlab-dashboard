@@ -1,5 +1,5 @@
 -- READ-ONLY PREFLIGHT ONLY
--- Target project: investlab-ledger-test (project ref: gopofxyezhwpfbxebcrxd)
+-- Target project: investlab-ledger-test (project ref: gopofxyezhwpfxbecrxd)
 -- Do NOT run against the operating project (duffpsvaphccgxvkiobm).
 -- This script performs catalog reads only. It does not apply migrations or change settings/data.
 -- Run in Supabase SQL Editor while connected to the target project.
