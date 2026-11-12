@@ -16,6 +16,7 @@ select,button,input{font:inherit;color:var(--text);background:#1d2b43;border:1px
 </head>
 <body>
 <main>
+<nav style="display:flex;gap:12px;margin-bottom:12px"><a href="./pilot-test.html" style="color:#b9d0ff">← Pilot Test 통합 화면</a><a href="#quarterly-financials" style="color:#b9d0ff">분기 매출·CAPEX 입력으로 이동 ↓</a></nav>
 <header class="top"><div><div class="brand">INVEST<span>LAB</span><span class="pill">SIX-COMPANY PREVIEW</span></div><div class="sub">수정종가(Adjusted Close) · MSFT · GOOGL · AMZN · META · TSLA · SPCX</div></div><div class="small">독립 미리보기 · 운영 대시보드 및 Supabase와 미연결</div></header>
 <h1>6개 기업 주가 모니터</h1>
 <div class="sub">일별·분기별 주가와 분기 매출·CAPEX를 함께 확인하는 1단계 MVP입니다.</div>
@@ -27,7 +28,7 @@ select,button,input{font:inherit;color:var(--text);background:#1d2b43;border:1px
  <div id="coverage" class="small" style="margin-top:8px"></div>
 </section>
 <section class="panel">
- <div class="head"><h2>분기 재무자료 가져오기</h2><span class="tag">수동 CSV · USD 십억 달러</span></div>
+ <div class="head" id="quarterly-financials" style="scroll-margin-top:24px"><h2>분기 재무자료 가져오기</h2><span class="tag">수동 CSV · USD 십억 달러</span></div>
  <div class="notice">재무자료는 직접 준비한 분기별 CSV로 입력합니다. 기존 자료에 새 파일을 추가할 수 있으며, 같은 종목·분기의 공란은 새 값으로 보완하고, 이미 입력된 서로 다른 값은 오류로 처리합니다. 기업별 관측행이 없는 경우와 관측행은 있지만 매출·CAPEX 값이 비어 있는 경우를 구분해 표시합니다. 형식은 <b>ticker,period,revenue_usd_bn,capex_usd_bn,capex_definition,source_url</b>입니다. 모르는 값은 비워 두고, CAPEX를 입력할 때는 산정 기준을 반드시 적어 주세요. SEC 자동 수집은 이 단계에서 구현하지 않습니다.</div>
  <div class="upload" style="margin-top:12px"><input id="financialFiles" type="file" accept=".csv,text/csv" multiple><button id="loadFinancial" type="button">재무 CSV 검증 및 불러오기</button><button id="clearFinancial" type="button">재무자료 초기화</button><a href="./six-company-quarterly-financial-template.csv" download style="color:#a9c4ff">입력 양식 다운로드</a></div>
  <div id="financialStatus" class="empty" style="margin-top:11px">분기 재무자료 CSV를 선택해 주세요.</div><div id="financialCoverage" class="small" style="margin-top:8px">재무자료를 불러오면 기업별·지표별 입력 현황을 표시합니다.</div>

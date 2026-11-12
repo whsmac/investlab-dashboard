@@ -1,0 +1,28 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>INVESTLAB | 상승장 분할 매도 계획</title>
+<style>:root{font-family:system-ui,-apple-system,sans-serif;color-scheme:dark;background:#101724;color:#edf3ff}body{max-width:1000px;margin:30px auto;padding:0 18px}.panel{background:#1a2435;border:1px solid #34425c;border-radius:12px;padding:20px;margin:16px 0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px}label{font-size:14px}input{display:block;box-sizing:border-box;width:100%;padding:9px;margin-top:6px;background:#111a29;color:white;border:1px solid #52637e;border-radius:7px}button{background:#285ca3;border:0;color:white;border-radius:7px;padding:10px 15px;cursor:pointer;margin:8px 8px 0 0}.secondary{background:#455772}table{width:100%;border-collapse:collapse;margin-top:12px}th,td{border-bottom:1px solid #34425c;padding:9px;text-align:right}th:first-child,td:first-child{text-align:left}.hint{color:#b4c1d6}.error{color:#ffb0b0}#output{overflow-x:auto}</style></head><body>
+<h1>상승장 분할 매도 · 현금 확보 시뮬레이터</h1><p class="hint">목표가별 부분 매도 후 잔여 주식 수, 확보 현금, 현금 비중을 계산합니다. 실제 거래·DB 저장은 하지 않습니다.</p>
+<section class="panel"><h2>현재 보유정보</h2><div class="grid">
+<label>종목<input id="ticker" value="TSLA"></label><label>보유 주식 수<input id="quantity" type="number" step="any" value="10"></label>
+<label>평균 취득단가 (USD)<input id="basis" type="number" step="any" value="100"></label><label>보유 현금 (USD)<input id="cash" type="number" step="any" value="0"></label>
+<label>최종 비교 주가 (USD)<input id="terminal" type="number" step="any" value="300"></label><label>목표 확보 현금 (USD)<input id="reserve" type="number" step="any" value="1000"></label>
+</div></section><section class="panel"><h2>목표가별 매도 계획</h2><div id="targets"></div><button id="add" type="button" class="secondary">매도 단계 추가</button><button id="run" type="button">계산하기</button></section>
+<section class="panel"><h2>예상 결과</h2><p id="error" class="error" role="alert"></p><div id="output" aria-live="polite"></div><p class="hint">세금·환율은 아직 반영하지 않습니다. 목표가는 예측이 아닌 사용자 가정입니다. 거래 단계별 현금 비중은 해당 단계 목표가 기준입니다.</p></section>
+<script type="module">
+import {planStagedSales} from './src/simulator/staged-sale-planner.mjs';
+const $=id=>document.getElementById(id),format=n=>Number(n).toLocaleString('ko-KR',{maximumFractionDigits:6});
+const inputNumber=id=>{const el=$(id);if(!el.value.trim())throw new Error('모든 기준 보유정보를 입력하세요.');return Number(el.value)};
+function add(price='',quantity='',fee='0'){const div=document.createElement('div');div.className='grid';div.style.marginBottom='12px';
+for(const [name,key,val] of [['매도 목표가','price',price],['매도 주식 수','quantity',quantity],['수수료','fee',fee]]){const label=document.createElement('label');label.textContent=name;const inp=document.createElement('input');inp.type='number';inp.step='any';inp.value=val;inp.dataset.key=key;label.append(inp);div.append(label)}
+const btn=document.createElement('button');btn.type='button';btn.className='secondary';btn.textContent='단계 삭제';btn.addEventListener('click',()=>div.remove());div.append(btn);$('targets').append(div)}
+function table(headers,rows){const t=document.createElement('table'),h=t.createTHead().insertRow();for(const title of headers){const th=document.createElement('th');th.textContent=title;h.append(th)}const body=t.createTBody();for(const row of rows){const tr=body.insertRow();for(const value of row){const td=tr.insertCell();td.textContent=String(value)}}return t}
+function calculate(){$('error').textContent='';$('output').replaceChildren();try{
+const ticker=$('ticker').value.trim().toUpperCase();
+const targets=[...$('targets').children].map(row=>{const get=key=>{const el=row.querySelector('[data-key="'+key+'"]');if(!el.value.trim())throw new Error('매도 단계의 입력값이 비어 있습니다.');return Number(el.value)};return {price:get('price'),quantity:get('quantity'),fee:get('fee')}});
+const result=planStagedSales({cash:inputNumber('cash'),positions:{[ticker]:{quantity:inputNumber('quantity'),averageCost:inputNumber('basis')}}},{ticker,targets,terminalPrices:{[ticker]:inputNumber('terminal')},reserveCash:inputNumber('reserve')});
+const p=document.createElement('p');p.textContent='최종 보유 '+format(result.final.positions[ticker].quantity)+'주 · 확보 현금 $'+format(result.totalRaisedCash)+' · 최종 현금 $'+format(result.final.cash)+' · 목표 '+(result.meetsReserveTarget?'달성':'미달');$('output').append(p);
+const q=document.createElement('p');q.textContent='계속 보유 $'+format(result.baselineValue)+' / 분할 매도 $'+format(result.terminalValue)+' / 차이 $'+format(result.deltaVsHold)+' (세전)';$('output').append(q);
+$('output').append(table(['단계','목표가','매도 수량','잔여 수량','누적 현금','현금 비중','목표 부족액'],result.steps.map(s=>[s.stage,format(s.targetPrice),format(s.soldShares),format(s.remainingShares),format(s.cash),format(s.cashWeightPct)+'%',format(s.reserveCashShortfall)])));
+}catch(e){$('error').textContent='입력 오류: '+e.message}}
+$('add').addEventListener('click',()=>add());$('run').addEventListener('click',calculate);
+add('150','2');add('200','2');add('250','1');calculate();
+</script></body></html>

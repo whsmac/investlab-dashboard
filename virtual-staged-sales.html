@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>INVESTLAB | 상승장 분할 매도 시뮬레이터</title>
+<style>body{font:15px system-ui,-apple-system,sans-serif;background:#101827;color:#e7edf7;max-width:1050px;margin:30px auto;padding:0 18px}h1{font-size:24px}p,small{color:#b9c5d5}fieldset{border:1px solid #3b4a60;border-radius:10px;margin:14px 0;padding:16px}label{display:inline-grid;gap:6px;margin:6px 12px 6px 0}input{background:#1e293b;color:white;border:1px solid #53647a;border-radius:6px;padding:9px;width:130px}button{background:#2469c5;color:white;border:0;border-radius:7px;padding:11px 18px;cursor:pointer}table{border-collapse:collapse;width:100%;margin:15px 0}th,td{border-bottom:1px solid #3b4a60;padding:10px;text-align:right}th:first-child,td:first-child{text-align:left}.note{padding:12px;background:#202c40;border-radius:8px}#error{color:#ff9e9e}strong{color:white}</style></head>
+<body><h1>INVESTLAB · 상승장 단계별 부분 매도</h1>
+<p>독립형 시뮬레이션 화면입니다. 모든 숫자는 예시 또는 직접 입력한 가정이며 실제 투자원장에 저장되지 않습니다.</p>
+<form id="form">
+<fieldset><legend>현재 보유 및 목표</legend>
+<label>종목 코드<input name="ticker" value="TSLA" pattern="[A-Z0-9.\\-]+" required></label>
+<label>보유 주식 수<input name="quantity" type="number" value="100" min="0.00000001" step="any" required></label>
+<label>평균 취득단가<input name="basis" type="number" value="200" min="0" step="any" required></label>
+<label>현재 현금<input name="cash" type="number" value="1000" min="0" step="any" required></label>
+<label>최종 평가 기준가<input name="terminal" type="number" value="400" min="0" step="any" required></label>
+<label>확보 목표 현금<input name="reserve" type="number" value="20000" min="0" step="any" required></label>
+</fieldset>
+<fieldset><legend>상승장 3단계 매도 계획</legend>
+<div id="targets"></div></fieldset>
+<button type="submit">시나리오 계산</button></form>
+<p id="error" role="alert"></p><section id="output" aria-live="polite"></section>
+<p class="note">주의: 양도세와 환율 변환은 아직 계산하지 않습니다. 현금·주가·수수료·취득단가는 모두 동일 통화로 입력해야 합니다. 최종 평가 기준가는 예측값이 아니라 사용자가 지정하는 가정입니다.</p>
+<script type="module">
+import {planStagedSales} from './src/simulator/staged-sale-planner.mjs';
+const targets=document.querySelector('#targets');
+for(let i=1;i<=3;i++){const div=document.createElement('div');div.innerHTML='<label>'+i+'차 목표가<input name="price'+i+'" type="number" min="0.00000001" step="any" required value="'+(250+50*(i-1))+'"></label><label>'+i+'차 매도 주식 수<input name="shares'+i+'" type="number" min="0.00000001" step="any" required value="10"></label><label>수수료<input name="fee'+i+'" type="number" min="0" step="any" required value="0"></label>';targets.append(div);}
+const number=(f,k)=>Number(f.get(k));
+const format=v=>new Intl.NumberFormat('ko-KR',{maximumFractionDigits:4}).format(v);
+document.querySelector('#form').addEventListener('submit',event=>{
+ event.preventDefault();const error=document.querySelector('#error'),output=document.querySelector('#output');error.textContent='';output.replaceChildren();
+ try{
+  const f=new FormData(event.currentTarget),ticker=String(f.get('ticker')).trim();
+  const targets=[1,2,3].map(i=>({price:number(f,'price'+i),quantity:number(f,'shares'+i),fee:number(f,'fee'+i)}));
+  const result=planStagedSales({cash:number(f,'cash'),positions:{[ticker]:{quantity:number(f,'quantity'),averageCost:number(f,'basis')}}},{ticker,targets,terminalPrices:{[ticker]:number(f,'terminal')},reserveCash:number(f,'reserve')});
+  const heading=document.createElement('h2');heading.textContent='분할 매도 결과';output.append(heading);
+  const table=document.createElement('table');const header=document.createElement('tr');
+  for(const label of ['단계','목표가','누적 매도 수','잔여 주식 수','현금','현금 비중','목표 현금 충족']){const th=document.createElement('th');th.textContent=label;header.append(th);}
+  const thead=document.createElement('thead');thead.append(header);table.append(thead);const tbody=document.createElement('tbody');
+  for(const s of result.steps){const tr=document.createElement('tr');for(const val of [s.stage,format(s.targetPrice),format(s.cumulativeSoldShares),format(s.remainingShares),format(s.cash),format(s.cashWeightPct)+'%',s.meetsReserveTarget?'충족':'미달']){const td=document.createElement('td');td.textContent=String(val);tr.append(td);}tbody.append(tr);}table.append(tbody);output.append(table);
+  const summary=document.createElement('p');summary.textContent='최종 확보 현금 '+format(result.final.cash)+' · 잔여 주식 '+format(result.final.positions[ticker].quantity)+'주 · 보유 유지 대비 최종 평가액 차이 '+format(result.deltaVsHold)+' (양도세 제외)';output.append(summary);
+ }catch(e){error.textContent='입력 확인: '+e.message;}
+});
+</script></body></html>

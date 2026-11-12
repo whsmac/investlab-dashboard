@@ -28,6 +28,7 @@ await page.route("https://cdn.jsdelivr.net/**", route => route.abort());
 try {
   await page.goto(`http://127.0.0.1:${address.port}/shared-data.html`);
   await page.locator("h1").getByText("공유 기업 데이터").waitFor();
+  await page.waitForFunction(() => document.querySelector("#projectUrl")?.value === "https://gopofxyezhwpfbxebcrxd.supabase.co");
   assert.equal(await page.locator("#projectUrl").inputValue(), "https://gopofxyezhwpfbxebcrxd.supabase.co");
   assert.equal(await page.locator("#logout").isDisabled(), true);
   assert.equal(await page.locator("#reload").isDisabled(), true);
@@ -58,6 +59,66 @@ try {
   assert.equal(stored.url, "https://gopofxyezhwpfbxebcrxd.supabase.co");
   assert.equal(stored.key, "sb_publishable_test_only");
   assert.match(await page.locator("#connectionStatus").innerText(), /저장했습니다/);
+  // Offline authenticated TEST mock: no network, no Supabase writes.
+  await page.addInitScript(() => {
+    const datasets = {
+      companies: { count: 6, data: [{id:1,ticker:"TSLA",company_name:"Tesla",exchange:"NASDAQ",is_active:true}] },
+      market_price_observations: { count: 4938, data: [{id:1,company_id:1,trading_date:"2026-11-06",close_price:250,currency:"USD",price_basis:"adjusted_close"}] },
+      quarterly_financial_observations: localStorage.getItem("pilot_financial_rows") === "yes" ? {count:2,data:[{id:1,company_id:1,fiscal_period:"2026-Q3",revenue_usd_bn:0,capex_usd_bn:null,capex_definition:null},{id:2,company_id:1,fiscal_period:"2026-Q2",revenue_usd_bn:null,capex_usd_bn:3.5,capex_definition:"cash paid"}]} : { count: 0, data: [] }
+    };
+    window.supabase = {createClient: () => ({
+      auth: {
+        getSession: async () => ({data:{session:{access_token:"offline-test"}}}),
+        onAuthStateChange: () => ({data:{subscription:{unsubscribe(){}}}})
+      },
+      from: table => ({
+        select: () => ({
+          order(){return this;},
+          limit: async () => localStorage.getItem("pilot_read_error") === "yes" ? {data:null,count:null,error:{message:"permission denied for table"}} : localStorage.getItem("pilot_count_missing") === "yes" ? {...datasets[table],count:null,error:null} : {...datasets[table],error:null}
+        })
+      })
+    })};
+  });
+  await page.reload();
+  await page.waitForFunction(() => document.querySelector("#financialCount")?.textContent === "0");
+  assert.equal(await page.locator("#companyCount").innerText(), "6");
+  assert.equal(await page.locator("#priceCount").innerText(), "4,938");
+  assert.match(await page.locator("#prices").innerText(), /2026-11-06/);
+  assert.match(await page.locator("#financials").innerText(), /분기 재무 데이터 없음/);
+  assert.match(await page.locator("#financials").innerText(), /미수집은 0 USD가 아닙니다/);
+  assert.match(await page.locator("#authStatus").innerText(), /조회 완료.*읽기 전용.*분기 매출·CAPEX는 아직 미수집/);
+  // A real zero must remain 0; missing individual financial metrics must read '미수집'.
+  await page.evaluate(() => localStorage.setItem("pilot_financial_rows", "yes"));
+  await page.reload();
+  await page.waitForFunction(() => document.querySelector("#financialCount")?.textContent === "2");
+  const financialText = await page.locator("#financials").innerText();
+  assert.match(financialText, /2026-Q3/);
+  assert.match(financialText, /2026-Q2/);
+  assert.match(financialText, /미수집/);
+  assert.ok(financialText.includes("3.5"));
+  assert.ok(financialText.includes("\t0\t"));
+  assert.doesNotMatch(financialText, /분기 재무 데이터 없음/);
+  await page.evaluate(() => localStorage.removeItem("pilot_financial_rows"));
+  // Failed read must not leave stale counts or imply missing data means zero.
+  await page.evaluate(() => localStorage.setItem("pilot_read_error", "yes"));
+  await page.reload();
+  await page.waitForFunction(() => document.querySelector("#authStatus")?.textContent.includes("조회 실패"));
+  assert.equal(await page.locator("#companyCount").innerText(), "—");
+  assert.equal(await page.locator("#priceCount").innerText(), "—");
+  assert.equal(await page.locator("#financialCount").innerText(), "—");
+  assert.match(await page.locator("#authStatus").innerText(), /permission denied for table/);
+  assert.ok((await page.locator("#authStatus").innerText()).includes("테이블 조회 권한(RLS)"));
+  assert.match(await page.locator("#authStatus").innerText(), /데이터는 변경되지 않았습니다/);
+  await page.evaluate(() => localStorage.removeItem("pilot_read_error"));
+  // A missing COUNT is an error, never a genuine zero-observation result.
+  await page.evaluate(() => localStorage.setItem("pilot_count_missing", "yes"));
+  await page.reload();
+  await page.waitForFunction(() => document.querySelector("#authStatus")?.textContent.includes("조회 실패"));
+  assert.equal(await page.locator("#financialCount").innerText(), "—");
+  assert.ok((await page.locator("#authStatus").innerText()).includes("정확한 COUNT를 확인할 수 없습니다"));
+  await page.evaluate(() => localStorage.removeItem("pilot_count_missing"));
+
+
   assert.deepEqual(pageErrors, [], "Shared data page should not emit uncaught JavaScript errors");
   console.log("Shared data browser smoke passed: initial state, project allowlist, service-role rejection, isolated local storage, and no page errors.");
 } finally {

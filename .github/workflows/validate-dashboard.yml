@@ -1,6 +1,7 @@
 name: Validate dashboard scripts
 
 on:
+  workflow_dispatch:
   pull_request:
     branches: [main, "feature/**"]
   push:
@@ -55,6 +56,12 @@ jobs:
           preview.feed(Path("ai-investment-cycle-preview.html").read_text(encoding="utf-8"))
           six_company = InlineScripts()
           six_company.feed(Path("six-company-price-preview.html").read_text(encoding="utf-8"))
+          import_ui = InlineScripts()
+          import_ui.feed(Path("shared-data-import.html").read_text(encoding="utf-8"))
+          if not import_ui.scripts:
+              raise SystemExit("No CSV import UI script found")
+          for i, code in enumerate(import_ui.scripts, 1):
+              Path(f"/tmp/investlab-import-ui-{i}.mjs").write_text(code, encoding="utf-8")
           shared_data = InlineScripts()
           shared_data.feed(Path("shared-data.html").read_text(encoding="utf-8"))
           if not preview.scripts:
@@ -71,12 +78,14 @@ jobs:
               Path(f"/tmp/investlab-shared-data-{i}.js").write_text(code, encoding="utf-8")
           print(f"Extracted {len(parser.scripts)} production inline blocks, {len(preview.scripts)} preview blocks, {len(shared_data.scripts)} shared-data blocks")
           PY
-          for file in /tmp/investlab-inline-*.js /tmp/investlab-preview-*.mjs /tmp/investlab-six-company-*.mjs /tmp/investlab-shared-data-*.js; do
+          for file in /tmp/investlab-inline-*.js /tmp/investlab-preview-*.mjs /tmp/investlab-six-company-*.mjs /tmp/investlab-shared-data-*.js /tmp/investlab-import-ui-*.mjs; do
             echo "Checking $file"
             node --check "$file"
           done
+      - name: Verify isolated GitHub Pages TEST bundle (no deploy)
+        run: python3 tests/github-pages-test-bundle.py
       - name: Run isolated investment-cycle tests
-        run: node --test tests/ai-investment-cycle.test.mjs tests/market-data-csv.test.mjs tests/market-data-bundle.test.mjs tests/market-cycle-analysis.test.mjs tests/ai-investment-cycle-preview.test.mjs tests/market-performance-ui.test.mjs tests/sec-companyfacts.test.mjs tests/quarterly-normalizer.test.mjs tests/sec-issuer-statement-map.test.mjs tests/six-company-price-csv.test.mjs tests/six-company-price-series.test.mjs tests/six-company-price-preview.test.mjs tests/six-company-financial-csv.test.mjs tests/six-company-financial-preview.test.mjs tests/shared-data-schema-foundation.test.mjs tests/shared-data-dashboard.test.mjs
+        run: node --test tests/ai-investment-cycle.test.mjs tests/market-data-csv.test.mjs tests/market-data-bundle.test.mjs tests/market-cycle-analysis.test.mjs tests/ai-investment-cycle-preview.test.mjs tests/market-performance-ui.test.mjs tests/sec-companyfacts.test.mjs tests/quarterly-normalizer.test.mjs tests/sec-issuer-statement-map.test.mjs tests/six-company-price-csv.test.mjs tests/six-company-price-series.test.mjs tests/six-company-price-preview.test.mjs tests/six-company-financial-csv.test.mjs tests/six-company-financial-preview.test.mjs tests/shared-data-schema-foundation.test.mjs tests/shared-data-dashboard.test.mjs tests/shared-data-csv-import-validator.test.mjs tests/shared-data-importer.test.mjs tests/shared-data-import-ui.test.mjs tests/shared-data-import-rpc.test.mjs tests/virtual-trade-engine.test.mjs tests/krw-tax-gain.test.mjs tests/overseas-stock-tax.test.mjs tests/overseas-share-tax-estimator.test.mjs tests/scenario-comparison.test.mjs tests/staged-sale-planner.test.mjs tests/dip-accumulation-planner.test.mjs tests/cash-weight-planner.test.mjs tests/virtual-trade-simulator-ui.test.mjs tests/virtual-trade-pages-integrity.test.mjs
       - name: Check required symbol-management elements
         run: |
           python3 - <<'PY'
@@ -109,3 +118,9 @@ jobs:
         run: node tests/six-company-browser-smoke.mjs
       - name: Exercise the shared data view in Chromium
         run: node tests/shared-data-browser-smoke.mjs
+      - name: Exercise the TEST CSV import screen in Chromium
+        run: node tests/shared-data-import-browser-smoke.mjs
+      - name: Exercise authenticated import flow with mocked Supabase
+        run: node tests/shared-data-import-browser-flow.mjs
+      - name: Exercise virtual trading UI in Chromium
+        run: node tests/virtual-trade-browser-smoke.mjs

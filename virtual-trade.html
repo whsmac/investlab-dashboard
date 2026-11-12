@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>INVESTLAB | 가상 매매 시뮬레이터</title>
+<style>
+body{font:15px/1.5 system-ui,sans-serif;background:#f5f7fb;color:#172235;margin:0}main{max-width:1000px;margin:auto;padding:24px}h1{font-size:26px}h2{font-size:19px}section{background:white;border:1px solid #dce2eb;border-radius:12px;padding:20px;margin:18px 0}label{display:inline-grid;gap:4px;margin:6px 12px 6px 0}input,select,button{font:inherit;padding:8px;border:1px solid #aab7c8;border-radius:7px}input{width:110px}button{cursor:pointer;background:#173f73;color:white}button.secondary{background:#edf2f9;color:#173f73}table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:right;border-bottom:1px solid #e3e7ef;padding:8px}th:first-child,td:first-child{text-align:left}.scroll{overflow:auto}.muted{color:#526075}.error{color:#a82020}#output[hidden]{display:none}
+</style></head><body><main><h1>INVESTLAB 가상 매매 시뮬레이터</h1>
+<p class="muted">하락장 주식 수 증대 · 상승장 분할 매도 · 레버리지 종목 전환. 실제 거래원장이나 Supabase에 저장하지 않습니다.</p>
+<section><h2>초기 보유 상태</h2>
+<label>현금 (USD)<input id="cash" type="number" value="0" step="any"></label>
+<label>종목<input id="ticker" value="TSLA"></label>
+<label>보유 주식 수<input id="shares" type="number" value="10" step="any"></label>
+<label>평균 취득단가 (USD)<input id="basis" type="number" value="100" step="any"></label>
+</section>
+<section><h2>가상 거래</h2><p class="muted">매도 후 매수 등 거래 순서대로 계산합니다.</p>
+<div class="scroll"><table><thead><tr><th>순서</th><th>구분</th><th>종목</th><th>수량</th><th>가격 ($)</th><th>수수료 ($)</th><th></th></tr></thead><tbody id="trades"></tbody></table></div>
+<button id="add" type="button">거래 추가</button>
+<button id="dip" class="secondary" type="button">하락장 재매수 예시</button>
+<button id="staged" class="secondary" type="button">상승장 분할 매도 예시</button>
+<button id="rotate" class="secondary" type="button">종목 전환 예시</button>
+</section>
+<section><h2>현금 목표와 최종 평가</h2>
+<label>목표 현금 ($)<input id="reserve" type="number" value="1000" step="any"></label>
+<label>TSLA 최종 비교 가격 ($)<input id="terminal" type="number" value="300" step="any"></label>
+<label>SOXL 최종 비교 가격 ($)<input id="soxlTerminal" type="number" value="50" step="any"></label>
+<p class="muted">최종 가격은 사용자가 입력한 가정이며, 실제 예측이 아닙니다.</p>
+</section>
+<button id="run" type="button">시뮬레이션 계산</button>
+<section id="output" hidden><h2>계산 결과</h2><p id="summary"></p><div class="scroll"><table><thead><tr><th>단계</th><th>거래</th><th>종목</th><th>거래 수량</th><th>현금 ($)</th><th>실현손익 ($)</th></tr></thead><tbody id="results"></tbody></table></div><p id="hold"></p><p class="muted">위 가상 매매 결과는 세전입니다. 아래 별도 양도세 추정은 자동 연동되지 않으며, 세금용 취득기록과 환율을 별도로 입력해야 합니다.</p></section><p id="error" class="error" role="alert"></p>
+<section><h2>해외주식 양도소득세 별도 추정 (원화)</h2><p class="muted">달러 실현손익을 세금 계산에 자동 사용하지 않습니다. 세금용 취득가액·환율·수수료를 반영해 계산한 <strong>원화 과세대상 손익</strong>을 입력하세요. 연간 다른 손익과 공제 적용 여부에 따라 결과가 달라집니다.</p>
+<fieldset><legend>가상 매도 원화 손익 계산 (세금용 입력)</legend>
+<label>매도 주식 수<input id="fxQuantity" type="number" step="any" value="10"></label>
+<label>취득단가 (USD)<input id="fxBuyPrice" type="number" step="any" value="100"></label>
+<label>매도가 (USD)<input id="fxSellPrice" type="number" step="any" value="150"></label>
+<label>취득 환율 (KRW/USD)<input id="fxBuyRate" type="number" step="any" value="1300"></label>
+<label>양도 환율 (KRW/USD)<input id="fxSellRate" type="number" step="any" value="1400"></label>
+<label>취득 수수료 (KRW)<input id="fxBuyFee" type="number" step="any" value="0"></label>
+<label>양도 수수료 (KRW)<input id="fxSellFee" type="number" step="any" value="0"></label>
+<button id="fxCalculate" type="button">원화 양도손익 계산 후 세금 입력에 반영</button><p id="fxResult" aria-live="polite"></p>
+<p class="muted">입력한 취득단가와 환율은 해당 매도 주식의 세법상 취득기록을 기준으로 직접 확인해야 합니다. 여러 취득분은 별도 계산해 합산하세요.</p>
+</fieldset>
+<label>올해 기존 실현손익 (KRW)<input id="taxPrior" type="number" step="any" value="0"></label>
+<label>가상 거래 과세 손익 합계 (KRW)<input id="taxHypothetical" type="number" step="any" value="0"></label>
+<label>연간 기본공제 가정 (KRW)<input id="taxDeduction" type="number" step="any" value="2500000"></label>
+<label>다른 양도소득에 사용한 공제 (KRW)<input id="taxUsed" type="number" step="any" value="0"></label>
+<label>합산 세율 가정<input id="taxRate" type="number" step="any" value="0.22"></label>
+<button id="taxRun" type="button">세금 별도 계산</button><p id="taxResult" aria-live="polite"></p><p class="muted">예상 세액은 가상 현금에서 즉시 차감하지 않습니다. 신고·납부액 확정용이 아니며 과세연도별 규정 검증이 필요합니다.</p></section>
+</main><script type="module">
+import {simulateTrades} from './src/simulator/virtual-trade-engine.mjs';
+import {calculateKrwDisposalGain} from './src/simulator/krw-tax-gain.mjs';
+import {estimateOverseasStockTax} from './src/simulator/overseas-stock-tax.mjs';
+import {compareScenarios} from './src/simulator/scenario-comparison.mjs';
+import {planStagedSales} from './src/simulator/staged-sale-planner.mjs';
+const $=id=>document.getElementById(id);
+const fmt=n=>Number(n).toLocaleString('ko-KR',{maximumFractionDigits:6});
+const number=id=>{const s=$(id).value.trim();if(!s)throw new Error('필수 입력값이 비어 있습니다: '+id);return Number(s)};
+function addTrade(t={side:'sell',ticker:'TSLA',quantity:1,price:100,fee:0}){
+ const tr=document.createElement('tr');
+ const num=String($('trades').children.length+1);
+ const cell=value=>{const td=document.createElement('td');td.textContent=value;tr.append(td);return td};
+ cell(num);
+ const side=document.createElement('select');
+ for(const s of ['buy','sell']){const option=document.createElement('option');option.value=s;option.textContent=s==='buy'?'매수':'매도';side.append(option)}
+ side.value=t.side;cell('').append(side);
+ const fields={};
+ for(const [key,type] of [['ticker','text'],['quantity','number'],['price','number'],['fee','number']]){
+  const input=document.createElement('input');input.type=type;if(type==='number')input.step='any';input.value=t[key];fields[key]=input;cell('').append(input);
+ }
+ const remove=document.createElement('button');remove.type='button';remove.className='secondary';remove.textContent='삭제';remove.addEventListener('click',()=>tr.remove());cell('').append(remove);
+ tr.readTrade=()=>{for(const key of ['ticker','quantity','price','fee'])if(!fields[key].value.trim())throw new Error('거래 입력값이 비어 있습니다');return {side:side.value,ticker:fields.ticker.value.trim().toUpperCase(),quantity:Number(fields.quantity.value),price:Number(fields.price.value),fee:Number(fields.fee.value)}};
+ $('trades').append(tr);
+}
+function example(name){
+ $('trades').replaceChildren();
+ const presets={
+ dip:[{side:'sell',ticker:'TSLA',quantity:5,price:200,fee:0},{side:'buy',ticker:'TSLA',quantity:10,price:100,fee:0}],
+ staged:[{side:'sell',ticker:'TSLA',quantity:2,price:150,fee:0},{side:'sell',ticker:'TSLA',quantity:2,price:200,fee:0},{side:'sell',ticker:'TSLA',quantity:1,price:250,fee:0}],
+ rotate:[{side:'sell',ticker:'TSLA',quantity:5,price:200,fee:0},{side:'buy',ticker:'SOXL',quantity:20,price:50,fee:0},{side:'sell',ticker:'SOXL',quantity:20,price:60,fee:0},{side:'buy',ticker:'TSLA',quantity:12,price:100,fee:0}]
+ };
+ for(const t of presets[name])addTrade(t);
+}
+function calculate(){
+ $('error').textContent='';$('output').hidden=true;
+ try{
+  const ticker=$('ticker').value.trim().toUpperCase();
+  const portfolio={cash:number('cash'),positions:{[ticker]:{quantity:number('shares'),averageCost:number('basis')}}};
+  const trades=[...$('trades').children].map(tr=>tr.readTrade());
+  const result=simulateTrades(portfolio,trades);
+  const terminalPrices={SOXL:number('soxlTerminal'),[ticker]:number('terminal')};
+  const comparison=compareScenarios(portfolio,[{name:'현재 전략',trades}],terminalPrices);
+  const strategy=comparison.scenarios[0];
+  const reserve=number('reserve');
+  if(!Number.isFinite(reserve)||reserve<0)throw new Error('현금 목표는 0 이상이어야 합니다');
+  const shares=Object.entries(result.final.positions).map(([symbol,p])=>symbol+' '+fmt(p.quantity)+'주').join(' / ');
+  $('summary').textContent='최종 보유: '+shares+' | 최종 현금: $'+fmt(result.final.cash)+' | 목표 현금: '+(result.final.cash>=reserve?'달성':'미달')+' | 실현손익: $'+fmt(result.final.realizedPnL);
+  $('hold').textContent='동일 최종 가격 가정: 보유 유지 $'+fmt(comparison.baseline.terminalValue)+' / 전략 실행 $'+fmt(strategy.terminalValue)+' / 차이 $'+fmt(strategy.deltaVsHold)+' (세전)';
+  const body=$('results');body.replaceChildren();
+  for(const s of result.steps){const tr=document.createElement('tr');for(const value of [s.index+1,s.side==='buy'?'매수':'매도',s.ticker,fmt(s.quantity),'$'+fmt(s.cash),'$'+fmt(s.tradePnL)]){const td=document.createElement('td');td.textContent=String(value);tr.append(td)}body.append(tr)}
+  // Dedicated staged-sale planner supplies stage-specific cash weights.
+  const staged=trades.length>0&&trades.every(t=>t.side==='sell'&&t.ticker===ticker)&&trades.every((t,i)=>i===0||t.price>trades[i-1].price);
+  if(staged){const plan=planStagedSales(portfolio,{ticker,targets:trades.map(t=>({price:t.price,quantity:t.quantity,fee:t.fee})),terminalPrices,reserveCash:reserve});const p=document.createElement('p');p.textContent='단계별 현금 비중: '+plan.steps.map(s=>s.stage+'차 '+fmt(s.cashWeightPct)+'%').join(' / ');$('hold').append(p)}
+  $('output').hidden=false;
+ }catch(e){$('error').textContent='계산 불가: '+e.message}
+}
+$('add').addEventListener('click',()=>addTrade());for(const name of ['dip','staged','rotate'])$(name).addEventListener('click',()=>example(name));$('run').addEventListener('click',calculate);example('dip');
+$('fxCalculate').addEventListener('click',()=>{try{const r=calculateKrwDisposalGain({quantity:number('fxQuantity'),acquisitionPrice:number('fxBuyPrice'),disposalPrice:number('fxSellPrice'),acquisitionFx:number('fxBuyRate'),disposalFx:number('fxSellRate'),acquisitionFeeKrw:number('fxBuyFee'),disposalFeeKrw:number('fxSellFee')});$('taxHypothetical').value=String(r.gainKrw);$('fxResult').textContent='취득원가 '+fmt(r.acquisitionCostKrw)+'원 / 양도대금 '+fmt(r.disposalProceedsKrw)+'원 / 과세손익 '+fmt(r.gainKrw)+'원. 아래 세금 계산 버튼을 눌러 연간 손익과 합산하세요.';}catch(e){$('fxResult').textContent='계산 불가: '+e.message}});
+$('taxRun').addEventListener('click',()=>{try{const r=estimateOverseasStockTax({priorRealizedKrw:number('taxPrior'),hypotheticalGainsKrw:[number('taxHypothetical')],annualDeductionKrw:number('taxDeduction'),deductionUsedElsewhereKrw:number('taxUsed'),taxRate:number('taxRate')});$('taxResult').textContent='기존 추정세액: '+fmt(r.baselineTaxKrw)+'원 / 가상 거래 포함: '+fmt(r.projectedTaxKrw)+'원 / 세액 변화: '+fmt(r.incrementalTaxKrw)+'원 (별도 추정)'}catch(e){$('taxResult').textContent='계산 불가: '+e.message}});
+</script></body></html>
