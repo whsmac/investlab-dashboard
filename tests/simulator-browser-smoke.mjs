@@ -268,7 +268,7 @@ try{
  assert.equal(await page.locator('#strategyEditor .strategy-card').count(),1);
  // Saved scenarios deliberately exclude terminal price assumptions: re-enter after reload.
  for(const row of await page.locator('#priceEditor .simple-row').all()){
-  const symbol=await row.locator('input[aria-label="종목코드"]').inputValue();
+  const symbol=await row.locator('input[aria-label="종목"]').inputValue();
   if(symbol==='TSLA')await row.locator('input[aria-label="최종가격"]').fill('150');
   if(symbol==='SOXL')await row.locator('input[aria-label="최종가격"]').fill('40');
  }
