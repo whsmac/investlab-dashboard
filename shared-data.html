@@ -112,7 +112,7 @@
       $("companyCount").textContent = $("priceCount").textContent = $("financialCount").textContent = "—";
       $("companies").innerHTML = '<div class="empty">공유 데이터 테이블을 조회할 수 없습니다.</div>';
       $("prices").innerHTML = $("financials").innerHTML = '<div class="empty">조회 대기</div>';
-      authStatus("조회 실패: " + error.message + " · 스키마 migration이 아직 적용되지 않았다면 정상적인 상태입니다.");
+      authStatus("조회 실패: " + error.message + " · TEST 프로젝트 로그인 상태, 공개용 키, 테이블 조회 권한(RLS)을 확인하세요. 데이터는 변경되지 않았습니다.");
     }
   }
   $("connect").onclick = () => {
