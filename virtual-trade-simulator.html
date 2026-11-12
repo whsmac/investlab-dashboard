@@ -369,6 +369,10 @@ byId('alternatives').addEventListener('change',()=>{
 strategyState=[{name:'가상 거래 1',trades:[]}];renderEditor();ensureTradePrices();
 
 let fxRateSnapshot=null;
+let simulatorInputRevision=0;
+// Edits made during an asynchronous FX lookup must not silently calculate a changed scenario.
+document.addEventListener('input',event=>{if(event.target instanceof HTMLElement&&event.target.closest('input,textarea,select')&&!event.target.readOnly)simulatorInputRevision++;},true);
+document.addEventListener('change',event=>{if(event.target instanceof HTMLElement&&event.target.closest('input,textarea,select')&&!event.target.readOnly)simulatorInputRevision++;},true);
 function parseTaxMoney(id){
  const raw=byId(id).value.replaceAll(',','').trim();
  return raw===''?NaN:Number(raw);
@@ -393,6 +397,7 @@ for(const id of ['priorTax','deduction']){
 }
 async function refreshFxAndCalculate(){
  const button=byId('calculate');button.disabled=true;
+ const inputRevisionAtStart=simulatorInputRevision;
  // Results from a previous FX snapshot must never appear as current while refreshing.
  for(const id of ['resultHero','positionCompare','summary','strategies','strategyHoldings','taxBasis','taxStages','taxGainEditor','steps','holdings','finalValuation'])byId(id).replaceChildren();
  byId('positionCompareTitle').hidden=true;
@@ -412,6 +417,7 @@ async function refreshFxAndCalculate(){
   if(data?.result!=='success'||data?.base_code!=='USD'||!Number.isFinite(rate)||rate<=0||!Number.isFinite(updated)||updated<=0)throw new Error('환율 응답이 유효하지 않습니다.');
   const age=Date.now()/1000-updated;
   if(age>172800||age< -3600)throw new Error('환율 자료의 갱신 시각이 유효하지 않거나 48시간보다 오래되었습니다.');
+  if(simulatorInputRevision!==inputRevisionAtStart)throw new Error('환율 조회 중 입력값이 변경되었습니다. 현재 입력값으로 다시 계산해 주세요.');
   fxRateSnapshot=rate;
   byId('taxFx').value=Math.round(rate).toLocaleString('ko-KR');
   byId('fxStatus').textContent='적용 환율 '+rate.toLocaleString('ko-KR')+' KRW/USD · 자료 갱신 '+new Date(updated*1000).toLocaleString('ko-KR')+' · 제공: ExchangeRate-API (일 단위 갱신, 실시간 호가 아님)';
