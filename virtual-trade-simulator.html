@@ -414,7 +414,7 @@ byId('loadScenario').addEventListener('click',()=>storageAction(()=>{
  const name=byId('savedScenarioList').value,saved=getSavedScenarios();
  if(!Object.hasOwn(saved,name))throw Error('불러올 전략을 선택하세요.');
  const strategies=validateSavedStrategy(saved[name]);
- strategyState=clone(strategies);renderEditor();
+ strategyState=clone(strategies);renderEditor();ensureTradePrices();
  simulatorInputRevision++;invalidateCalculatedResults();
  byId('scenarioName').value=name;
  byId('scenarioStorageStatus').textContent='저장된 전략을 불러왔습니다: '+name+' · 다시 계산하세요.';
