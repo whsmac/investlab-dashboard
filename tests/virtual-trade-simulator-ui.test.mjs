@@ -38,7 +38,7 @@ test('initial scenario has no fictional holdings, cash or executed trades',()=>{
 
 test('trade editor accepts fees and retains distinct execution and terminal prices',()=>{
  assert.match(html,/\['구분','종목코드','수량 \(주\)','체결가 \(\$\)',''\]/);
- assert.match(html,/\['quantity','price'\]/);
+ assert.match(html,/\['quantity','price','fee'\]/);
  assert.match(html,/price:Number\(value\('price'\)\)/);
  assert.match(html,/\['fee','수수료 USD'\]/);
  assert.match(html,/input\.value=trade\[key\]\?\?\(key==='fee'\?0:''\)/);
