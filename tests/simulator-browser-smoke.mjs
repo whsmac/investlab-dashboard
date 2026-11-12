@@ -239,6 +239,20 @@ try{
  assert.equal(await page.locator('#summary').innerText(),'','Insufficient cash must clear stale results');
  assert.equal(await page.locator('#taxGainEditor').innerText(),'','Insufficient cash must clear stale tax rows');
  assert.equal((await page.evaluate(()=>JSON.parse(localStorage.getItem('investlab_holdings'))))[0].shares,10);
+ // Programmatic strategy edits (button clicks) must invalidate a previously successful result.
+ await trade.locator('[data-field="quantity"]').fill('2');
+ await second.locator('[data-field="quantity"]').fill('1');
+ await calculateAndWait();
+ assert.match(await page.locator('#status').innerText(),/계산 완료/);
+ await page.locator('#addStrategy').click();
+ assert.match(await page.locator('#status').innerText(),/입력값이 변경되었습니다/);
+ assert.equal(await page.locator('#summary').innerText(),'');
+ assert.equal(await page.locator('#taxFx').inputValue(),'');
+ await calculateAndWait();
+ assert.match(await page.locator('#status').innerText(),/계산 완료/);
+ await page.locator('#strategyEditor .strategy-card').last().getByRole('button',{name:'전략 삭제'}).click();
+ assert.match(await page.locator('#status').innerText(),/입력값이 변경되었습니다/);
+ assert.equal(await page.locator('#summary').innerText(),'');
  assert.deepEqual(remoteRequests,[],'Simulation must not contact Supabase');
  assert.deepEqual(errors,[]);
  console.log('Simulator browser smoke passed: real holdings, cash, sell, valuation, no writes.');
