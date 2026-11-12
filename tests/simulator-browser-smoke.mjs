@@ -111,6 +111,17 @@ try{
  await buyHelper.getByRole('button',{name:'매수 가능 최대 수량 계산'}).click();
  assert.equal(await tradeRows.last().locator('[data-field="quantity"]').inputValue(),'16','Sell-first should fund sixteen SOXL shares');
  assert.match(await buyHelper.locator('output').innerText(),/매수 직전 현금 500.*최대 16주/);
+ // The last buy must respect the user's reserved cash, unlike intermediate buys.
+ const reserve=page.locator('#strategyEditor .strategy-card').first().getByRole('spinbutton',{name:'전략 목표 잔여 현금 USD'});
+ await reserve.fill('200');
+ await buyHelper.getByRole('button',{name:'매수 가능 최대 수량 계산'}).click();
+ assert.equal(await tradeRows.last().locator('[data-field="quantity"]').inputValue(),'10','Reserve of $200 must cap the final $30 buy at ten shares');
+ assert.match(await buyHelper.locator('output').innerText(),/최종 매수 \(목표 현금 적용\).*매수 직전 현금 500.*최대 10주.*매수 후 잔여 200/);
+ await reserve.fill('600');
+ await buyHelper.getByRole('button',{name:'매수 가능 최대 수량 계산'}).click();
+ assert.equal(await tradeRows.last().locator('[data-field="quantity"]').inputValue(),'0','Reserve above available cash must not create a negative buy');
+ assert.match(await buyHelper.locator('output').innerText(),/목표 현금이 현재 현금보다 큽니다/);
+ await reserve.fill('0');
  await tradeRows.last().locator('[data-field="quantity"]').fill('10');
  assert.equal(await tradeRows.first().getByRole('button',{name:'1번째 거래 위로 이동'}).isDisabled(),true);
  assert.equal(await tradeRows.last().getByRole('button',{name:'2번째 거래 아래로 이동'}).isDisabled(),true);
