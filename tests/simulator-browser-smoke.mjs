@@ -107,6 +107,11 @@ try{
  assert.equal(afterCash,'100','Starting cash input remains unchanged by simulation');
  const stored=await page.evaluate(()=>JSON.parse(localStorage.getItem('investlab_holdings')));
  assert.equal(stored[0].shares,10,'Virtual trades must not mutate actual holdings');
+ // Editing an assumption must immediately invalidate the previous success and FX snapshot.
+ await page.locator('#priorTax').fill('1234567');
+ assert.equal(await page.locator('#summary').innerText(),'','Editing assumptions must immediately clear stale results');
+ assert.equal(await page.locator('#taxFx').inputValue(),'','Editing assumptions must clear the old FX snapshot');
+ assert.match(await page.locator('#status').innerText(),/입력값이 변경되었습니다/);
  // Verify comma formatting, zero deduction, and one FX snapshot per calculation.
  await page.locator('#priorTax').fill('1234567');
  assert.equal(await page.locator('#priorTax').inputValue(),'1,234,567');
