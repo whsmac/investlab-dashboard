@@ -1,0 +1,25 @@
+name: Package isolated TEST Pages preview
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package-test-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Build static TEST preview (no publishing)
+        run: python3 tests/github-pages-test-bundle.py
+      - name: Upload TEST Pages artifact for separate repository
+        uses: actions/upload-artifact@v4
+        with:
+          name: investlab-test-pages
+          path: dist/github-pages-test/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
