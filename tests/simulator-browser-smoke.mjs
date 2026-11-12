@@ -269,6 +269,8 @@ try{
  assert.equal(await page.locator('#allStrategyTitle').isVisible(),true);
  const overview=await page.locator('#allStrategySummary').innerText();
  for(const label of ['최종 현금 USD','최종 평가총액 USD','누적 실현손익 USD','추가 예상 양도세 KRW'])assert.ok(overview.includes(label));
+ assert.match(overview,/보유 대비 차이 \(%\)/);
+ assert.equal(await page.locator('#allStrategySummary .strategy-overview-table').count(),1);
  assert.match(await page.locator('#scenarioStorageStatus').innerText(),/비교 목록에 추가했습니다/);
  assert.equal(await page.evaluate(()=>localStorage.getItem('investlab_holdings')),holdingsBeforeSave);
  await page.reload();
