@@ -86,7 +86,7 @@ try {
   assert.match(await page.locator("#prices").innerText(), /2026-11-06/);
   assert.match(await page.locator("#financials").innerText(), /분기 재무 데이터 없음/);
   assert.match(await page.locator("#financials").innerText(), /미수집은 0 USD가 아닙니다/);
-  assert.match(await page.locator("#authStatus").innerText(), /조회 완료/);
+  assert.match(await page.locator("#authStatus").innerText(), /조회 완료.*읽기 전용.*분기 매출·CAPEX는 아직 미수집/);
   // A real zero must remain 0; missing individual financial metrics must read '미수집'.
   await page.evaluate(() => localStorage.setItem("pilot_financial_rows", "yes"));
   await page.reload();
