@@ -116,6 +116,12 @@ try{
  assert.equal(JSON.parse(await page.locator('#terminal').inputValue()).SOXL,40,'Advanced terminal JSON must reflect the new ticker price');
  assert.match(await page.locator('#finalValuation').textContent(),/SOXL/);
  assert.match(await page.locator('#finalValuation').textContent(),/1,800|1800/);
+ const stepTable=page.locator('#steps table').first();
+ assert.match(await stepTable.locator('thead').innerText(),/수수료.*거래 후 해당 종목 수량.*거래 후 현금/);
+ const stepRows=await stepTable.locator('tbody tr').allTextContents();
+ assert.equal(stepRows.length,2,'Two executed trades must produce two chronological rows');
+ assert.match(stepRows[0],/매도.*TSLA.*2.*200.*8.*500/,'TSLA sell row must show remaining eight shares and cash after sale');
+ assert.match(stepRows[1],/매수.*SOXL.*10.*30.*10.*200/,'SOXL buy row must show ten acquired shares and remaining cash');
  const summaryRows=await page.locator('#summary table tr').allTextContents();
  const row=label=>summaryRows.find(line=>line.includes(label))||'';
  assert.match(row('최종 현금'),/100.*200/);
