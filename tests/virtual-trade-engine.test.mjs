@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {simulateTrades} from '../src/simulator/virtual-trade-engine.mjs';
+import {compareScenarios} from '../src/simulator/scenario-comparison.mjs';
 
 test('staged sale creates cash and preserves remaining shares', () => {
   const original={cash:100,positions:{TSLA:{quantity:10,averageCost:200}}};
@@ -71,4 +72,24 @@ test('four-step rotation tracks funded cash, fees, cost basis and realized gains
   assert.equal(result.final.realizedPnL,355.2);
   assert.deepEqual(original,{cash:50,positions:{TSLA:{quantity:10,averageCost:100}}},'Virtual simulation must not mutate the real portfolio');
   assert.equal(result.taxStatus,'not_calculated','The trade engine must not present USD gains as calculated KRW tax');
+});
+
+test('scenario comparison identifies the exact failing trade and strategy without changing holdings', () => {
+ const portfolio={cash:10,positions:{TSLA:{quantity:2,averageCost:100}}};
+ const cases=[
+  {trades:[{side:'buy',ticker:'SOXL',quantity:1,price:20}],reason:'insufficient cash',ticker:'SOXL'},
+  {trades:[{side:'sell',ticker:'TSLA',quantity:3,price:150}],reason:'insufficient shares',ticker:'TSLA'}
+ ];
+ for(const item of cases){
+  assert.throws(()=>compareScenarios(portfolio,[{name:'불가능한 전략',trades:item.trades}],{TSLA:150,SOXL:20}),error=>{
+   assert.equal(error.message,'scenario trade unavailable');
+   assert.equal(error.scenarioName,'불가능한 전략');
+   assert.equal(error.tradeIndex,0);
+   assert.equal(error.ticker,item.ticker);
+   assert.equal(error.reason,item.reason);
+   return true;
+  });
+ }
+ assert.equal(portfolio.cash,10);
+ assert.equal(portfolio.positions.TSLA.quantity,2);
 });
