@@ -56,6 +56,25 @@ try{
  await page.evaluate(()=>localStorage.removeItem('investlab_simulator_saved_scenarios_v1'));
  await page.reload();
  for(const id of ['savedScenarioList','loadScenario','appendScenario','deleteScenario'])assert.equal(await page.locator('#'+id).isDisabled(),true,'Empty saved list must disable '+id);
+ // Saved strategies must preserve explicit per-trade fees across reload and load.
+ await page.locator('#strategyEditor .strategy-card button').last().click();
+ const feeTrade=page.locator('#strategyEditor .strategy-card').first().locator('.trade-grid').first();
+ await feeTrade.locator('[data-field="ticker"]').fill('SOXL');
+ await feeTrade.locator('[data-field="quantity"]').fill('1');
+ await feeTrade.locator('[data-field="price"]').fill('30');
+ await feeTrade.locator('[data-field="fee"]').fill('1.25');
+ await page.locator('#scenarioName').fill('수수료 저장 검증');
+ await page.locator('#saveScenario').click();
+ assert.match(await page.locator('#scenarioStorageStatus').innerText(),/저장했습니다/);
+ const feeSaved=await page.evaluate(()=>JSON.parse(localStorage.getItem('investlab_simulator_saved_scenarios_v1')));
+ assert.equal(feeSaved['수수료 저장 검증'][0].trades[0].fee,1.25);
+ await page.reload();
+ await page.locator('#savedScenarioList').selectOption('수수료 저장 검증');
+ await page.locator('#loadScenario').click();
+ assert.equal(await page.locator('#strategyEditor .strategy-card').first().locator('.trade-grid').first().locator('[data-field="fee"]').inputValue(),'1.25','Reload and load must preserve transaction fee');
+ page.once('dialog',dialog=>dialog.accept());
+ await page.locator('#deleteScenario').click();
+ await page.reload();
  await page.evaluate(()=>{
   localStorage.setItem('investlab_holdings',JSON.stringify([
    {symbol:'TSLA',shares:10,avg_cost:100,price:150},
