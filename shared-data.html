@@ -100,7 +100,8 @@
       const failed = results.find(x => x.error);
       if (failed) throw failed.error;
       const [companies, prices, financials] = results.map(x => x.data || []);
-      const [companyTotal, priceTotal, financialTotal] = results.map(x => x.count ?? 0);
+      if (results.some(x => !Number.isSafeInteger(x.count) || x.count < 0)) throw new Error("정확한 COUNT를 확인할 수 없습니다.");
+      const [companyTotal, priceTotal, financialTotal] = results.map(x => x.count);
       $("companyCount").textContent = companyTotal.toLocaleString("ko-KR");
       $("priceCount").textContent = priceTotal.toLocaleString("ko-KR");
       $("financialCount").textContent = financialTotal.toLocaleString("ko-KR");
