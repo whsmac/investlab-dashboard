@@ -253,6 +253,26 @@ try{
  await page.locator('#strategyEditor .strategy-card').last().getByRole('button',{name:'전략 삭제'}).click();
  assert.match(await page.locator('#status').innerText(),/입력값이 변경되었습니다/);
  assert.equal(await page.locator('#summary').innerText(),'');
+ // Persist only virtual strategies across reload; do not touch actual holdings.
+ const holdingsBeforeSave=await page.evaluate(()=>localStorage.getItem('investlab_holdings'));
+ await page.locator('#scenarioName').fill('TSLA 재매수 검증');
+ await page.locator('#saveScenario').click();
+ assert.match(await page.locator('#scenarioStorageStatus').innerText(),/저장했습니다/);
+ const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('investlab_simulator_saved_scenarios_v1')));
+ assert.ok(saved['TSLA 재매수 검증']);
+ assert.equal(await page.evaluate(()=>localStorage.getItem('investlab_holdings')),holdingsBeforeSave);
+ await page.reload();
+ await page.locator('#savedScenarioList').selectOption('TSLA 재매수 검증');
+ await page.locator('#loadScenario').click();
+ assert.match(await page.locator('#scenarioStorageStatus').innerText(),/불러왔습니다/);
+ assert.equal(await page.locator('#strategyEditor .strategy-card').count(),1);
+ await calculateAndWait();
+ assert.match(await page.locator('#status').innerText(),/계산 완료/);
+ page.once('dialog',dialog=>dialog.accept());
+ await page.locator('#deleteScenario').click();
+ assert.match(await page.locator('#scenarioStorageStatus').innerText(),/삭제했습니다/);
+ assert.equal(await page.locator('#savedScenarioList option').count(),0);
+ assert.equal(await page.evaluate(()=>localStorage.getItem('investlab_holdings')),holdingsBeforeSave);
  assert.deepEqual(remoteRequests,[],'Simulation must not contact Supabase');
  assert.deepEqual(errors,[]);
  console.log('Simulator browser smoke passed: real holdings, cash, sell, valuation, no writes.');
