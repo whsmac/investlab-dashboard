@@ -397,7 +397,7 @@ document.addEventListener('click',event=>{
   simulatorInputRevision++;
   invalidateCalculatedResults();
  }
-});
+},true);
 function parseTaxMoney(id){
  const raw=byId(id).value.replaceAll(',','').trim();
  return raw===''?NaN:Number(raw);
