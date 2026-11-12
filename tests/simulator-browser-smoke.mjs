@@ -106,12 +106,22 @@ try{
  await second.locator('[data-field="quantity"]').fill('10');
  await second.locator('[data-field="price"]').fill('30');
  const tradeRows=page.locator('#strategyEditor .strategy-card').first().locator('.trade-grid');
+ // Maximum purchasable quantity must use only cash available before this trade.
+ const buyHelper=page.locator('#strategyEditor .strategy-card').first().locator('.buy-helper').filter({has:page.getByRole('button',{name:'매수 가능 최대 수량 계산'})});
+ await buyHelper.getByRole('button',{name:'매수 가능 최대 수량 계산'}).click();
+ assert.equal(await tradeRows.last().locator('[data-field="quantity"]').inputValue(),'16','Sell-first should fund sixteen SOXL shares');
+ assert.match(await buyHelper.locator('output').innerText(),/매수 직전 현금 500.*최대 16주/);
+ await tradeRows.last().locator('[data-field="quantity"]').fill('10');
  assert.equal(await tradeRows.first().getByRole('button',{name:'1번째 거래 위로 이동'}).isDisabled(),true);
  assert.equal(await tradeRows.last().getByRole('button',{name:'2번째 거래 아래로 이동'}).isDisabled(),true);
  await tradeRows.last().getByRole('button',{name:'2번째 거래 위로 이동'}).click();
  assert.equal(await tradeRows.first().locator('[data-field="ticker"]').inputValue(),'SOXL','Move-up must preserve the traded symbol');
  assert.equal(await tradeRows.last().locator('[data-field="ticker"]').inputValue(),'TSLA');
  assert.equal(await tradeRows.first().locator('[data-field="price"]').inputValue(),'30','Move-up must preserve the trade price');
+ await buyHelper.getByRole('button',{name:'매수 가능 최대 수량 계산'}).click();
+ assert.equal(await tradeRows.first().locator('[data-field="quantity"]').inputValue(),'3','Buy-first must be limited to three SOXL shares from initial cash');
+ assert.match(await buyHelper.locator('output').innerText(),/매수 직전 현금 100.*최대 3주/);
+ await tradeRows.first().locator('[data-field="quantity"]').fill('10');
  assert.match(await page.locator('#status').innerText(),/다시 실행/,'Reordering must invalidate previous results');
  await tradeRows.first().getByRole('button',{name:'1번째 거래 아래로 이동'}).click();
  assert.equal(await tradeRows.first().locator('[data-field="ticker"]').inputValue(),'TSLA');
