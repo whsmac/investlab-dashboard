@@ -20,7 +20,9 @@ const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 const page=await browser.newPage();
 const errors=[];
 await page.route('https://open.er-api.com/v6/latest/USD',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({result:'success',base_code:'USD',rates:{KRW:1341.693922},time_last_update_unix:Math.floor(Date.now()/1000)})}));
-async function calculateAndWait(){await page.locator('#calculate').click();await page.waitForFunction(()=>!document.querySelector('#calculate').disabled);}
+let fxRequestCount=0;
+page.on('request',request=>{if(request.url()==='https://open.er-api.com/v6/latest/USD')fxRequestCount++;});
+async function calculateAndWait(){const before=fxRequestCount;await page.locator('#calculate').click();await page.waitForFunction(()=>!document.querySelector('#calculate').disabled);assert.equal(fxRequestCount,before+1,'Each calculation must fetch exactly one USD/KRW snapshot');}
 
 const remoteRequests=[];
 page.on('request',request=>{if(/supabase\.co/i.test(request.url()))remoteRequests.push(request.url());});
