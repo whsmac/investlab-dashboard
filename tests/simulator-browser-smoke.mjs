@@ -146,6 +146,20 @@ try{
  await helpers.nth(2).getByRole('button',{name:'매수 가능 최대 수량 계산'}).click();
  assert.equal(await third.locator('[data-field="quantity"]').inputValue(),'2','Final $50 buy should use only $100 above reserve');
  assert.match(await helpers.nth(2).locator('output').innerText(),/매수 후 잔여 100/);
+ // Moving the final buy earlier must transfer reserve enforcement to the new last buy.
+ await third.getByRole('button',{name:'3번째 거래 위로 이동'}).click();
+ assert.equal(await tradeRows.nth(1).locator('[data-field="ticker"]').inputValue(),'TQQQ');
+ assert.equal(await tradeRows.nth(2).locator('[data-field="ticker"]').inputValue(),'SOXL');
+ await helpers.nth(1).getByRole('button',{name:'매수 가능 최대 수량 계산'}).click();
+ assert.equal(await tradeRows.nth(1).locator('[data-field="quantity"]').inputValue(),'10','Moved intermediate TQQQ buy must ignore reserve');
+ assert.match(await helpers.nth(1).locator('output').innerText(),/중간 매수 \(목표 현금 미적용\)/);
+ await tradeRows.nth(1).locator('[data-field="quantity"]').fill('2');
+ await helpers.nth(2).getByRole('button',{name:'매수 가능 최대 수량 계산'}).click();
+ assert.equal(await tradeRows.nth(2).locator('[data-field="quantity"]').inputValue(),'10','Moved final SOXL buy must reserve $100');
+ assert.match(await helpers.nth(2).locator('output').innerText(),/최종 매수 \(목표 현금 적용\).*매수 직전 현금 400.*최대 10주.*매수 후 잔여 100/);
+ await tradeRows.nth(1).getByRole('button',{name:'2번째 거래 아래로 이동'}).click();
+ assert.equal(await tradeRows.nth(1).locator('[data-field="ticker"]').inputValue(),'SOXL');
+ assert.equal(await tradeRows.nth(2).locator('[data-field="ticker"]').inputValue(),'TQQQ');
  await third.getByRole('button',{name:'삭제'}).click();
  await reserve.fill('0');
  await tradeRows.last().locator('[data-field="quantity"]').fill('10');
