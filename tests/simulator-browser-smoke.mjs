@@ -30,6 +30,17 @@ page.on('pageerror',e=>errors.push(e.message));
 try{
  await page.goto('http://127.0.0.1:'+server.address().port+'/virtual-trade-simulator.html');
  assert.match(await page.locator('body').innerText(),/저장된 전략 불러오기는 현재 편집 중인 전략을 교체하므로, 유지할 내용은 먼저 저장하세요/);
+ // Malformed local saved-strategy JSON must be reported, never silently erased.
+ await page.evaluate(()=>localStorage.setItem('investlab_simulator_saved_scenarios_v1','{broken-json'));
+ await page.reload();
+ assert.match(await page.locator('#scenarioStorageStatus').innerText(),/저장된 전략 데이터가 손상되었습니다/);
+ assert.equal(await page.evaluate(()=>localStorage.getItem('investlab_simulator_saved_scenarios_v1')),'{broken-json');
+ await page.locator('#scenarioName').fill('손상 저장소 테스트');
+ await page.locator('#saveScenario').click();
+ assert.match(await page.locator('#scenarioStorageStatus').innerText(),/저장 작업 실패/);
+ assert.equal(await page.evaluate(()=>localStorage.getItem('investlab_simulator_saved_scenarios_v1')),'{broken-json');
+ await page.evaluate(()=>localStorage.removeItem('investlab_simulator_saved_scenarios_v1'));
+ await page.reload();
  for(const id of ['savedScenarioList','loadScenario','appendScenario','deleteScenario'])assert.equal(await page.locator('#'+id).isDisabled(),true,'Empty saved list must disable '+id);
  await page.evaluate(()=>{
   localStorage.setItem('investlab_holdings',JSON.stringify([
