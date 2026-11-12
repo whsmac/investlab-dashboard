@@ -106,7 +106,7 @@
       $("companies").innerHTML = table(["Ticker","기업명","거래소","상태"], companies.map(x => [x.ticker,x.company_name,x.exchange,x.is_active ? "활성" : "비활성"]));
       $("prices").innerHTML = table(["기업 ID","거래일","조정종가","통화"], prices.slice().sort((a,b)=>b.trading_date.localeCompare(a.trading_date)).slice(0,20).map(x => [x.company_id,x.trading_date,x.close_price,x.currency]));
       $("financials").innerHTML = financialTotal === 0 ? '<div class="empty">분기 재무 데이터 없음 · TEST DB에 매출액·CAPEX 관측값이 아직 등록되지 않았습니다. 미수집은 0 USD가 아닙니다.</div>' : table(["기업 ID","회계분기","매출(USD bn)","CAPEX(USD bn)","CAPEX 정의"], financials.slice().sort((a,b)=>b.fiscal_period.localeCompare(a.fiscal_period)).slice(0,20).map(x => [x.company_id,x.fiscal_period,x.revenue_usd_bn ?? '미수집',x.capex_usd_bn ?? '미수집',x.capex_definition ?? '미수집']));
-      authStatus("조회 완료 · 전체 건수는 정확한 COUNT 기준이며, 상세 목록은 테이블별 최대 100행만 표시합니다.");
+      authStatus("조회 완료 · 읽기 전용 · 전체 건수는 정확한 COUNT 기준이며, 상세 목록은 테이블별 최대 100행만 표시합니다." + (financialTotal === 0 ? " · 분기 매출·CAPEX는 아직 미수집 상태입니다." : ""));
     } catch (error) {
       $("companyCount").textContent = $("priceCount").textContent = $("financialCount").textContent = "—";
       $("companies").innerHTML = '<div class="empty">공유 데이터 테이블을 조회할 수 없습니다.</div>';
