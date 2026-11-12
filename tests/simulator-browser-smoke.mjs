@@ -430,9 +430,17 @@ try{
  }
  await calculateAndWait();
  assert.match(await page.locator('#status').innerText(),/계산 완료/);
+ const savedBeforeDelete=await page.evaluate(()=>localStorage.getItem('investlab_simulator_saved_scenarios_v1'));
+ const editorBeforeDelete=await page.locator('#strategyEditor .strategy-card').first().locator('.strategy-name').inputValue();
+ page.once('dialog',dialog=>{assert.match(dialog.message(),/저장된 전략을 삭제하시겠습니까/);return dialog.dismiss();});
+ await page.locator('#deleteScenario').click();
+ assert.equal(await page.evaluate(()=>localStorage.getItem('investlab_simulator_saved_scenarios_v1')),savedBeforeDelete,'Cancelling deletion must preserve saved strategies');
+ assert.equal(await page.locator('#savedScenarioList option').count(),1);
+ assert.equal(await page.locator('#strategyEditor .strategy-card').first().locator('.strategy-name').inputValue(),editorBeforeDelete);
  page.once('dialog',dialog=>dialog.accept());
  await page.locator('#deleteScenario').click();
  assert.match(await page.locator('#scenarioStorageStatus').innerText(),/삭제했습니다/);
+ assert.equal(await page.locator('#strategyEditor .strategy-card').first().locator('.strategy-name').inputValue(),editorBeforeDelete,'Deleting saved scenario must not remove active editor strategy');
  assert.equal(await page.locator('#savedScenarioList option').count(),0);
  assert.equal(await page.evaluate(()=>localStorage.getItem('investlab_holdings')),holdingsBeforeSave);
  assert.deepEqual(remoteRequests,[],'Simulation must not contact Supabase');
