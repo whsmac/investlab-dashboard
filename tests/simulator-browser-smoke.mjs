@@ -340,6 +340,12 @@ try{
  await calculateAndWait();
  assert.match(await page.locator('#status').innerText(),/계산 완료/);
  assert.equal(await page.locator('#allStrategyTitle').isVisible(),true);
+ const allStepTable=page.locator('#allStrategySteps table');
+ assert.equal(await allStepTable.count(),1,'Multi-strategy step comparison must render a table');
+ assert.match(await allStepTable.locator('thead').innerText(),/전략.*단계.*거래 후 종목 수량.*거래 후 현금 USD/);
+ const allStepRows=await allStepTable.locator('tbody tr').allTextContents();
+ assert.equal(allStepRows.length,4,'Two two-trade strategies must show four chronological trade rows');
+ assert.ok(allStepRows.every(line=>/TSLA|SOXL/.test(line)),'Every step must identify its traded ticker');
  assert.equal(await page.locator('#strategyRanking').isVisible(),true);
  assert.match(await page.locator('#strategyRanking').innerText(),/세전 평가총액 1위.*추가 예상세액 반영 1위.*두 기준의 1위가 (같습니다|다릅니다)/);
  const overview=await page.locator('#allStrategySummary').innerText();
