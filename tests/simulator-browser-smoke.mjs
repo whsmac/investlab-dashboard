@@ -313,6 +313,31 @@ try{
  assert.match(invertedRanking,/세전 평가총액 1위.*세전 우세·세후 열세/);
  assert.ok(invertedRanking.split('추가 예상세액 반영 1위')[1]?.includes(firstStrategyName),'Net valuation leader should be the first strategy');
  assert.match(invertedRanking,/두 기준의 1위가 다릅니다/);
+ // Check numerical consistency across the rendered strategy overview, tax and FX.
+ const comparisonCells=await page.locator('#allStrategySummary .strategy-overview-table tr').evaluateAll(rows=>
+  rows.map(row=>[...row.querySelectorAll('th,td')].map(cell=>cell.textContent.trim()))
+ );
+ const comparisonRow=label=>{
+  const found=comparisonCells.find(cells=>cells[0]===label);
+  assert.ok(found,'Missing comparison row: '+label);
+  return found;
+ };
+ const numeric=value=>Number(value.replaceAll(',','').replaceAll('+','').replaceAll('%',''));
+ const pretax=comparisonRow('최종 평가총액 USD');
+ const incrementalKrw=comparisonRow('추가 예상 양도세 KRW');
+ const incrementalUsd=comparisonRow('추가 예상세액 환산 USD');
+ const adjusted=comparisonRow('세금 반영 추정 평가총액 USD');
+ const difference=comparisonRow('보유 대비 차이 USD');
+ const adjustedDifference=comparisonRow('세금 반영 보유 대비 차이 USD');
+ const fxRate=Number((await page.locator('#taxFx').inputValue()).replaceAll(',',''));
+ assert.ok(Number.isFinite(fxRate)&&fxRate>0);
+ for(let col=2;col<pretax.length;col++){
+  assert.ok(Math.abs(numeric(incrementalKrw[col])/fxRate-numeric(incrementalUsd[col]))<1.1,'USD tax conversion mismatch for strategy '+col);
+  assert.ok(Math.abs(numeric(pretax[col])-numeric(incrementalKrw[col])/fxRate-numeric(adjusted[col]))<1.1,'Net valuation mismatch for strategy '+col);
+  assert.ok(Math.abs(numeric(difference[col])-numeric(incrementalKrw[col])/fxRate-numeric(adjustedDifference[col]))<1.1,'Net delta mismatch for strategy '+col);
+ }
+ assert.ok(numeric(pretax[3])>numeric(pretax[2]),'Second strategy should win pretax valuation');
+ assert.ok(numeric(adjusted[3])<numeric(adjusted[2]),'First strategy should win tax-adjusted valuation');
  assert.equal(await page.evaluate(()=>localStorage.getItem('investlab_holdings')),holdingsBeforeSave);
  await page.reload();
  await page.locator('#savedScenarioList').selectOption('TSLA 재매수 검증');
