@@ -44,5 +44,5 @@ test('tax UI uses explicit separate KRW inputs and does not claim filing-grade r
  for(const id of ['taxPrior','taxHypothetical','taxDeduction','taxRate','taxResult','fxBuyRate','fxSellRate'])assert.ok(html.includes('id="'+id+'"'),id);
  assert.match(html,/incrementalTaxKrw/);
  assert.match(html,/신고·납부액 확정용이 아니며/);
- assert.doesNotMatch(html,/supabase\\.co|supabase\\.from\\(/);
+ assert.ok(!html.includes('supabase.co') && !html.includes('supabase.from('));
 });
