@@ -267,6 +267,8 @@ try{
  await calculateAndWait();
  assert.match(await page.locator('#status').innerText(),/계산 완료/);
  assert.equal(await page.locator('#allStrategyTitle').isVisible(),true);
+ assert.equal(await page.locator('#strategyRanking').isVisible(),true);
+ assert.match(await page.locator('#strategyRanking').innerText(),/평가총액 1위.*세금 차감 전, 위험 미반영/);
  const overview=await page.locator('#allStrategySummary').innerText();
  for(const label of ['최종 현금 USD','최종 평가총액 USD','누적 실현손익 USD','추가 예상 양도세 KRW'])assert.ok(overview.includes(label));
  assert.match(overview,/보유 대비 차이 \(%\)/);
