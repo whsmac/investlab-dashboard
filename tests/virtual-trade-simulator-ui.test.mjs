@@ -36,13 +36,14 @@ test('initial scenario has no fictional holdings, cash or executed trades',()=>{
 });
 
 
-test('phase-1 trade editor excludes fees and retains distinct execution and terminal prices',()=>{
+test('trade editor accepts fees and retains distinct execution and terminal prices',()=>{
  assert.match(html,/\['구분','종목코드','수량 \(주\)','체결가 \(\$\)',''\]/);
  assert.match(html,/\['quantity','price'\]/);
  assert.match(html,/price:Number\(value\('price'\)\)/);
- assert.doesNotMatch(html,/data-field=['"]fee|\['fee','수수료|\['price','가격 USD'\],\['fee'/);
+ assert.match(html,/\['fee','수수료 USD'\]/);
+ assert.match(html,/input\.value=trade\[key\]\?\?\(key==='fee'\?0:''\)/);
  assert.match(html,/최종 가정 주가/);
- assert.match(html,/trades:s\.trades\.map\(\(\{fee,\.\.\.trade\}\)=>trade\)/);
+ assert.match(html,/strategyState=clone\(value\)/);
 });
 
 
@@ -59,7 +60,7 @@ test('buy helper uses preceding trades and target reserve without changing sell 
 test('target cash reserve is entered once per strategy and reused for buy calculations',()=>{
  assert.match(html,/reserve\.value=String\(strategy\.targetCash\?\?0\)/);
  assert.match(html,/strategy\.targetCash=reserve\.value/);
- assert.match(html,/const price=Number\(trade\.price\),target=isFinalBuy\?Number\(reserve\.value\):0/);
+ assert.match(html,/const price=Number\(trade\.price\),fee=Number\(trade\.fee\?\?0\),target=isFinalBuy\?Number\(reserve\.value\):0/);
  assert.match(html,/helper\.append\(auto,info\)/);
  assert.doesNotMatch(html,/helper\.append\(reserveLabel,reserve,auto,info\)/);
 });
@@ -133,4 +134,10 @@ test('named scenario storage is browser-local and does not write portfolio or Su
  assert.match(html,/validateSavedStrategy\(readStrategies\(\)\)/);
  assert.match(html,/localStorage\.setItem\(SCENARIO_STORAGE_KEY/);
  assert.match(html,/simulatorInputRevision\+\+;invalidateCalculatedResults\(\)/);
+});
+
+test('buy helper includes preceding trade fees and current buy fee',()=>{
+ assert.match(html,/price:Number\(t\.price\),fee:Number\(t\.fee\?\?0\)/);
+ assert.match(html,/const budget=Math\.max\(0,available-target-fee\)/);
+ assert.match(html,/if\(!Number\.isFinite\(fee\)\|\|fee<0\)/);
 });
