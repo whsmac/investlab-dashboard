@@ -141,3 +141,11 @@ test('buy helper includes preceding trade fees and current buy fee',()=>{
  assert.match(html,/const budget=Math\.max\(0,available-target-fee\)/);
  assert.match(html,/if\(!Number\.isFinite\(fee\)\|\|fee<0\)/);
 });
+
+test('scenario editor and local storage preserve fee while old saved trades default to zero',()=>{
+ assert.match(html,/price:Number\(value\('price'\)\),fee:Number\(value\('fee'\)\)/);
+ assert.match(html,/for\(const key of \['quantity','price','fee'\]\)/);
+ assert.match(html,/!Number\.isFinite\(t\.fee\?\?0\)/);
+ assert.match(html,/fee:t\.fee\?\?0/);
+ assert.match(html,/strategyState=clone\(value\)/);
+});
