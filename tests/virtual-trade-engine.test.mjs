@@ -51,3 +51,24 @@ test('rejects malformed inputs and never mutates portfolio', () => {
   assert.throws(()=>simulateTrades({cash:10,positions:{}},[{side:'buy',ticker:'TSLA',quantity:1,price:20,fee:-1}]),/nonnegative/);
   assert.throws(()=>simulateTrades({cash:10,positions:{}},[{side:'buy',ticker:'TSLA',quantity:1,price:NaN}]),/finite/);
 });
+
+test('four-step rotation tracks funded cash, fees, cost basis and realized gains at every step', () => {
+  const original={cash:50,positions:{TSLA:{quantity:10,averageCost:100}}};
+  const trades=[
+    {side:'sell',ticker:'TSLA',quantity:3,price:200,fee:3},
+    {side:'buy',ticker:'SOXL',quantity:10,price:40,fee:2},
+    {side:'sell',ticker:'SOXL',quantity:4,price:55,fee:1},
+    {side:'buy',ticker:'TSLA',quantity:2,price:110,fee:2}
+  ];
+  const result=simulateTrades(original,trades);
+  assert.deepEqual(result.steps.map(step=>step.cash),[647,245,464,242]);
+  assert.deepEqual(result.steps.map(step=>step.cumulativeRealizedPnL),[297,297,355.2,355.2]);
+  assert.deepEqual(result.steps.map(step=>step.positions.TSLA.quantity),[7,7,7,9]);
+  assert.deepEqual(result.steps.map(step=>step.positions.SOXL?.quantity??0),[0,10,6,6]);
+  assert.equal(result.final.positions.SOXL.averageCost,40.2);
+  assert.ok(Math.abs(result.final.positions.TSLA.averageCost-102.44444444)<1e-7);
+  assert.equal(result.final.cash,242);
+  assert.equal(result.final.realizedPnL,355.2);
+  assert.deepEqual(original,{cash:50,positions:{TSLA:{quantity:10,averageCost:100}}},'Virtual simulation must not mutate the real portfolio');
+  assert.equal(result.taxStatus,'not_calculated','The trade engine must not present USD gains as calculated KRW tax');
+});
