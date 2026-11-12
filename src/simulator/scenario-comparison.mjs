@@ -26,8 +26,8 @@ export function compareScenarios(portfolio, scenarios, terminalPrices) {
     let result;
     try{result=simulateTrades(portfolio,s.trades);}
     catch(error){
-      if(/^(insufficient cash|insufficient shares) at (\\d+)$/.test(error.message)){
-        const [,reason,index]=error.message.match(/^(insufficient cash|insufficient shares) at (\\d+)$/);
+      if(/^(insufficient cash|insufficient shares) at (\d+)$/.test(error.message)){
+        const [,reason,index]=error.message.match(/^(insufficient cash|insufficient shares) at (\d+)$/);
         const failure=new Error('scenario trade unavailable');
         failure.scenarioName=s.name;
         failure.tradeIndex=Number(index);
