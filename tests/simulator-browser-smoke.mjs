@@ -105,6 +105,17 @@ try{
  await second.locator('[data-field="ticker"]').fill('SOXL');
  await second.locator('[data-field="quantity"]').fill('10');
  await second.locator('[data-field="price"]').fill('30');
+ const tradeRows=page.locator('#strategyEditor .strategy-card').first().locator('.trade-grid');
+ assert.equal(await tradeRows.first().getByRole('button',{name:'1번째 거래 위로 이동'}).isDisabled(),true);
+ assert.equal(await tradeRows.last().getByRole('button',{name:'2번째 거래 아래로 이동'}).isDisabled(),true);
+ await tradeRows.last().getByRole('button',{name:'2번째 거래 위로 이동'}).click();
+ assert.equal(await tradeRows.first().locator('[data-field="ticker"]').inputValue(),'SOXL','Move-up must preserve the traded symbol');
+ assert.equal(await tradeRows.last().locator('[data-field="ticker"]').inputValue(),'TSLA');
+ assert.equal(await tradeRows.first().locator('[data-field="price"]').inputValue(),'30','Move-up must preserve the trade price');
+ assert.match(await page.locator('#status').innerText(),/다시 실행/,'Reordering must invalidate previous results');
+ await tradeRows.first().getByRole('button',{name:'1번째 거래 아래로 이동'}).click();
+ assert.equal(await tradeRows.first().locator('[data-field="ticker"]').inputValue(),'TSLA');
+ assert.equal(await tradeRows.last().locator('[data-field="ticker"]').inputValue(),'SOXL');
  await calculateAndWait();
  // The first calculation intentionally requests a terminal assumption for the new ticker.
  assert.match(await page.locator('#status').innerText(),/SOXL/);
