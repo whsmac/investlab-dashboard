@@ -23,7 +23,20 @@ export function compareScenarios(portfolio, scenarios, terminalPrices) {
   return {baseline:{...baseline,terminalValue:baselineValue},scenarios:scenarios.map(s=>{
     if (!s || typeof s.name!=='string' || !s.name.trim() || seen.has(s.name)) throw new Error('scenario name must be unique');
     seen.add(s.name);
-    const result=simulateTrades(portfolio,s.trades);
+    let result;
+    try{result=simulateTrades(portfolio,s.trades);}
+    catch(error){
+      if(/^(insufficient cash|insufficient shares) at (\\d+)$/.test(error.message)){
+        const [,reason,index]=error.message.match(/^(insufficient cash|insufficient shares) at (\\d+)$/);
+        const failure=new Error('scenario trade unavailable');
+        failure.scenarioName=s.name;
+        failure.tradeIndex=Number(index);
+        failure.reason=reason;
+        failure.ticker=s.trades[Number(index)]?.ticker;
+        throw failure;
+      }
+      throw error;
+    }
     const terminalValue=valueOf(result);
     return {name:s.name,...result,terminalValue,deltaVsHold:Math.round((terminalValue-baselineValue+Number.EPSILON)*1e8)/1e8};
   }),taxStatus:'not_calculated'};
