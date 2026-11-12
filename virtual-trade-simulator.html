@@ -179,7 +179,12 @@ function calculate(){
   byId('holdings').append(table(['종목','계속 보유 주식 수','가상 거래 후 주식 수'],[...tickers].map(t=>[t,fmt(result.baseline.final.positions[t]?.quantity??0),fmt(scenario.final.positions[t]?.quantity??0)])));
   byId('status').textContent='계산 완료 · 실제 거래 및 데이터베이스 저장 없음';
   byId('status').className='hint';
- }catch(e){byId('status').textContent='입력 오류: '+e.message;byId('status').className='error';}
+ }catch(e){
+  const unavailable=e.message==='scenario trade unavailable'&&Number.isInteger(e.tradeIndex);
+  const reason=e.reason==='insufficient cash'?'매수에 필요한 현금이 부족합니다.':'매도하려는 수량이 보유수량을 초과합니다.';
+  byId('status').textContent=unavailable?'실행 불가: 전략 「'+e.scenarioName+'」의 '+(e.tradeIndex+1)+'번째 거래 ('+(e.ticker||'종목 미확인')+') — '+reason:'입력 오류: '+e.message;
+  byId('status').className='error';
+ }
 }
 
 
