@@ -339,6 +339,28 @@ try{
  }
  assert.ok(numeric(pretax[3])>numeric(pretax[2]),'Second strategy should win pretax valuation');
  assert.ok(numeric(adjusted[3])<numeric(adjusted[2]),'First strategy should win tax-adjusted valuation');
+ // A loss-making disposal can reduce the estimated annual tax, but cannot
+ // deposit a cash refund into the virtual account.
+ await page.locator('#priorTax').fill('5,000,000');
+ await page.locator('#strategyEditor .strategy-card').first().locator('.trade-grid').first().locator('[data-field="price"]').fill('50');
+ await calculateAndWait();
+ assert.match(await page.locator('#status').innerText(),/계산 완료/);
+ const lossRows=await page.locator('#allStrategySummary .strategy-overview-table tr').evaluateAll(rows=>
+  rows.map(row=>[...row.querySelectorAll('th,td')].map(cell=>cell.textContent.trim()))
+ );
+ const lossRow=label=>{
+  const row=lossRows.find(cells=>cells[0]===label);
+  assert.ok(row,'Missing loss scenario row: '+label);
+  return row;
+ };
+ const lossTax=numeric(lossRow('추가 예상 양도세 KRW')[2]);
+ const lossPretax=numeric(lossRow('최종 평가총액 USD')[2]);
+ const lossAdjusted=numeric(lossRow('세금 반영 추정 평가총액 USD')[2]);
+ const lossCash=numeric(lossRow('최종 현금 USD')[2]);
+ assert.ok(lossTax<0,'Loss sale must lower prior annual estimated tax');
+ assert.ok(lossAdjusted>lossPretax,'Negative incremental tax must raise comparison-only adjusted valuation');
+ assert.ok(Math.abs(lossCash-170)<0.01,'Virtual cash must reflect trades only, without any tax refund');
+ assert.match(await page.locator('#allStrategySummary').innerText(),/즉시 환급되는 현금이 아닙니다/);
  assert.equal(await page.evaluate(()=>localStorage.getItem('investlab_holdings')),holdingsBeforeSave);
  await page.reload();
  await page.locator('#savedScenarioList').selectOption('TSLA 재매수 검증');
