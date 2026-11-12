@@ -385,6 +385,10 @@ for(const id of ['priorTax','deduction']){
   input.value=formatted;
   const prefix=left.split('.')[0].replace(/\B(?=(\d{3})+(?!\d))/g,',')+(left.includes('.')?'.'+left.split('.')[1]:'');
   input.setSelectionRange(prefix.length,prefix.length);
+  // A changed tax assumption invalidates the previous tax estimate until recalculation.
+  for(const resultId of ['taxBasis','taxStages','taxGainEditor'])byId(resultId).replaceChildren();
+  byId('status').textContent='세금 가정값이 변경되었습니다. 시나리오 계산을 다시 실행하세요.';
+  byId('status').className='';
  });
 }
 async function refreshFxAndCalculate(){
