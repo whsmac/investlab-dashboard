@@ -290,7 +290,7 @@ try{
  try{
   page.once('dialog',dialog=>dialog.accept());
   await page.locator('#saveScenario').click();
-  assert.match(await page.locator('#scenarioStorageStatus').innerText(),/저장 작업 실패/);
+  assert.match(await page.locator('#scenarioStorageStatus').innerText(),/저장 공간이 부족해 전략을 저장하지 못했습니다.*현재 편집 내용과 기존 저장 전략은 유지됩니다/);
   assert.equal(await page.evaluate(()=>localStorage.getItem('investlab_simulator_saved_scenarios_v1')),savedBeforeQuota,'Quota failure must preserve saved data');
   assert.equal(await quotaEditor.inputValue(),'저장 공간 부족 테스트','Quota failure must preserve unsaved editor edits');
  }finally{
