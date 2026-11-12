@@ -10,7 +10,7 @@
  {"side":"sell","ticker":"TSLA","quantity":5,"price":200},
  {"side":"buy","ticker":"TSLA","quantity":10,"price":100}
 ]</textarea><p class="hint">여러 전략 비교(선택): 아래에 시나리오 배열을 입력하면 위 거래 목록 대신 전략별로 독립 계산합니다.</p><label for="alternatives">비교 전략 목록 (JSON 배열, 비우면 기존 거래 사용)</label><textarea id="alternatives" spellcheck="false" placeholder="여러 시나리오를 JSON 배열로 입력하세요."></textarea></details><p class="notice">USD 매매 평가와 KRW 세금 추정은 별도 · 미래 가격은 사용자 가정</p></section>
-<section class="panel wide"><h2>해외주식 양도세 추정 (선택)</h2><p class="hint">시나리오의 매도별 USD 실현손익을 입력 환율로 원화 환산하여 자동 추정합니다. 실제 세무 신고용 원화 취득가·양도가 계산과 다를 수 있습니다.</p><label>계산 시 자동 조회 환율 (KRW/USD)</label><input id="taxFx" type="text" readonly value="" placeholder="시나리오 계산 시 최신 공개 환율 조회"><p id="fxStatus" class="hint" role="status">환율은 계산 버튼을 누를 때 조회합니다. 공개 API의 최근 갱신 환율이며 실시간 체결 호가는 아닙니다.</p><label>기존 연간 실현손익 (KRW) — 다른 거래에서 이미 발생한 금액</label><input id="priorTax" type="text" inputmode="decimal" value="0"><label>기본공제 가정 (KRW, 0 허용)</label><input id="deduction" type="text" inputmode="decimal" value="2,500,000"><label>세율 가정</label><input id="taxRate" type="number" step="0.01" min="0" value="0.22"><h3>시나리오 매도별 자동 원화 실현손익</h3><div id="taxGainEditor"></div><p class="notice">자동 계산: 각 매도 USD 실현손익 × 입력 환율. 기존 연간 실현손익과 합산하여 세액을 추정합니다. 세액은 가상 현금에서 차감하지 않습니다.</p></section><section class="panel wide"><h2>결과 비교</h2><p id="status" role="status" aria-live="polite">계산 버튼을 누르세요.</p><div id="resultHero" class="result-hero"></div><h3 id="allStrategyTitle" hidden>전체 전략 핵심 비교</h3><p id="strategyRanking" class="hint" hidden></p><div id="allStrategySummary"></div><h3 id="positionCompareTitle" hidden>종목별 보유수량 비교</h3><div id="positionCompare"></div><div id="summary"></div><details class="result-details"><summary>상세 분석표 펼치기 (종목별 평가·세금·거래 단계)</summary><h3>최종 가상 포트폴리오 상세 (첫 번째 전략)</h3><div id="finalValuation"></div><h3>전략별 비교</h3><div id="strategies"></div><h3>전략별 종목 수량·평가금액 변화</h3><div id="strategyHoldings"></div><h3>세금 계산 기준 및 환율</h3><div id="taxBasis"></div><h3>세금 단계별 추정 (입력된 전략)</h3><div id="taxStages"></div><h3>거래 단계별 변화 (첫 번째 전략)</h3><div id="steps"></div><h3>최종 종목별 보유수량</h3><div id="holdings"></div></details></section>
+<section class="panel wide"><h2>해외주식 양도세 추정 (선택)</h2><p class="hint">시나리오의 매도별 USD 실현손익을 입력 환율로 원화 환산하여 자동 추정합니다. 실제 세무 신고용 원화 취득가·양도가 계산과 다를 수 있습니다.</p><label>계산 시 자동 조회 환율 (KRW/USD)</label><input id="taxFx" type="text" readonly value="" placeholder="시나리오 계산 시 최신 공개 환율 조회"><p id="fxStatus" class="hint" role="status">환율은 계산 버튼을 누를 때 조회합니다. 공개 API의 최근 갱신 환율이며 실시간 체결 호가는 아닙니다.</p><label>기존 연간 실현손익 (KRW) — 다른 거래에서 이미 발생한 금액</label><input id="priorTax" type="text" inputmode="decimal" value="0"><label>기본공제 가정 (KRW, 0 허용)</label><input id="deduction" type="text" inputmode="decimal" value="2,500,000"><label>세율 가정</label><input id="taxRate" type="number" step="0.01" min="0" value="0.22"><h3>시나리오 매도별 자동 원화 실현손익</h3><div id="taxGainEditor"></div><p class="notice">자동 계산: 각 매도 USD 실현손익 × 입력 환율. 기존 연간 실현손익과 합산하여 세액을 추정합니다. 세액은 가상 현금에서 차감하지 않습니다.</p></section><section class="panel wide"><h2>결과 비교</h2><p id="status" role="status" aria-live="polite">계산 버튼을 누르세요.</p><div id="resultHero" class="result-hero"></div><h3 id="allStrategyTitle" hidden>전체 전략 핵심 비교</h3><p id="strategyRanking" class="hint" hidden></p><div id="allStrategySummary"></div><h3 id="positionCompareTitle" hidden>종목별 보유수량 비교</h3><div id="positionCompare"></div><div id="summary"></div><details class="result-details"><summary>상세 분석표 펼치기 (종목별 평가·세금·거래 단계)</summary><h3>최종 가상 포트폴리오 상세 (첫 번째 전략)</h3><div id="finalValuation"></div><h3>전략별 비교</h3><div id="strategies"></div><h3>전략별 종목 수량·평가금액 변화</h3><div id="strategyHoldings"></div><h3>세금 계산 기준 및 환율</h3><div id="taxBasis"></div><h3>세금 단계별 추정 (입력된 전략)</h3><div id="taxStages"></div><h3>전략별 거래 단계·현금·보유수량 변화</h3><div id="allStrategySteps"></div><h3>거래 단계별 변화 (첫 번째 전략)</h3><div id="steps"></div><h3>최종 종목별 보유수량</h3><div id="holdings"></div></details></section>
 </div>
 <script type="module">
 import {compareScenarios} from './src/simulator/scenario-comparison.mjs';
@@ -45,7 +45,7 @@ function calculate(){
  byId('allStrategySummary').replaceChildren();byId('allStrategyTitle').hidden=true;byId('strategyRanking').hidden=true;byId('strategyRanking').textContent='';
  byId('positionCompare').replaceChildren();
  byId('positionCompareTitle').hidden=true;
- for(const id of ['summary','strategies','strategyHoldings','taxBasis','taxStages','taxGainEditor','steps','holdings','finalValuation'])byId(id).replaceChildren();
+ for(const id of ['summary','strategies','strategyHoldings','taxBasis','taxStages','taxGainEditor','allStrategySteps','steps','holdings','finalValuation'])byId(id).replaceChildren();
  try{
   const cash=Number(byId('cash').value);
   if(!byId('cash').value.trim()||!Number.isFinite(cash)||cash<0)throw new Error('시작 현금은 0 이상의 숫자여야 합니다.');
@@ -168,6 +168,12 @@ function calculate(){
   byId('taxBasis').append(fxNotice);
   const stageRows=taxResults.flatMap((tax,i)=>tax?tax.stages.map(stage=>[result.scenarios[i].name,stage.stage,fmt(stage.gainKrw),fmt(stage.cumulativeProjectedTaxKrw),fmt(stage.stageIncrementalTaxKrw)]):[]);
   if(stageRows.length)byId('taxStages').append(table(['전략','매도 순서','원화 실현손익','연간 예상 세액 KRW','직전 단계 대비 세액 변화 KRW'],stageRows));
+  const allStepRows=result.scenarios.flatMap(sc=>sc.steps.map(step=>[
+   sc.name,step.index+1,step.side==='buy'?'매수':'매도',step.ticker,
+   fmt(step.quantity),fmt(step.positions[step.ticker]?.quantity??0),
+   fmt(step.cash),fmt(step.cumulativeRealizedPnL)
+  ]));
+  if(allStepRows.length)byId('allStrategySteps').append(table(['전략','단계','거래','종목','거래 수량','거래 후 종목 수량','거래 후 현금 USD','누적 실현손익 USD'],allStepRows));
   byId('steps').append(table(['순서','거래','종목','거래 수량','체결가','수수료','거래 후 해당 종목 수량','거래 후 현금','누적 실현손익'],scenario.steps.map(s=>[s.index+1,s.side==='buy'?'매수':'매도',s.ticker,fmt(s.quantity),fmt(s.price),fmt(s.fee),fmt(s.positions[s.ticker]?.quantity??0),fmt(s.cash),fmt(s.cumulativeRealizedPnL)])));
   const tickers=new Set([...Object.keys(result.baseline.final.positions),...Object.keys(scenario.final.positions)]);
   byId('holdings').append(table(['종목','계속 보유 주식 수','가상 거래 후 주식 수'],[...tickers].map(t=>[t,fmt(result.baseline.final.positions[t]?.quantity??0),fmt(scenario.final.positions[t]?.quantity??0)])));
@@ -504,7 +510,7 @@ function invalidateCalculatedResults(){
  byId('allStrategySummary').replaceChildren();byId('allStrategyTitle').hidden=true;byId('strategyRanking').hidden=true;byId('strategyRanking').textContent='';
  fxRateSnapshot=null;
  byId('taxFx').value='';
- for(const id of ['resultHero','positionCompare','summary','strategies','strategyHoldings','taxBasis','taxStages','taxGainEditor','steps','holdings','finalValuation'])byId(id).replaceChildren();
+ for(const id of ['resultHero','positionCompare','summary','strategies','strategyHoldings','taxBasis','taxStages','taxGainEditor','allStrategySteps','steps','holdings','finalValuation'])byId(id).replaceChildren();
  byId('positionCompareTitle').hidden=true;
  byId('status').textContent='입력값이 변경되었습니다. 시나리오 계산을 다시 실행하세요.';
  byId('status').className='';
@@ -554,7 +560,7 @@ async function refreshFxAndCalculate(){
  const button=byId('calculate');button.disabled=true;
  const inputRevisionAtStart=simulatorInputRevision;
  // Results from a previous FX snapshot must never appear as current while refreshing.
- for(const id of ['resultHero','positionCompare','summary','strategies','strategyHoldings','taxBasis','taxStages','taxGainEditor','steps','holdings','finalValuation'])byId(id).replaceChildren();
+ for(const id of ['resultHero','positionCompare','summary','strategies','strategyHoldings','taxBasis','taxStages','taxGainEditor','allStrategySteps','steps','holdings','finalValuation'])byId(id).replaceChildren();
  byId('positionCompareTitle').hidden=true;
  byId('status').textContent='계산 대기: 최신 환율을 조회하고 있습니다.';
  byId('status').className='';
@@ -583,7 +589,7 @@ async function refreshFxAndCalculate(){
   const reason=error?.name==='AbortError'?'8초 내 환율 서버 응답이 없습니다.':error instanceof TypeError?'환율 서버 연결 또는 브라우저 네트워크 정책 문제입니다.':error.message;
   const inputsChanged=simulatorInputRevision!==inputRevisionAtStart;
   byId('fxStatus').textContent=inputsChanged?'계산 취소: 환율 조회 중 시나리오 입력값이 변경되었습니다. 현재 입력값으로 다시 계산해 주세요.':'환율 자동 조회 실패: '+reason+' · 임의 환율을 적용하지 않았습니다.';
-  for(const id of ['resultHero','positionCompare','summary','strategies','strategyHoldings','taxBasis','taxStages','taxGainEditor','steps','holdings','finalValuation'])byId(id).replaceChildren();
+  for(const id of ['resultHero','positionCompare','summary','strategies','strategyHoldings','taxBasis','taxStages','taxGainEditor','allStrategySteps','steps','holdings','finalValuation'])byId(id).replaceChildren();
   byId('positionCompareTitle').hidden=true;
   byId('status').textContent=inputsChanged?'계산 중단: 환율 조회 중 시나리오 입력값이 변경되었습니다. 다시 계산해 주세요.':'계산 중단: 최신 환율을 가져오지 못했습니다. 연결 상태를 확인하고 다시 시도하세요.';
   byId('status').className='error';
