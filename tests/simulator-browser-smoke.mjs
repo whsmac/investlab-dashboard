@@ -29,6 +29,7 @@ page.on('request',request=>{if(/supabase\.co/i.test(request.url()))remoteRequest
 page.on('pageerror',e=>errors.push(e.message));
 try{
  await page.goto('http://127.0.0.1:'+server.address().port+'/virtual-trade-simulator.html');
+ assert.match(await page.locator('body').innerText(),/저장된 전략 불러오기는 현재 편집 중인 전략을 교체하므로, 유지할 내용은 먼저 저장하세요/);
  await page.evaluate(()=>{
   localStorage.setItem('investlab_holdings',JSON.stringify([
    {symbol:'TSLA',shares:10,avg_cost:100,price:150},
