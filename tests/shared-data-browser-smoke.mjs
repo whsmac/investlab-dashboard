@@ -74,7 +74,7 @@ try {
       from: table => ({
         select: () => ({
           order(){return this;},
-          limit: async () => localStorage.getItem("pilot_read_error") === "yes" ? {data:null,count:null,error:{message:"permission denied for table"}} : {...datasets[table],error:null}
+          limit: async () => localStorage.getItem("pilot_read_error") === "yes" ? {data:null,count:null,error:{message:"permission denied for table"}} : localStorage.getItem("pilot_count_missing") === "yes" ? {...datasets[table],count:null,error:null} : {...datasets[table],error:null}
         })
       })
     })};
@@ -110,6 +110,14 @@ try {
   assert.ok((await page.locator("#authStatus").innerText()).includes("테이블 조회 권한(RLS)"));
   assert.match(await page.locator("#authStatus").innerText(), /데이터는 변경되지 않았습니다/);
   await page.evaluate(() => localStorage.removeItem("pilot_read_error"));
+  // A missing COUNT is an error, never a genuine zero-observation result.
+  await page.evaluate(() => localStorage.setItem("pilot_count_missing", "yes"));
+  await page.reload();
+  await page.waitForFunction(() => document.querySelector("#authStatus")?.textContent.includes("조회 실패"));
+  assert.equal(await page.locator("#financialCount").innerText(), "—");
+  assert.ok((await page.locator("#authStatus").innerText()).includes("정확한 COUNT를 확인할 수 없습니다"));
+  await page.evaluate(() => localStorage.removeItem("pilot_count_missing"));
+
 
   assert.deepEqual(pageErrors, [], "Shared data page should not emit uncaught JavaScript errors");
   console.log("Shared data browser smoke passed: initial state, project allowlist, service-role rejection, isolated local storage, and no page errors.");
