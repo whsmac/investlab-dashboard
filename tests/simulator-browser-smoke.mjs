@@ -111,7 +111,7 @@ try{
  await page.locator('#priorTax').fill('1234567');
  assert.equal(await page.locator('#summary').innerText(),'','Editing assumptions must immediately clear stale results');
  assert.equal(await page.locator('#taxFx').inputValue(),'','Editing assumptions must clear the old FX snapshot');
- assert.match(await page.locator('#status').innerText(),/입력값이 변경되었습니다/);
+ assert.match(await page.locator('#status').innerText(),/세금 가정값이 변경되었습니다/);
  // Verify comma formatting, zero deduction, and one FX snapshot per calculation.
  await page.locator('#priorTax').fill('1234567');
  assert.equal(await page.locator('#priorTax').inputValue(),'1,234,567');
