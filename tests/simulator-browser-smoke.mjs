@@ -261,6 +261,12 @@ try{
  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('investlab_simulator_saved_scenarios_v1')));
  assert.ok(saved['TSLA 재매수 검증']);
  assert.equal(await page.evaluate(()=>localStorage.getItem('investlab_holdings')),holdingsBeforeSave);
+ // A saved scenario can be appended to the current comparison without modifying portfolio data.
+ await page.locator('#appendScenario').click();
+ assert.equal(await page.locator('#strategyEditor .strategy-card').count(),2);
+ assert.match(await page.locator('#scenarioStorageStatus').innerText(),/비교 목록에 추가했습니다/);
+ assert.equal(await page.locator('#summary').innerText(),'');
+ assert.equal(await page.evaluate(()=>localStorage.getItem('investlab_holdings')),holdingsBeforeSave);
  await page.reload();
  await page.locator('#savedScenarioList').selectOption('TSLA 재매수 검증');
  await page.locator('#loadScenario').click();
