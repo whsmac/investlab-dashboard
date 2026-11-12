@@ -16,7 +16,7 @@ for file in ("index.html", "shared-data.html", "shared-data-import.html",
              "src/simulator/scenario-comparison.mjs"):
     assert (out / file).is_file(), f"Missing bundle asset: {file}"
 assert "INVESTLAB TEST Preview" in (out / "index.html").read_text()
-assert "gopofxyezhwpfbxebcrxd.supabase.co" in (out / "shared-data.html").read_text()
+assert "gopofxyezhwpfxbecrxd.supabase.co" in (out / "shared-data.html").read_text()
 print("Isolated TEST Pages bundle: OK (no publishing)")
 
 # Check every relative HTML link and module import needed by the TEST bundle.
