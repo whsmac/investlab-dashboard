@@ -116,6 +116,14 @@ try{
  assert.match(await page.locator('#status').innerText(),/계산 완료/);
  assert.equal(await page.locator('#taxFx').inputValue(),'1,342');
  assert.match(await page.locator('#taxGainEditor').innerText(),/268,339/);
+ // Editing tax assumptions must not leave an outdated tax estimate labeled as current.
+ await page.locator('#deduction').fill('1000000');
+ assert.equal(await page.locator('#deduction').inputValue(),'1,000,000');
+ assert.match(await page.locator('#status').innerText(),/다시 실행/);
+ for(const id of ['taxBasis','taxStages','taxGainEditor'])assert.equal(await page.locator('#'+id).innerText(),'','Changed deduction must invalidate '+id);
+ await page.locator('#deduction').fill('0');
+ await calculateAndWait();
+ assert.match(await page.locator('#taxGainEditor').innerText(),/268,339/);
  // Pending FX lookup must immediately invalidate prior results, not just after failure.
  await page.route('https://open.er-api.com/v6/latest/USD',async route=>{
   await new Promise(resolve=>setTimeout(resolve,900));
