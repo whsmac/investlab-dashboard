@@ -411,8 +411,16 @@ try{
  assert.equal(await page.evaluate(()=>localStorage.getItem('investlab_holdings')),holdingsBeforeSave);
  await page.reload();
  await page.locator('#savedScenarioList').selectOption('TSLA 재매수 검증');
+ const originalEditorName=await page.locator('#strategyEditor .strategy-card').first().locator('.strategy-name').inputValue();
+ await page.locator('#strategyEditor .strategy-card').first().locator('.strategy-name').fill('저장하지 않은 변경');
+ page.once('dialog',dialog=>{assert.match(dialog.message(),/현재 편집 중인 전략이 교체됩니다/);return dialog.dismiss();});
+ await page.locator('#loadScenario').click();
+ assert.match(await page.locator('#scenarioStorageStatus').innerText(),/불러오기를 취소했습니다/);
+ assert.equal(await page.locator('#strategyEditor .strategy-card').first().locator('.strategy-name').inputValue(),'저장하지 않은 변경');
+ page.once('dialog',dialog=>dialog.accept());
  await page.locator('#loadScenario').click();
  assert.match(await page.locator('#scenarioStorageStatus').innerText(),/불러왔습니다/);
+ assert.notEqual(await page.locator('#strategyEditor .strategy-card').first().locator('.strategy-name').inputValue(),'저장하지 않은 변경');
  assert.equal(await page.locator('#strategyEditor .strategy-card').count(),1);
  // Saved scenarios deliberately exclude terminal price assumptions: re-enter after reload.
  for(const row of await page.locator('#priceEditor .simple-row').all()){
