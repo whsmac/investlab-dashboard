@@ -311,8 +311,8 @@ function readStrategies(){
   const trades=[...card.querySelectorAll('.trade-grid')].map((row,i)=>{
    const value=key=>row.querySelector('[data-field="'+key+'"]').value;
    const ticker=value('ticker').trim().toUpperCase();
-   for(const key of ['quantity','price'])if(value(key).trim()===''||!Number.isFinite(Number(value(key)))||Number(value(key))<0)throw Error(name+' '+(i+1)+'번 거래의 '+key+'는 0 이상의 숫자여야 합니다.');
-   return {side:value('side'),ticker,quantity:Number(value('quantity')),price:Number(value('price'))};
+   for(const key of ['quantity','price','fee'])if(value(key).trim()===''||!Number.isFinite(Number(value(key)))||Number(value(key))<0)throw Error(name+' '+(i+1)+'번 거래의 '+key+'는 0 이상의 숫자여야 합니다.');
+   return {side:value('side'),ticker,quantity:Number(value('quantity')),price:Number(value('price')),fee:Number(value('fee'))};
   });
   return {name,trades};
  });
@@ -460,8 +460,8 @@ function validateSavedStrategy(value){
  return value.map(item=>{
   if(!item||typeof item.name!=='string'||!item.name.trim()||!Array.isArray(item.trades)||item.trades.length>100)throw Error('전략 데이터가 유효하지 않습니다.');
   return {name:item.name.slice(0,80),trades:item.trades.map(t=>{
-   if(!t||!['buy','sell'].includes(t.side)||typeof t.ticker!=='string'||!/^[A-Z0-9.^_-]{1,20}$/.test(t.ticker)||!Number.isFinite(t.quantity)||t.quantity<=0||!Number.isFinite(t.price)||t.price<=0)throw Error('거래 데이터가 유효하지 않습니다.');
-   return {side:t.side,ticker:t.ticker,quantity:t.quantity,price:t.price};
+   if(!t||!['buy','sell'].includes(t.side)||typeof t.ticker!=='string'||!/^[A-Z0-9.^_-]{1,20}$/.test(t.ticker)||!Number.isFinite(t.quantity)||t.quantity<=0||!Number.isFinite(t.price)||t.price<=0||!Number.isFinite(t.fee??0)||(t.fee??0)<0)throw Error('거래 데이터가 유효하지 않습니다.');
+   return {side:t.side,ticker:t.ticker,quantity:t.quantity,price:t.price,fee:t.fee??0};
   })};
  });
 }
