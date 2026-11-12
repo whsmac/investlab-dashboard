@@ -199,6 +199,22 @@ try{
  await page.route('https://open.er-api.com/v6/latest/USD',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({result:'success',base_code:'USD',rates:{KRW:1341.693922},time_last_update_unix:Math.floor(Date.now()/1000)})}));
  await calculateAndWait();
  assert.match(await page.locator('#status').innerText(),/계산 완료/);
+ // Editing a tax assumption while the FX request is in flight must invalidate that calculation.
+ await page.unroute('https://open.er-api.com/v6/latest/USD');
+ await page.route('https://open.er-api.com/v6/latest/USD',async route=>{
+  await new Promise(resolve=>setTimeout(resolve,350));
+  await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({result:'success',base_code:'USD',rates:{KRW:1341.693922},time_last_update_unix:Math.floor(Date.now()/1000)})});
+ });
+ await page.locator('#calculate').click();
+ await page.locator('#deduction').fill('1000000');
+ await page.waitForFunction(()=>!document.querySelector('#calculate').disabled);
+ assert.match(await page.locator('#fxStatus').innerText(),/입력값이 변경되었습니다/);
+ assert.match(await page.locator('#status').innerText(),/계산 중단/);
+ assert.equal(await page.locator('#summary').innerText(),'','In-flight edits must not leave a calculated result');
+ await page.unroute('https://open.er-api.com/v6/latest/USD');
+ await page.route('https://open.er-api.com/v6/latest/USD',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({result:'success',base_code:'USD',rates:{KRW:1341.693922},time_last_update_unix:Math.floor(Date.now()/1000)})}));
+ await calculateAndWait();
+ assert.match(await page.locator('#status').innerText(),/계산 완료/);
  // Reject an oversell without changing original holdings or leaving a success message.
  await trade.locator('[data-field="quantity"]').fill('999');
  await calculateAndWait();
