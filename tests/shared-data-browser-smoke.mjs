@@ -64,7 +64,7 @@ try {
     const datasets = {
       companies: { count: 6, data: [{id:1,ticker:"TSLA",company_name:"Tesla",exchange:"NASDAQ",is_active:true}] },
       market_price_observations: { count: 4938, data: [{id:1,company_id:1,trading_date:"2026-11-06",close_price:250,currency:"USD",price_basis:"adjusted_close"}] },
-      quarterly_financial_observations: { count: 0, data: [] }
+      quarterly_financial_observations: localStorage.getItem("pilot_financial_rows") === "yes" ? {count:2,data:[{id:1,company_id:1,fiscal_period:"2026-Q3",revenue_usd_bn:0,capex_usd_bn:null,capex_definition:null},{id:2,company_id:1,fiscal_period:"2026-Q2",revenue_usd_bn:null,capex_usd_bn:3.5,capex_definition:"cash paid"}]} : { count: 0, data: [] }
     };
     window.supabase = {createClient: () => ({
       auth: {
@@ -87,6 +87,18 @@ try {
   assert.match(await page.locator("#financials").innerText(), /분기 재무 데이터 없음/);
   assert.match(await page.locator("#financials").innerText(), /미수집은 0 USD가 아닙니다/);
   assert.match(await page.locator("#authStatus").innerText(), /조회 완료/);
+  // A real zero must remain 0; missing individual financial metrics must read '미수집'.
+  await page.evaluate(() => localStorage.setItem("pilot_financial_rows", "yes"));
+  await page.reload();
+  await page.waitForFunction(() => document.querySelector("#financialCount")?.textContent === "2");
+  const financialText = await page.locator("#financials").innerText();
+  assert.match(financialText, /2026-Q3/);
+  assert.match(financialText, /2026-Q2/);
+  assert.match(financialText, /미수집/);
+  assert.match(financialText, /3\\.5/);
+  assert.match(financialText, /(?:^|\\s)0(?:\\s|$)/);
+  assert.doesNotMatch(financialText, /분기 재무 데이터 없음/);
+  await page.evaluate(() => localStorage.removeItem("pilot_financial_rows"));
   assert.deepEqual(pageErrors, [], "Shared data page should not emit uncaught JavaScript errors");
   console.log("Shared data browser smoke passed: initial state, project allowlist, service-role rejection, isolated local storage, and no page errors.");
 } finally {
