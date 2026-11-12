@@ -25,7 +25,7 @@ test('compare leveraged rotation with hold using separate terminal prices',()=>{
 test('reject missing terminal prices, duplicate names and unfunded trades',()=>{
  assert.throws(()=>compareScenarios(portfolio,[{name:'x',trades:[]}],{}),/terminal price/);
  assert.throws(()=>compareScenarios(portfolio,[{name:'x',trades:[]},{name:'x',trades:[]}],{TSLA:100}),/unique/);
- assert.throws(()=>compareScenarios(portfolio,[{name:'x',trades:[{side:'buy',ticker:'SOXL',quantity:1,price:100}]}],{TSLA:100,SOXL:100}),/insufficient cash/);
+ assert.throws(()=>compareScenarios(portfolio,[{name:'x',trades:[{side:'buy',ticker:'SOXL',quantity:1,price:100}]}],{TSLA:100,SOXL:100}),error=>error.message==='scenario trade unavailable'&&error.reason==='insufficient cash'&&error.scenarioName==='x'&&error.tradeIndex===0&&error.ticker==='SOXL');
 });
 
 test('empty trade scenario matches unchanged portfolio and keeps original untouched',()=>{
