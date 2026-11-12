@@ -42,7 +42,7 @@ const fmt=v=>Number(v).toLocaleString('ko-KR',{maximumFractionDigits:8});
 const table=(headers,rows)=>{const t=document.createElement('table'),thead=t.createTHead(),tr=thead.insertRow();for(const h of headers){const th=document.createElement('th');th.textContent=h;tr.append(th);}const body=t.createTBody();for(const row of rows){const r=body.insertRow();for(const value of row){const cell=r.insertCell();cell.textContent=String(value);}}return t;};
 function calculate(){
  byId('resultHero').replaceChildren();
- byId('allStrategySummary').replaceChildren();byId('allStrategyTitle').hidden=true;byId('strategyRanking').hidden=true;byId('strategyRanking').textContent='';byId('strategyRanking').hidden=true;byId('strategyRanking').textContent='';
+ byId('allStrategySummary').replaceChildren();byId('allStrategyTitle').hidden=true;byId('strategyRanking').hidden=true;byId('strategyRanking').textContent='';
  byId('positionCompare').replaceChildren();
  byId('positionCompareTitle').hidden=true;
  for(const id of ['summary','strategies','strategyHoldings','taxBasis','taxStages','taxGainEditor','steps','holdings','finalValuation'])byId(id).replaceChildren();
@@ -478,7 +478,7 @@ let fxRateSnapshot=null;
 let simulatorInputRevision=0;
 // User edits invalidate previous results, even before another FX request starts.
 function invalidateCalculatedResults(){
- byId('allStrategySummary').replaceChildren();byId('allStrategyTitle').hidden=true;
+ byId('allStrategySummary').replaceChildren();byId('allStrategyTitle').hidden=true;byId('strategyRanking').hidden=true;byId('strategyRanking').textContent='';
  fxRateSnapshot=null;
  byId('taxFx').value='';
  for(const id of ['resultHero','positionCompare','summary','strategies','strategyHoldings','taxBasis','taxStages','taxGainEditor','steps','holdings','finalValuation'])byId(id).replaceChildren();
