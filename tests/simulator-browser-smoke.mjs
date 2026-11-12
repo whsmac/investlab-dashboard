@@ -194,6 +194,7 @@ try{
  await calculateAndWait();
  assert.doesNotMatch(await page.locator('#status').innerText(),/계산 완료/);
  assert.equal(await page.locator('#summary').innerText(),'','Invalid oversell must clear the previous successful summary');
+ assert.equal(await page.locator('#taxGainEditor').innerText(),'','Invalid oversell must clear stale realized-gain tax rows');
  assert.equal(await page.locator('#finalValuation').textContent(),'','Invalid oversell must clear stale terminal valuation');
  assert.equal((await page.evaluate(()=>JSON.parse(localStorage.getItem('investlab_holdings'))))[0].shares,10);
  // Reject a buy larger than available cash, without altering real portfolio data.
@@ -202,6 +203,7 @@ try{
  await calculateAndWait();
  assert.doesNotMatch(await page.locator('#status').innerText(),/계산 완료/,'Insufficient cash must not report success');
  assert.equal(await page.locator('#summary').innerText(),'','Insufficient cash must clear stale results');
+ assert.equal(await page.locator('#taxGainEditor').innerText(),'','Insufficient cash must clear stale tax rows');
  assert.equal((await page.evaluate(()=>JSON.parse(localStorage.getItem('investlab_holdings'))))[0].shares,10);
  assert.deepEqual(remoteRequests,[],'Simulation must not contact Supabase');
  assert.deepEqual(errors,[]);
