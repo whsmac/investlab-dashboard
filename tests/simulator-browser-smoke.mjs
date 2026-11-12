@@ -522,6 +522,19 @@ try{
  assert.equal(await page.locator('#savedScenarioList option').count(),0);
  for(const id of ['savedScenarioList','loadScenario','appendScenario','deleteScenario'])assert.equal(await page.locator('#'+id).isDisabled(),true,'Deleting last saved scenario must disable '+id);
  assert.equal(await page.evaluate(()=>localStorage.getItem('investlab_holdings')),holdingsBeforeSave);
+ // An impossible sale must point directly to its offending editor row.
+ const firstCard=page.locator('#strategyEditor .strategy-card').first();
+ const firstTrade=firstCard.locator('.trade-grid').first();
+ await firstTrade.locator('[data-field="side"]').selectOption('sell');
+ await firstTrade.locator('[data-field="ticker"]').fill('TSLA');
+ await firstTrade.locator('[data-field="quantity"]').fill('99999');
+ await firstTrade.locator('[data-field="price"]').fill('200');
+ await calculateAndWait();
+ assert.match(await page.locator('#status').innerText(),/실행 불가: 전략 .*1번째 거래 \(TSLA\).*보유수량을 초과합니다/);
+ assert.equal(await firstTrade.evaluate(row=>row.classList.contains('trade-error')),true,'Impossible trade must be highlighted');
+ assert.equal(await firstTrade.locator('[data-field="quantity"]').evaluate(el=>el===document.activeElement),true,'Quantity field must receive focus');
+ await firstTrade.locator('[data-field="quantity"]').fill('1');
+ assert.equal(await firstTrade.evaluate(row=>row.classList.contains('trade-error')),false,'Editing must clear stale trade highlight');
  assert.deepEqual(remoteRequests,[],'Simulation must not contact Supabase');
  assert.deepEqual(errors,[]);
  console.log('Simulator browser smoke passed: real holdings, cash, sell, valuation, no writes.');
