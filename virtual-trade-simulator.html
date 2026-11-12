@@ -6,7 +6,7 @@
 <section class="panel" style="margin-bottom:16px"><strong>기존 포트폴리오 종목 선택</strong><p class="hint" id="managedSymbolStatus">종목 목록 확인 중…</p><p id="savedQuoteStatus" class="hint" role="status"></p><button type="button" id="refreshManagedSymbols" style="max-width:240px">종목 목록 새로고침</button><datalist id="managedSymbolOptions"></datalist><p class="hint">이 화면은 기존 종목관리 정보를 읽기만 합니다. 종목 등록·수정은 기존 종목관리에서 수행하세요. 다른 도메인이나 기기의 목록은 자동 연결되지 않습니다.</p></section>
 <div class="layout">
 <section class="panel"><h2>기준 보유정보</h2><label for="cash">시작 현금 (USD)</label><input id="cash" type="number" min="0" step="any" placeholder="실제 USD 현금잔액 입력" value=""><p class="hint">원본에 USD-CASH 현금 항목이 있으면 자동 반영합니다. 구형 USD 종목은 현금으로 단정할 수 없어 직접 확인 후 입력하세요.</p><h3>보유종목</h3><p class="simple-caption">종목 · 수량 · 평균 취득단가(USD)</p><div id="positionEditor"></div><button type="button" id="loadPortfolioPositions">현재 포트폴리오 보유정보 다시 불러오기</button><p id="positionLoadStatus" class="hint" role="status"></p><button class="small-add" type="button" id="addPosition">+ 보유종목 추가</button><h3>기준 포트폴리오 합계</h3><div id="initialValuation"></div><p class="hint">기준 평가액은 아래 최종 가정 주가와 동일한 가격을 적용한 비교용 금액입니다. 실시간 현재가가 아닙니다. 취득원가 합계도 별도로 표시합니다.</p><h3>최종 가정 주가</h3><p class="simple-caption">종목별 가상 최종가격(USD)</p><div id="priceEditor"></div><button class="small-add" type="button" id="addPrice">+ 종목 가격 추가</button><details><summary>고급 입력: 보유정보·최종가격 JSON</summary><label for="positions">보유종목 JSON</label><textarea id="positions" spellcheck="false">{"TSLA":{"quantity":10,"averageCost":100}}</textarea><label for="terminal">최종 가정 주가 JSON</label><textarea id="terminal" spellcheck="false">{"TSLA":150,"SOXL":40}</textarea><button id="applyPortfolioJson" type="button">JSON 입력 반영</button></details><p id="portfolioStatus" class="hint" role="status"></p></section>
-<section class="panel"><h2>가상 거래</h2><p class="hint">아래 전략 편집기에서 거래를 추가·삭제하고 가격과 수량을 직접 수정하세요.</p><div id="strategyEditor"></div><div class="editor-actions"><button id="addStrategy" type="button">+ 전략 추가</button><button id="presetRise" type="button">상승장 부분 매도</button><button id="presetDip" type="button">하락장 재매수</button></div><p id="editorStatus" class="hint"></p><button id="calculate" type="button">시나리오 계산</button><details><summary>고급 입력: JSON 직접 편집</summary><p class="hint">배열 순서대로 체결을 가정합니다. buy/sell, ticker, quantity, price를 입력하세요. 1단계에서는 거래 수수료를 적용하지 않습니다.</p><label for="trades">가상 거래 목록 (JSON)</label><textarea id="trades" spellcheck="false" style="min-height:245px">[
+<section class="panel"><h2>가상 거래</h2><p class="hint">아래 전략 편집기에서 거래를 추가·삭제하고 가격과 수량을 직접 수정하세요.</p><div id="strategyEditor"></div><div class="editor-actions"><button id="addStrategy" type="button">+ 전략 추가</button><button id="presetRise" type="button">상승장 부분 매도</button><button id="presetDip" type="button">하락장 재매수</button></div><div class="editor-actions"><button id="saveScenario" type="button">현재 전략 저장</button><button id="loadScenario" type="button">저장된 전략 불러오기</button><button id="deleteScenario" type="button">저장된 전략 삭제</button></div><label for="scenarioName">저장 이름 (현재 브라우저 전용)</label><input id="scenarioName" type="text" maxlength="80" placeholder="예: TSLA 단계적 전환"><label for="savedScenarioList">저장된 전략 선택</label><select id="savedScenarioList" style="width:100%;padding:10px;background:#111a29;color:white"></select><p class="hint">전략 이름과 가상 거래만 브라우저에 저장합니다. 실제 보유정보·현금·세금 가정은 저장하지 않습니다. 다른 기기와 동기화되지 않습니다.</p><p id="scenarioStorageStatus" class="hint" role="status"></p><p id="editorStatus" class="hint"></p><button id="calculate" type="button">시나리오 계산</button><details><summary>고급 입력: JSON 직접 편집</summary><p class="hint">배열 순서대로 체결을 가정합니다. buy/sell, ticker, quantity, price를 입력하세요. 1단계에서는 거래 수수료를 적용하지 않습니다.</p><label for="trades">가상 거래 목록 (JSON)</label><textarea id="trades" spellcheck="false" style="min-height:245px">[
  {"side":"sell","ticker":"TSLA","quantity":5,"price":200},
  {"side":"buy","ticker":"TSLA","quantity":10,"price":100}
 ]</textarea><p class="hint">여러 전략 비교(선택): 아래에 시나리오 배열을 입력하면 위 거래 목록 대신 전략별로 독립 계산합니다.</p><label for="alternatives">비교 전략 목록 (JSON 배열, 비우면 기존 거래 사용)</label><textarea id="alternatives" spellcheck="false" placeholder="여러 시나리오를 JSON 배열로 입력하세요."></textarea></details><p class="notice">USD 매매 평가와 KRW 세금 추정은 별도 · 미래 가격은 사용자 가정</p></section>
@@ -368,6 +368,65 @@ byId('alternatives').addEventListener('change',()=>{
 
 strategyState=[{name:'가상 거래 1',trades:[]}];renderEditor();ensureTradePrices();
 
+const SCENARIO_STORAGE_KEY='investlab_simulator_saved_scenarios_v1';
+function getSavedScenarios(){
+ const raw=localStorage.getItem(SCENARIO_STORAGE_KEY);
+ if(!raw)return {};
+ const parsed=JSON.parse(raw);
+ if(!parsed||typeof parsed!=='object'||Array.isArray(parsed))throw Error('저장 형식이 올바르지 않습니다.');
+ return parsed;
+}
+function refreshSavedScenarioList(){
+ const list=byId('savedScenarioList'),selected=list.value;
+ list.replaceChildren();
+ for(const name of Object.keys(getSavedScenarios()).sort((a,b)=>a.localeCompare(b,'ko'))){
+  const option=document.createElement('option');option.value=name;option.textContent=name;list.append(option);
+ }
+ if([...list.options].some(option=>option.value===selected))list.value=selected;
+}
+function validateSavedStrategy(value){
+ if(!Array.isArray(value)||!value.length||value.length>30)throw Error('전략은 1~30개여야 합니다.');
+ return value.map(item=>{
+  if(!item||typeof item.name!=='string'||!item.name.trim()||!Array.isArray(item.trades)||item.trades.length>100)throw Error('전략 데이터가 유효하지 않습니다.');
+  return {name:item.name.slice(0,80),trades:item.trades.map(t=>{
+   if(!t||!['buy','sell'].includes(t.side)||typeof t.ticker!=='string'||!/^[A-Z0-9.^_-]{1,20}$/.test(t.ticker)||!Number.isFinite(t.quantity)||t.quantity<=0||!Number.isFinite(t.price)||t.price<=0)throw Error('거래 데이터가 유효하지 않습니다.');
+   return {side:t.side,ticker:t.ticker,quantity:t.quantity,price:t.price};
+  })};
+ });
+}
+function storageAction(action){
+ try{action();byId('scenarioStorageStatus').className='hint';}
+ catch(error){byId('scenarioStorageStatus').className='error';byId('scenarioStorageStatus').textContent='저장 작업 실패: '+error.message;}
+}
+byId('saveScenario').addEventListener('click',()=>storageAction(()=>{
+ const name=byId('scenarioName').value.trim();
+ if(!name||name.length>80||name==='__proto__'||name==='constructor'||name==='prototype')throw Error('유효한 저장 이름을 입력하세요.');
+ const strategies=validateSavedStrategy(readStrategies());
+ const saved=getSavedScenarios();
+ if(!Object.hasOwn(saved,name)&&Object.keys(saved).length>=30)throw Error('최대 30개까지 저장할 수 있습니다.');
+ if(Object.hasOwn(saved,name)&&!confirm('같은 이름의 저장된 전략을 덮어쓰시겠습니까?'))return;
+ Object.defineProperty(saved,name,{value:strategies,enumerable:true,writable:true,configurable:true});
+ localStorage.setItem(SCENARIO_STORAGE_KEY,JSON.stringify(saved));
+ refreshSavedScenarioList();byId('savedScenarioList').value=name;
+ byId('scenarioStorageStatus').textContent='전략을 이 브라우저에 저장했습니다: '+name;
+}));
+byId('loadScenario').addEventListener('click',()=>storageAction(()=>{
+ const name=byId('savedScenarioList').value,saved=getSavedScenarios();
+ if(!Object.hasOwn(saved,name))throw Error('불러올 전략을 선택하세요.');
+ const strategies=validateSavedStrategy(saved[name]);
+ strategyState=clone(strategies);renderEditor();
+ simulatorInputRevision++;invalidateCalculatedResults();
+ byId('scenarioName').value=name;
+ byId('scenarioStorageStatus').textContent='저장된 전략을 불러왔습니다: '+name+' · 다시 계산하세요.';
+}));
+byId('deleteScenario').addEventListener('click',()=>storageAction(()=>{
+ const name=byId('savedScenarioList').value,saved=getSavedScenarios();
+ if(!Object.hasOwn(saved,name))throw Error('삭제할 전략을 선택하세요.');
+ if(!confirm('저장된 전략을 삭제하시겠습니까? 현재 편집 중인 전략은 유지됩니다.'))return;
+ delete saved[name];localStorage.setItem(SCENARIO_STORAGE_KEY,JSON.stringify(saved));
+ refreshSavedScenarioList();byId('scenarioStorageStatus').textContent='저장된 전략을 삭제했습니다: '+name;
+}));
+storageAction(refreshSavedScenarioList);
 let fxRateSnapshot=null;
 let simulatorInputRevision=0;
 // User edits invalidate previous results, even before another FX request starts.
