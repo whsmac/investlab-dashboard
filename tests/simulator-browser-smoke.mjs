@@ -277,6 +277,28 @@ try{
  assert.equal(await page.locator('#allStrategySummary .strategy-overview-table').count(),1);
  assert.match(await page.locator('#scenarioStorageStatus').innerText(),/비교 목록에 추가했습니다/);
  assert.equal(await page.evaluate(()=>localStorage.getItem('investlab_holdings')),holdingsBeforeSave);
+ // Ranking inversion: strategy B has $5 more pretax value but realizes an extra
+ // $500 gain, so its estimated incremental tax makes strategy A the net leader.
+ const secondStrategy=page.locator('#strategyEditor .strategy-card').nth(1);
+ await secondStrategy.locator('.strategy-name').fill('세전 우세·세후 열세');
+ for(const [side,ticker,quantity,price] of [
+  ['sell','TSLA','5','200'],
+  ['buy','TSLA','5','199']
+ ]){
+  await page.locator('#strategyEditor .strategy-card').nth(1).getByRole('button',{name:'+ 거래 추가'}).click();
+  const newTrade=page.locator('#strategyEditor .strategy-card').nth(1).locator('.trade-grid').last();
+  await newTrade.locator('[data-field="side"]').selectOption(side);
+  await newTrade.locator('[data-field="ticker"]').fill(ticker);
+  await newTrade.locator('[data-field="quantity"]').fill(quantity);
+  await newTrade.locator('[data-field="price"]').fill(price);
+ }
+ await calculateAndWait();
+ assert.match(await page.locator('#status').innerText(),/계산 완료/);
+ const invertedRanking=await page.locator('#strategyRanking').innerText();
+ assert.match(invertedRanking,/세전 평가총액 1위.*세전 우세·세후 열세/);
+ assert.match(invertedRanking,/추가 예상세액 반영 1위.*TSLA 재매수 검증/);
+ assert.match(invertedRanking,/두 기준의 1위가 다릅니다/);
+ assert.equal(await page.evaluate(()=>localStorage.getItem('investlab_holdings')),holdingsBeforeSave);
  await page.reload();
  await page.locator('#savedScenarioList').selectOption('TSLA 재매수 검증');
  await page.locator('#loadScenario').click();
