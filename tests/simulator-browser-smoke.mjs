@@ -361,6 +361,38 @@ try{
  assert.ok(lossAdjusted>lossPretax,'Negative incremental tax must raise comparison-only adjusted valuation');
  assert.ok(Math.abs(lossCash-170)<0.01,'Virtual cash must reflect trades only, without any tax refund');
  assert.match(await page.locator('#allStrategySummary').innerText(),/즉시 환급되는 현금이 아닙니다/);
+ // With no prior realized gains and a deduction above these hypothetical gains,
+ // all strategies must show zero incremental tax and unchanged adjusted values.
+ await page.locator('#priorTax').fill('0');
+ await page.locator('#deduction').fill('2,500,000');
+ await calculateAndWait();
+ assert.match(await page.locator('#status').innerText(),/계산 완료/);
+ const zeroRows=await page.locator('#allStrategySummary .strategy-overview-table tr').evaluateAll(rows=>
+  rows.map(row=>[...row.querySelectorAll('th,td')].map(cell=>cell.textContent.trim()))
+ );
+ const zeroRow=label=>{
+  const row=zeroRows.find(cells=>cells[0]===label);
+  assert.ok(row,'Missing zero-tax row: '+label);
+  return row;
+ };
+ const zeroTax=zeroRow('추가 예상 양도세 KRW');
+ const zeroPretax=zeroRow('최종 평가총액 USD');
+ const zeroAdjusted=zeroRow('세금 반영 추정 평가총액 USD');
+ for(let col=2;col<zeroTax.length;col++){
+  assert.equal(numeric(zeroTax[col]),0,'Zero-tax scenario must have no incremental tax');
+  assert.ok(Math.abs(numeric(zeroPretax[col])-numeric(zeroAdjusted[col]))<0.01,'Zero tax must leave adjusted valuation unchanged');
+ }
+ // Crossing the deduction with a positive disposal must create a different
+ // incremental tax across strategies without changing the starting portfolio.
+ await page.locator('#deduction').fill('0');
+ await calculateAndWait();
+ assert.match(await page.locator('#status').innerText(),/계산 완료/);
+ const mixedRows=await page.locator('#allStrategySummary .strategy-overview-table tr').evaluateAll(rows=>
+  rows.map(row=>[...row.querySelectorAll('th,td')].map(cell=>cell.textContent.trim()))
+ );
+ const mixedTax=mixedRows.find(cells=>cells[0]==='추가 예상 양도세 KRW');
+ assert.ok(mixedTax,'Missing mixed tax row');
+ assert.notEqual(numeric(mixedTax[2]),numeric(mixedTax[3]),'Distinct realized gains should produce different incremental taxes');
  assert.equal(await page.evaluate(()=>localStorage.getItem('investlab_holdings')),holdingsBeforeSave);
  await page.reload();
  await page.locator('#savedScenarioList').selectOption('TSLA 재매수 검증');
