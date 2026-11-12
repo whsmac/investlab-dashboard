@@ -209,6 +209,8 @@ try{
  await page.locator('#deduction').fill('1000000');
  await page.waitForFunction(()=>!document.querySelector('#calculate').disabled);
  assert.match(await page.locator('#fxStatus').innerText(),/입력값이 변경되었습니다/);
+ assert.match(await page.locator('#fxStatus').innerText(),/계산 취소/);
+ assert.doesNotMatch(await page.locator('#fxStatus').innerText(),/환율 자동 조회 실패/,'Editing inputs must not be classified as an FX outage');
  assert.match(await page.locator('#status').innerText(),/계산 중단: 환율 조회 중 시나리오 입력값이 변경되었습니다/);
  assert.doesNotMatch(await page.locator('#status').innerText(),/연결 상태를 확인/,'Input edits must not be misreported as network errors');
  assert.equal(await page.locator('#summary').innerText(),'','In-flight edits must not leave a calculated result');
