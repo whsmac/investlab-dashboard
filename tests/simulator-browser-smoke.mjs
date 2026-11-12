@@ -70,7 +70,9 @@ try{
  assert.equal(feeSaved['수수료 저장 검증'][0].trades[0].fee,1.25);
  await page.reload();
  await page.locator('#savedScenarioList').selectOption('수수료 저장 검증');
+ page.once('dialog',dialog=>dialog.accept());
  await page.locator('#loadScenario').click();
+ assert.match(await page.locator('#scenarioStorageStatus').innerText(),/불러왔습니다/);
  assert.equal(await page.locator('#strategyEditor .strategy-card').first().locator('.trade-grid').first().locator('[data-field="fee"]').inputValue(),'1.25','Reload and load must preserve transaction fee');
  page.once('dialog',dialog=>dialog.accept());
  await page.locator('#deleteScenario').click();
