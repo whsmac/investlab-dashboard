@@ -107,7 +107,7 @@ try {
   assert.equal(await page.locator("#priceCount").innerText(), "—");
   assert.equal(await page.locator("#financialCount").innerText(), "—");
   assert.match(await page.locator("#authStatus").innerText(), /permission denied for table/);
-  assert.match(await page.locator("#authStatus").innerText(), /테이블 조회 권한\\(RLS\\)/);
+  assert.ok((await page.locator("#authStatus").innerText()).includes("테이블 조회 권한(RLS)"));
   assert.match(await page.locator("#authStatus").innerText(), /데이터는 변경되지 않았습니다/);
   await page.evaluate(() => localStorage.removeItem("pilot_read_error"));
 
