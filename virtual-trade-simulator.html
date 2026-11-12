@@ -440,7 +440,11 @@ function validateSavedStrategy(value){
 }
 function storageAction(action){
  try{action();byId('scenarioStorageStatus').className='hint';}
- catch(error){byId('scenarioStorageStatus').className='error';byId('scenarioStorageStatus').textContent='저장 작업 실패: '+error.message;}
+ catch(error){
+  const quota=error&&(['QuotaExceededError','NS_ERROR_DOM_QUOTA_REACHED'].includes(error.name)||error.code===22||error.code===1014);
+  byId('scenarioStorageStatus').className='error';
+  byId('scenarioStorageStatus').textContent=quota?'저장 공간이 부족해 전략을 저장하지 못했습니다. 현재 편집 내용과 기존 저장 전략은 유지됩니다. 브라우저 저장 공간을 확인하세요.':'저장 작업 실패: '+error.message;
+ }
 }
 byId('saveScenario').addEventListener('click',()=>storageAction(()=>{
  const name=byId('scenarioName').value.trim();
