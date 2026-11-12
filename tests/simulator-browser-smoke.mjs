@@ -264,8 +264,12 @@ try{
  // A saved scenario can be appended to the current comparison without modifying portfolio data.
  await page.locator('#appendScenario').click();
  assert.equal(await page.locator('#strategyEditor .strategy-card').count(),2);
+ await calculateAndWait();
+ assert.match(await page.locator('#status').innerText(),/계산 완료/);
+ assert.equal(await page.locator('#allStrategyTitle').isVisible(),true);
+ const overview=await page.locator('#allStrategySummary').innerText();
+ for(const label of ['최종 현금 USD','최종 평가총액 USD','누적 실현손익 USD','추가 예상 양도세 KRW'])assert.ok(overview.includes(label));
  assert.match(await page.locator('#scenarioStorageStatus').innerText(),/비교 목록에 추가했습니다/);
- assert.equal(await page.locator('#summary').innerText(),'');
  assert.equal(await page.evaluate(()=>localStorage.getItem('investlab_holdings')),holdingsBeforeSave);
  await page.reload();
  await page.locator('#savedScenarioList').selectOption('TSLA 재매수 검증');
