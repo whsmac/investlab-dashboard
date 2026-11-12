@@ -80,8 +80,14 @@ function calculate(){
     ['보유 대비 차이 USD','—',...result.scenarios.map(s=>(s.deltaVsHold>0?'+':'')+fmt(s.deltaVsHold))],
     ['보유 대비 차이 (%)','—',...result.scenarios.map(s=>result.baseline.terminalValue>0?(s.deltaVsHold>0?'+':'')+(s.deltaVsHold/result.baseline.terminalValue*100).toFixed(2)+'%':'산출 불가')],
     ['누적 실현손익 USD','0',...result.scenarios.map(s=>fmt(s.final.realizedPnL))],
-    ['추가 예상 양도세 KRW','—',...taxResults.map(t=>fmt(t.incrementalTaxKrw))]
+    ['추가 예상 양도세 KRW','—',...taxResults.map(t=>fmt(t.incrementalTaxKrw))],
+    ['추가 예상세액 환산 USD','—',...taxResults.map(t=>fmt(t.incrementalTaxKrw/fx))],
+    ['세금 반영 추정 평가총액 USD','—',...result.scenarios.map((sc,i)=>fmt(sc.terminalValue-taxResults[i].incrementalTaxKrw/fx))],
+    ['세금 반영 보유 대비 차이 USD','—',...result.scenarios.map((sc,i)=>fmt(sc.deltaVsHold-taxResults[i].incrementalTaxKrw/fx))]
    ]));
+   const netNotice=document.createElement('p');netNotice.className='notice';
+   netNotice.textContent='세금 반영 추정치는 각 전략의 추가 예상 양도세(KRW)를 계산 시 적용한 단일 환율로 USD 환산해 평가총액에서 뺀 비교용 수치입니다. 세액은 가상 현금에서 실제 차감하지 않으며, 계속 보유 기준의 미실현손익 세금은 추정하지 않습니다.';
+   byId('allStrategySummary').append(netNotice);
    const comparisonTable=byId('allStrategySummary').querySelector('table');
    if(comparisonTable){
     comparisonTable.classList.add('strategy-overview-table');
