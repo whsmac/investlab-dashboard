@@ -44,7 +44,7 @@ function calculate(){
  byId('resultHero').replaceChildren();
  byId('positionCompare').replaceChildren();
  byId('positionCompareTitle').hidden=true;
- for(const id of ['summary','strategies','strategyHoldings','taxBasis','taxStages','steps','holdings','finalValuation'])byId(id).replaceChildren();
+ for(const id of ['summary','strategies','strategyHoldings','taxBasis','taxStages','taxGainEditor','steps','holdings','finalValuation'])byId(id).replaceChildren();
  try{
   const cash=Number(byId('cash').value);
   if(!byId('cash').value.trim()||!Number.isFinite(cash)||cash<0)throw new Error('시작 현금은 0 이상의 숫자여야 합니다.');
