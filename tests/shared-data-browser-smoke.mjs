@@ -95,8 +95,8 @@ try {
   assert.match(financialText, /2026-Q3/);
   assert.match(financialText, /2026-Q2/);
   assert.match(financialText, /미수집/);
-  assert.match(financialText, /3\\.5/);
-  assert.match(financialText, /(?:^|\\s)0(?:\\s|$)/);
+  assert.ok(financialText.includes("3.5"));
+  assert.ok(financialText.includes("\t0\t"));
   assert.doesNotMatch(financialText, /분기 재무 데이터 없음/);
   await page.evaluate(() => localStorage.removeItem("pilot_financial_rows"));
   assert.deepEqual(pageErrors, [], "Shared data page should not emit uncaught JavaScript errors");
