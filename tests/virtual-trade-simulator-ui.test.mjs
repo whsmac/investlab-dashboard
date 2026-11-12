@@ -122,3 +122,13 @@ test('FX request times out and distinguishes network failures without guessed ra
  assert.ok(html.includes('error instanceof TypeError'));
  assert.match(html,/임의 환율을 적용하지 않았습니다/);
 });
+
+test('named scenario storage is browser-local and does not write portfolio or Supabase',()=>{
+ assert.match(html,/investlab_simulator_saved_scenarios_v1/);
+ assert.match(html,/id="saveScenario"/);
+ assert.match(html,/id="loadScenario"/);
+ assert.match(html,/id="deleteScenario"/);
+ assert.match(html,/validateSavedStrategy\(readStrategies\(\)\)/);
+ assert.match(html,/localStorage\.setItem\(SCENARIO_STORAGE_KEY/);
+ assert.match(html,/simulatorInputRevision\+\+;invalidateCalculatedResults\(\)/);
+});
