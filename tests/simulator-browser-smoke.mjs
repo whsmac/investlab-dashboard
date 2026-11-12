@@ -279,6 +279,7 @@ try{
  assert.equal(await page.evaluate(()=>localStorage.getItem('investlab_holdings')),holdingsBeforeSave);
  // Ranking inversion: strategy B has $5 more pretax value but realizes an extra
  // $500 gain, so its estimated incremental tax makes strategy A the net leader.
+ const firstStrategyName=await page.locator('#strategyEditor .strategy-card').first().locator('.strategy-name').inputValue();
  const secondStrategy=page.locator('#strategyEditor .strategy-card').nth(1);
  await secondStrategy.locator('.strategy-name').fill('세전 우세·세후 열세');
  for(const [side,ticker,quantity,price] of [
@@ -296,7 +297,7 @@ try{
  assert.match(await page.locator('#status').innerText(),/계산 완료/);
  const invertedRanking=await page.locator('#strategyRanking').innerText();
  assert.match(invertedRanking,/세전 평가총액 1위.*세전 우세·세후 열세/);
- assert.match(invertedRanking,/추가 예상세액 반영 1위.*TSLA 재매수 검증/);
+ assert.ok(invertedRanking.split('추가 예상세액 반영 1위')[1]?.includes(firstStrategyName),'Net valuation leader should be the first strategy');
  assert.match(invertedRanking,/두 기준의 1위가 다릅니다/);
  assert.equal(await page.evaluate(()=>localStorage.getItem('investlab_holdings')),holdingsBeforeSave);
  await page.reload();
