@@ -15,3 +15,11 @@
 
 ## 변경 금지
 Draft PR 병합, 운영 대시보드 및 Supabase 변경, 실거래, 포트폴리오 원본 쓰기 금지.
+
+## 최신 SHA 재배포 확인 (2026-11-12)
+- GitHub Actions: 커밋 `96bfd074` 기준 두 워크플로 모두 성공.
+- Vercel 전용 preview 프로젝트 `investlab-phase1-preview`에 `96bfd074b8e1552a498a2b8506544d82fae6e7d7`을 명시하여 Git 배포 요청.
+- 새 배포 ID: `dpl_JCvLfsMgauVDJrTeuN51D6DsdXRY`.
+- 배포 요청 자체는 접수되었지만 상태는 `ERROR`, `errorCode=git_info_fail`. READY URL 없음.
+- 이전의 429 API 제한과 별개로, Git 소스 조회/연동 문제는 지속됨. 원인 확정 전 임의로 빌드 오류로 분류하거나 운영 환경 설정을 변경하지 않는다.
+- 안전한 대안: GitHub-Vercel 연동 권한을 확인한 후 preview 재배포하거나, 별도 검증된 정적 소스 업로드 방식으로 preview 전용 배포를 구성한다. 운영 프로젝트·Supabase·PR 병합은 변경하지 않는다.
