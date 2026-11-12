@@ -370,9 +370,25 @@ strategyState=[{name:'가상 거래 1',trades:[]}];renderEditor();ensureTradePri
 
 let fxRateSnapshot=null;
 let simulatorInputRevision=0;
+// User edits invalidate previous results, even before another FX request starts.
+function invalidateCalculatedResults(){
+ fxRateSnapshot=null;
+ byId('taxFx').value='';
+ for(const id of ['resultHero','positionCompare','summary','strategies','strategyHoldings','taxBasis','taxStages','taxGainEditor','steps','holdings','finalValuation'])byId(id).replaceChildren();
+ byId('positionCompareTitle').hidden=true;
+ byId('status').textContent='입력값이 변경되었습니다. 시나리오 계산을 다시 실행하세요.';
+ byId('status').className='';
+ byId('fxStatus').textContent='입력값 변경으로 이전 환율 적용을 해제했습니다. 계산 시 최신 환율을 다시 조회합니다.';
+}
 // Edits made during an asynchronous FX lookup must not silently calculate a changed scenario.
-document.addEventListener('input',event=>{if(event.target instanceof HTMLElement&&event.target.closest('input,textarea,select')&&!event.target.readOnly)simulatorInputRevision++;},true);
-document.addEventListener('change',event=>{if(event.target instanceof HTMLElement&&event.target.closest('input,textarea,select')&&!event.target.readOnly)simulatorInputRevision++;},true);
+function trackSimulatorEdit(event){
+ if(event.target instanceof HTMLElement&&event.target.closest('input,textarea,select')&&!event.target.readOnly){
+  simulatorInputRevision++;
+  invalidateCalculatedResults();
+ }
+}
+document.addEventListener('input',trackSimulatorEdit,true);
+document.addEventListener('change',trackSimulatorEdit,true);
 function parseTaxMoney(id){
  const raw=byId(id).value.replaceAll(',','').trim();
  return raw===''?NaN:Number(raw);
