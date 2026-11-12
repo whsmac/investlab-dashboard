@@ -263,6 +263,23 @@ try{
  for(const id of ['savedScenarioList','loadScenario','appendScenario','deleteScenario'])assert.equal(await page.locator('#'+id).isEnabled(),true,'Saving must enable '+id);
  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('investlab_simulator_saved_scenarios_v1')));
  assert.ok(saved['TSLA 재매수 검증']);
+ // An existing name must never overwrite a saved strategy without consent.
+ const originalSaved=await page.evaluate(()=>localStorage.getItem('investlab_simulator_saved_scenarios_v1'));
+ const nameField=page.locator('#strategyEditor .strategy-card').first().locator('.strategy-name');
+ const beforeOverwriteName=await nameField.inputValue();
+ await nameField.fill('덮어쓰기 확인용 수정');
+ page.once('dialog',dialog=>{assert.match(dialog.message(),/덮어쓰시겠습니까/);return dialog.dismiss();});
+ await page.locator('#saveScenario').click();
+ assert.equal(await page.evaluate(()=>localStorage.getItem('investlab_simulator_saved_scenarios_v1')),originalSaved,'Declining overwrite must preserve saved data');
+ assert.equal(await nameField.inputValue(),'덮어쓰기 확인용 수정','Declining overwrite must preserve editor changes');
+ page.once('dialog',dialog=>dialog.accept());
+ await page.locator('#saveScenario').click();
+ const overwritten=await page.evaluate(()=>JSON.parse(localStorage.getItem('investlab_simulator_saved_scenarios_v1')));
+ assert.equal(overwritten['TSLA 재매수 검증'][0].name,'덮어쓰기 확인용 수정','Accepting overwrite must save edited strategy');
+ assert.equal(Object.keys(overwritten).length,1,'Overwrite must not create a duplicate saved entry');
+ await nameField.fill(beforeOverwriteName);
+ page.once('dialog',dialog=>dialog.accept());
+ await page.locator('#saveScenario').click();
  assert.equal(await page.evaluate(()=>localStorage.getItem('investlab_holdings')),holdingsBeforeSave);
  // A saved scenario can be appended to the current comparison without modifying portfolio data.
  await page.locator('#appendScenario').click();
