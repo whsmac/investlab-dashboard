@@ -121,6 +121,28 @@ try{
  await buyHelper.getByRole('button',{name:'매수 가능 최대 수량 계산'}).click();
  assert.equal(await tradeRows.last().locator('[data-field="quantity"]').inputValue(),'0','Reserve above available cash must not create a negative buy');
  assert.match(await buyHelper.locator('output').innerText(),/목표 현금이 현재 현금보다 큽니다/);
+ // With two buys, the reserve applies only to the final buy, not the intermediate one.
+ await reserve.fill('200');
+ await page.locator('#strategyEditor .strategy-card').first().getByRole('button',{name:'+ 거래 추가'}).click();
+ const third=tradeRows.nth(2);
+ await third.locator('[data-field="side"]').selectOption('buy');
+ await third.locator('[data-field="ticker"]').fill('TQQQ');
+ await third.locator('[data-field="quantity"]').fill('1');
+ await third.locator('[data-field="price"]').fill('50');
+ const helpers=page.locator('#strategyEditor .strategy-card').first().locator('.buy-helper');
+ await helpers.nth(1).getByRole('button',{name:'매수 가능 최대 수량 계산'}).click();
+ assert.equal(await tradeRows.nth(1).locator('[data-field="quantity"]').inputValue(),'16','Intermediate buy must ignore the final reserve');
+ assert.match(await helpers.nth(1).locator('output').innerText(),/중간 매수 \(목표 현금 미적용\).*최대 16주/);
+ // A smaller intermediate purchase leaves $200; final buy must reserve all of it.
+ await tradeRows.nth(1).locator('[data-field="quantity"]').fill('10');
+ await helpers.nth(2).getByRole('button',{name:'매수 가능 최대 수량 계산'}).click();
+ assert.equal(await third.locator('[data-field="quantity"]').inputValue(),'0','Final buy must preserve the $200 target');
+ assert.match(await helpers.nth(2).locator('output').innerText(),/최종 매수 \(목표 현금 적용\).*매수 직전 현금 200.*최대 0주/);
+ await reserve.fill('100');
+ await helpers.nth(2).getByRole('button',{name:'매수 가능 최대 수량 계산'}).click();
+ assert.equal(await third.locator('[data-field="quantity"]').inputValue(),'2','Final $50 buy should use only $100 above reserve');
+ assert.match(await helpers.nth(2).locator('output').innerText(),/매수 후 잔여 100/);
+ await third.getByRole('button',{name:'삭제'}).click();
  await reserve.fill('0');
  await tradeRows.last().locator('[data-field="quantity"]').fill('10');
  assert.equal(await tradeRows.first().getByRole('button',{name:'1번째 거래 위로 이동'}).isDisabled(),true);
