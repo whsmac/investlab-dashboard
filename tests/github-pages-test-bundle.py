@@ -18,3 +18,22 @@ for file in ("index.html", "shared-data.html", "shared-data-import.html",
 assert "INVESTLAB TEST Preview" in (out / "index.html").read_text()
 assert "gopofxyezhwpfbxebcrxd.supabase.co" in (out / "shared-data.html").read_text()
 print("Isolated TEST Pages bundle: OK (no publishing)")
+
+# Check every relative HTML link and module import needed by the TEST bundle.
+import re
+from urllib.parse import unquote, urlsplit
+for page in out.glob("*.html"):
+    html = page.read_text(encoding="utf-8")
+    references = re.findall(r'(?:src|href)\\s*=\\s*["\\']([^"\\']+)["\\']', html)
+    references += re.findall(r'\\bfrom\\s*["\\']([^"\\']+)["\\']', html)
+    for reference in references:
+        if not reference.startswith("./"):
+            continue
+        local_path = unquote(urlsplit(reference).path).removeprefix("./")
+        assert (out / local_path).is_file(), f"Broken relative asset in {page.name}: {reference}"
+# Never package credential files or deployment config into the public static artifact.
+for file in out.rglob("*"):
+    if file.is_file():
+        assert file.name not in (".env", ".env.local", ".env.production"), file
+        assert not file.name.endswith((".pem", ".key")), file
+print("TEST Pages relative asset links and credential exclusions: OK")
