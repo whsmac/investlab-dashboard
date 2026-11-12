@@ -160,6 +160,16 @@ try{
  await tradeRows.nth(1).getByRole('button',{name:'2번째 거래 아래로 이동'}).click();
  assert.equal(await tradeRows.nth(1).locator('[data-field="ticker"]').inputValue(),'SOXL');
  assert.equal(await tradeRows.nth(2).locator('[data-field="ticker"]').inputValue(),'TQQQ');
+ // Fees on prior sales and the final buy must both reduce affordable quantity.
+ await tradeRows.first().locator('[data-field="fee"]').fill('5');
+ await tradeRows.nth(1).locator('[data-field="fee"]').fill('5');
+ await tradeRows.nth(2).locator('[data-field="fee"]').fill('5');
+ await helpers.nth(2).getByRole('button',{name:'매수 가능 최대 수량 계산'}).click();
+ assert.equal(await tradeRows.nth(2).locator('[data-field="quantity"]').inputValue(),'1','Fees on sale and final buy must reduce final TQQQ affordability');
+ assert.match(await helpers.nth(2).locator('output').innerText(),/매수 직전 현금 190.*최대 1주.*매수 후 잔여 135/);
+ await tradeRows.first().locator('[data-field="fee"]').fill('0');
+ await tradeRows.nth(1).locator('[data-field="fee"]').fill('0');
+ await tradeRows.nth(2).locator('[data-field="fee"]').fill('0');
  await third.getByRole('button',{name:'삭제'}).click();
  await reserve.fill('0');
  await tradeRows.last().locator('[data-field="quantity"]').fill('10');
