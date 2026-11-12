@@ -119,3 +119,23 @@ test('sell fees reduce the next buy budget and reserved cash survives a fee-char
  assert.throws(()=>simulateTrades(portfolio,[steps[0],{side:'buy',ticker:'SOXL',quantity:10,price:30,fee:200}]),/insufficient cash at 1/);
  assert.equal(portfolio.positions.TSLA.quantity,2);
 });
+
+test('four-leg fee-bearing rotation preserves cash, positions, basis and realized gains',()=>{
+ const original={cash:100,positions:{TSLA:{quantity:10,averageCost:100}}};
+ const trades=[
+  {side:'sell',ticker:'TSLA',quantity:2,price:200,fee:5},
+  {side:'buy',ticker:'SOXL',quantity:10,price:30,fee:5},
+  {side:'sell',ticker:'SOXL',quantity:5,price:40,fee:3},
+  {side:'buy',ticker:'TSLA',quantity:1,price:150,fee:2}
+ ];
+ const result=simulateTrades(original,trades);
+ assert.deepEqual(result.steps.map(step=>step.cash),[495,190,387,235]);
+ assert.deepEqual(result.steps.map(step=>step.cumulativeRealizedPnL),[195,195,239.5,239.5]);
+ assert.equal(result.final.cash,235);
+ assert.equal(result.final.positions.TSLA.quantity,9);
+ assert.equal(result.final.positions.SOXL.quantity,5);
+ assert.equal(result.final.positions.SOXL.averageCost,30.5);
+ assert.ok(Math.abs(result.final.positions.TSLA.averageCost-(952/9))<1e-7);
+ assert.equal(result.final.realizedPnL,239.5);
+ assert.deepEqual(original,{cash:100,positions:{TSLA:{quantity:10,averageCost:100}}});
+});
