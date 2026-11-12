@@ -130,6 +130,10 @@ try{
  await third.locator('[data-field="quantity"]').fill('1');
  await third.locator('[data-field="price"]').fill('50');
  const helpers=page.locator('#strategyEditor .strategy-card').first().locator('.buy-helper');
+ assert.equal(await helpers.count(),3,'Every trade must have an adjacent buy helper');
+ assert.equal(await tradeRows.nth(1).locator('[data-field="side"]').inputValue(),'buy','Intermediate trade must remain a buy after adding final trade');
+ assert.equal(await tradeRows.nth(2).locator('[data-field="side"]').inputValue(),'buy','Final trade must remain a buy');
+ assert.equal(await helpers.nth(1).isVisible(),true,'Intermediate buy helper must be visible');
  await helpers.nth(1).getByRole('button',{name:'매수 가능 최대 수량 계산'}).click();
  assert.equal(await tradeRows.nth(1).locator('[data-field="quantity"]').inputValue(),'16','Intermediate buy must ignore the final reserve');
  assert.match(await helpers.nth(1).locator('output').innerText(),/중간 매수 \(목표 현금 미적용\).*최대 16주/);
