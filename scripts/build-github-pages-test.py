@@ -16,6 +16,9 @@ PAGES = [
 if OUT.exists():
     shutil.rmtree(OUT)
 OUT.mkdir(parents=True)
+shutil.copytree(ROOT / "src", OUT / "src")
+for extra in ("pilot-test.html", "six-company-quarterly-financial-template.csv"):
+    shutil.copy2(ROOT / extra, OUT / extra)
 for filename, _ in PAGES:
     source = ROOT / filename
     if not source.is_file():
