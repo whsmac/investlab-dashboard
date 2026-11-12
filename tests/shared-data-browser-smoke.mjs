@@ -59,6 +59,34 @@ try {
   assert.equal(stored.url, "https://gopofxyezhwpfbxebcrxd.supabase.co");
   assert.equal(stored.key, "sb_publishable_test_only");
   assert.match(await page.locator("#connectionStatus").innerText(), /저장했습니다/);
+  // Offline authenticated TEST mock: no network, no Supabase writes.
+  await page.addInitScript(() => {
+    const datasets = {
+      companies: { count: 6, data: [{id:1,ticker:"TSLA",company_name:"Tesla",exchange:"NASDAQ",is_active:true}] },
+      market_price_observations: { count: 4938, data: [{id:1,company_id:1,trading_date:"2026-11-06",close_price:250,currency:"USD",price_basis:"adjusted_close"}] },
+      quarterly_financial_observations: { count: 0, data: [] }
+    };
+    window.supabase = {createClient: () => ({
+      auth: {
+        getSession: async () => ({data:{session:{access_token:"offline-test"}}}),
+        onAuthStateChange: () => ({data:{subscription:{unsubscribe(){}}}})
+      },
+      from: table => ({
+        select: () => ({
+          order(){return this;},
+          limit: async () => ({...datasets[table],error:null})
+        })
+      })
+    })};
+  });
+  await page.reload();
+  await page.waitForFunction(() => document.querySelector("#financialCount")?.textContent === "0");
+  assert.equal(await page.locator("#companyCount").innerText(), "6");
+  assert.equal(await page.locator("#priceCount").innerText(), "4,938");
+  assert.match(await page.locator("#prices").innerText(), /2026-11-06/);
+  assert.match(await page.locator("#financials").innerText(), /분기 재무 데이터 없음/);
+  assert.match(await page.locator("#financials").innerText(), /미수집은 0 USD가 아닙니다/);
+  assert.match(await page.locator("#authStatus").innerText(), /조회 완료/);
   assert.deepEqual(pageErrors, [], "Shared data page should not emit uncaught JavaScript errors");
   console.log("Shared data browser smoke passed: initial state, project allowlist, service-role rejection, isolated local storage, and no page errors.");
 } finally {
