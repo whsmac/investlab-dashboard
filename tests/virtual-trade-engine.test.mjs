@@ -99,7 +99,7 @@ test('buy fees reduce affordable shares and never allow negative cash at the bou
  const funded=simulateTrades(portfolio,[{side:'buy',ticker:'SOXL',quantity:9,price:10,fee:5}]);
  assert.equal(funded.final.cash,5);
  assert.equal(funded.final.positions.SOXL.quantity,9);
- assert.equal(funded.final.positions.SOXL.averageCost,95/9);
+ assert.ok(Math.abs(funded.final.positions.SOXL.averageCost-95/9)<1e-7);
  assert.equal(funded.steps[0].fee,5);
  assert.throws(()=>simulateTrades(portfolio,[{side:'buy',ticker:'SOXL',quantity:10,price:10,fee:5}]),/insufficient cash at 0/);
  assert.deepEqual(portfolio,{cash:100,positions:{}},'A rejected buy must not mutate the starting portfolio');
@@ -114,7 +114,7 @@ test('sell fees reduce the next buy budget and reserved cash survives a fee-char
  const result=simulateTrades(portfolio,steps);
  assert.equal(result.steps[0].cash,495,'Sale proceeds must be net of fee');
  assert.equal(result.steps[1].cash,220,'Buy fee must be deducted from cash');
- assert.equal(result.final.positions.SOXL.averageCost,275/9,'Buy fee must enter average acquisition cost');
+ assert.ok(Math.abs(result.final.positions.SOXL.averageCost-275/9)<1e-7,'Buy fee must enter average acquisition cost');
  assert.equal(result.final.realizedPnL,195,'Sale fee must reduce realized gains');
  assert.throws(()=>simulateTrades(portfolio,[steps[0],{side:'buy',ticker:'SOXL',quantity:10,price:30,fee:200}]),/insufficient cash at 1/);
  assert.equal(portfolio.positions.TSLA.quantity,2);
