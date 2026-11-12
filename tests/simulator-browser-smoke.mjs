@@ -274,6 +274,28 @@ try{
  for(const id of ['savedScenarioList','loadScenario','appendScenario','deleteScenario'])assert.equal(await page.locator('#'+id).isEnabled(),true,'Saving must enable '+id);
  const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('investlab_simulator_saved_scenarios_v1')));
  assert.ok(saved['TSLA 재매수 검증']);
+ // Simulate a browser storage quota failure: keep the saved version and
+ // unsaved editor changes intact rather than reporting a false success.
+ const savedBeforeQuota=await page.evaluate(()=>localStorage.getItem('investlab_simulator_saved_scenarios_v1'));
+ const quotaEditor=page.locator('#strategyEditor .strategy-card').first().locator('.strategy-name');
+ await quotaEditor.fill('저장 공간 부족 테스트');
+ await page.evaluate(()=>{
+  const original=Storage.prototype.setItem;
+  window.__restoreStorageSetItem=()=>{Storage.prototype.setItem=original;};
+  Storage.prototype.setItem=function(key,value){
+   if(key==='investlab_simulator_saved_scenarios_v1')throw new DOMException('Storage quota exceeded','QuotaExceededError');
+   return original.call(this,key,value);
+  };
+ });
+ try{
+  page.once('dialog',dialog=>dialog.accept());
+  await page.locator('#saveScenario').click();
+  assert.match(await page.locator('#scenarioStorageStatus').innerText(),/저장 작업 실패/);
+  assert.equal(await page.evaluate(()=>localStorage.getItem('investlab_simulator_saved_scenarios_v1')),savedBeforeQuota,'Quota failure must preserve saved data');
+  assert.equal(await quotaEditor.inputValue(),'저장 공간 부족 테스트','Quota failure must preserve unsaved editor edits');
+ }finally{
+  await page.evaluate(()=>window.__restoreStorageSetItem());
+ }
  // An existing name must never overwrite a saved strategy without consent.
  const originalSaved=await page.evaluate(()=>localStorage.getItem('investlab_simulator_saved_scenarios_v1'));
  const nameField=page.locator('#strategyEditor .strategy-card').first().locator('.strategy-name');
