@@ -39,6 +39,20 @@ try{
  await page.locator('#saveScenario').click();
  assert.match(await page.locator('#scenarioStorageStatus').innerText(),/저장 작업 실패/);
  assert.equal(await page.evaluate(()=>localStorage.getItem('investlab_simulator_saved_scenarios_v1')),'{broken-json');
+ // Structurally valid JSON with an invalid trade must not replace the editor or be erased.
+ const invalidSaved=JSON.stringify({'잘못된 거래':[{name:'손상된 전략',trades:[{side:'sell',ticker:'TSLA',quantity:-2,price:100}]}]});
+ await page.evaluate(value=>localStorage.setItem('investlab_simulator_saved_scenarios_v1',value),invalidSaved);
+ await page.reload();
+ const editorBeforeInvalid=await page.locator('#strategyEditor .strategy-card').first().locator('.strategy-name').inputValue();
+ await page.locator('#savedScenarioList').selectOption('잘못된 거래');
+ await page.locator('#loadScenario').click();
+ assert.match(await page.locator('#scenarioStorageStatus').innerText(),/거래 데이터가 유효하지 않습니다/);
+ assert.equal(await page.locator('#strategyEditor .strategy-card').first().locator('.strategy-name').inputValue(),editorBeforeInvalid);
+ assert.equal(await page.evaluate(()=>localStorage.getItem('investlab_simulator_saved_scenarios_v1')),invalidSaved);
+ await page.locator('#appendScenario').click();
+ assert.match(await page.locator('#scenarioStorageStatus').innerText(),/거래 데이터가 유효하지 않습니다/);
+ assert.equal(await page.locator('#strategyEditor .strategy-card').count(),1);
+ assert.equal(await page.evaluate(()=>localStorage.getItem('investlab_simulator_saved_scenarios_v1')),invalidSaved);
  await page.evaluate(()=>localStorage.removeItem('investlab_simulator_saved_scenarios_v1'));
  await page.reload();
  for(const id of ['savedScenarioList','loadScenario','appendScenario','deleteScenario'])assert.equal(await page.locator('#'+id).isDisabled(),true,'Empty saved list must disable '+id);
