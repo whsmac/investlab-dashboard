@@ -1,6 +1,11 @@
 # Six-company chart improvements — Phase 1 (2026-11-22)
 
-Status: approved requirements; implementation pending. Isolated development branch. Do not merge or deploy to production.
+Status: approved requirements implemented in the current TEST UI repository, pending online browser review.
+
+Implementation branch: `whsmac/investlab-test-pages` / `feature/six-company-visual-comparison-20261122`.
+Draft review: https://github.com/whsmac/investlab-test-pages/pull/4
+The earlier `investlab-dashboard/six-company-price-preview.html` is historical and must not replace the newer TEST company analysis page.
+Do not merge or deploy to production.
 
 ## Approved UI behavior
 - Multi-select companies: MSFT, GOOGL, AMZN, META, TSLA, SPCX.
